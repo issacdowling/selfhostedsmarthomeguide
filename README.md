@@ -138,11 +138,11 @@ To test audio input, press 'Wake Up' on the home page, and say "What time is it?
 
 If there's no response, try relaunching rhasspy, by going back to your terminal, and typing
 ```
-docker-compose up -d --force-recreate
+sudo docker-compose up -d --force-recreate
 ```
 This may get your mic detected if it wasn't before.
 
-# Some small improvements
+# Some improvements
 ## TTS
 I reccommend going back to the settings page, switching your Text To Speech to Larynx, and choosing a voice you think sounds good. Southern-english-female is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response. Low Quality is perfectly fine, as you'll see when you test it. Though, speaking of testing, trying Larynx was somewhat awkward in the settings page for the first minute-or-so of restarting after selecting a new voice, so don't be alarmed if this happens to you. Remember to save your settings and restart afterwards.
 
@@ -154,7 +154,57 @@ In the settings page, click the green "Wake Word" dropdown, and type a wakeword 
 ![wakewordsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Wakeword.png)
 
 # Making it smart
-## Homeassistant
+## Setting up Homeassistant
+### If you've already got a homassistant instance, scroll down until the 'Integrating Homeassistant' section.
 
+To set up homeassistant, first we need a docker-compose file, just like what we had for rhasspy.
+So, run:
+```
+mkdir ~/hass
+cd ~/hass
+nano docker-compose.yml
+```
+And paste in:
+```
+version: '3'
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+```
+Then, press CTRL+X, Y, Enter, to save and exit. After which, run
+```
+sudo docker-compose up -d
+```
+Once that's done, go to a browser on another machine on your network, and go to:
+```
+http://yourhostname.local:8123
+```
+Replacing 'yourhostname' with your hostname. It should look like this: (after the same security prompt as before)
+
+![hass onboarding](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassonboarding.png)
+
+Just type a name, username, and make a password, and press 'Create Account'
+
+![hass make account](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassmakeaccoun.png)
+
+Now, give your home a name and location, (plus elevation, if you'd like)
+
+![hass name home](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassnamehome.png)
+
+And choose which data to *opt-in* for. These are all disabled by default, however I'd ask that you consider turning on anything you're comfortable with, since it can help the devs.
+
+![hass opt in](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassoptin.png)
+
+Finally for the onboarding, just press finish! This page shows any services that homeassistant automatically found, but we'll set things up later.
+
+![hass auto find](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassautofind.png)
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
+[Homeassistant Documentation](https://www.home-assistant.io/docs/)
