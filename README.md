@@ -210,7 +210,7 @@ Now, you should be on the main homeassistant page. Click your name in the bottom
 
 ![llat](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/llat.png)
 
-Name it whatever you'd like, and copy it.
+Create one, name it whatever you'd like, and copy it.
 
 Go back to your rhasspy tab, then settings, scroll down to intent handler, and select homeassistant.
 
