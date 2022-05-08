@@ -128,6 +128,12 @@ It will likely sound quite bad, but should work.
 
 To test audio input, press 'Wake Up' on the home page, and say "What time is it?". If it hears you, you'll get a response.
 
+If there's no response, try relaunching rhasspy, by going back to your terminal, and typing
+```
+docker-compose up -d --force-recreate
+```
+This may get your mic detected if it wasn't before.
+
 
 
 # Credit
