@@ -4,7 +4,7 @@
 ## What's needed
 Raspberry Pi 4
 
-Micro SD Card (or other boot device, USB drives work too)
+Micro SD Card - >=16GB (or other boot device, USB drives work too)
 
 # Setting Up the Pi
 
@@ -88,6 +88,7 @@ services:
             - '/dev/snd:/dev/snd'
         image: rhasspy/rhasspy
         command: --user-profiles /profiles --profile en
+        restart: unless-stopped
 ```
 Then, press CTRL+X, Y, Enter, to save and exit. After which, you can just run
 ```
@@ -95,6 +96,39 @@ sudo docker-compose up -d
 ```
 to begin installing. This, again, may take a while. You'll know it's done once you see this:
 ![Install complete](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/donedocker.png)
+
+# Initally setting up rhasspy
+In a browser on the same network as your Pi, go to this site, changing 'yourhostname' to your hostname.
+```
+http://yourhostname.local:12101
+```
+Your browser *should* complain that this site is not secure. If it was a site on the internet, you wouldn't want to access it, however it's just local, so we can tell the browser that we want to continue.
+![https issue](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/httpsonly.png)
+
+### And now you'll be here!
+![Rhasspy main page](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/rhasspyhome.png)
+
+# Testing things
+
+Then, go to the settings page using the left-side menu. Go through each service, and - for now - just select the default from the dropdown menu. Then, press the save settings button below the list, and restart. Once restarted, go to the top of the page, and press download. After that's done, things should look like this.
+
+![Settings page with defaults selected](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/settingspagedefault.png)
+
+## Testing audio output
+### Plug something in using the Pi's 3.5mm jack.
+
+To test audio output, go back to the home page, and type something into the 'speak' box, and see if it comes out of your speakers. 
+
+![AudioTest](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/audiotest.png)
+
+It will likely sound quite bad, but should work.
+
+## Testing audio input
+### Plug a USB microphone into a USB port
+
+To test audio input, press 'Wake Up' on the home page, and say "What time is it?". If it hears you, you'll get a response.
+
+
 
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
