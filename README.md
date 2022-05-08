@@ -223,6 +223,61 @@ And paste your token into the token section.
 
 Now, you can press save and restart.
 
+## It gets difficult.
+
+Now, we have to learn stuff, and edit yaml files. 
+
+Go to your terminal (still SSH'd into the Pi), and type 
+```
+sudo nano ~/hass/config/configuration.yaml
+```
+### Our example will be getting the assistant to return the time.
+
+So, by default, your configuration.yaml should look like this:
+
+![default config.yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/defaultyaml.png)
+
+We want to go to the bottom line, using the arrow keys to move our cursor, then add a few more lines with enter. Then, add a #, and afterwards type 'custom intents'.
+
+Now, paste this below:
+```
+intent_script:
+  GetTime:  # Intent name
+    speech:
+      text:  # What Rhasspy will say
+    action:
+      service: notify.notify
+      data:
+        message: Intent
+```
+It should look like this.
+
+![editing config.yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/editingconfignow.png)
+
+Then, go down a bit, add a #, type 'Custom Sensors', add some more lines, two #s, and 'Time'. Then, you can paste this:
+```
+sensor:
+  - platform: time_date
+    display_options:
+      - 'time'
+      - 'date'
+      - 'date_time'
+      - 'date_time_utc'
+      - 'date_time_iso'
+      - 'time_date'
+      - 'time_utc'
+      - 'beat'
+```
+
+Now, move your cursor back up to the line beginning with 'text:'. We'll learn a little bit about how we get the assistant to say what we want. Add a space after the colon (:), and type "It is ". Then, add two curly brackets '{{', a space, then ```states.sensor.time ```, followed by two closing curly brackets '}}'.Make sure there's a space between the closing brackets and the #. In the end, it'll look like this. 
+
+![config.yaml now](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/intheendconfig.png)
+
+Then, CTRL+X, Y, ENTER. Now, run ```sudo docker restart homeassistant```.
+
+
+
+
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
 [Homeassistant Documentation](https://www.home-assistant.io/docs/)
