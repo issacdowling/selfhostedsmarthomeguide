@@ -155,8 +155,7 @@ In the settings page, click the green "Wake Word" dropdown, and type a wakeword 
 
 # Making it smart
 ## Setting up Homeassistant
-### If you've already got a homassistant instance, scroll down until the 'Integrating Homeassistant' section.
-
+### If you've already got a homassistant instance, scroll down until we start entering URLs
 To set up homeassistant, first we need a docker-compose file, just like what we had for rhasspy.
 So, run:
 ```
@@ -182,7 +181,7 @@ Then, press CTRL+X, Y, Enter, to save and exit. After which, run
 ```
 sudo docker-compose up -d
 ```
-Once that's done, go to a browser on another machine on your network, and go to:
+Once that's done, go to a browser on another machine on your network, and go to this URL: (or your already existing server's URL)
 ```
 http://yourhostname.local:8123
 ```
