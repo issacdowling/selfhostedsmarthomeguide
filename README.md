@@ -205,6 +205,25 @@ And choose which data to *opt-in* for. These are all disabled by default, howeve
 Finally for the onboarding, just press finish! This page shows any services that homeassistant automatically found, but we'll set things up later.
 
 ![hass auto find](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassautofind.png)
+
+Now, you should be on the main homeassistant page. Click your name in the bottom right, then scroll down to long-lived tokens.
+
+![llat](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/llat.png)
+
+Name it whatever you'd like, and copy it.
+
+Go back to your rhasspy tab, then settings, scroll down to intent handler, and select homeassistant.
+
+![hass intent handler](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/intenthass.png)
+
+Then, press the green dropdown, and set the Hass URL to
+```
+http://yourhostname.local:8123
+```
+And paste your token into the token section.
+
+Now, you can press save and restart.
+
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
 [Homeassistant Documentation](https://www.home-assistant.io/docs/)
