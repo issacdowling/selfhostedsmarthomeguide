@@ -126,7 +126,9 @@ It will likely sound quite bad, but should work.
 ## Testing audio input
 ### Plug a USB microphone into a USB port
 
-To test audio input, press 'Wake Up' on the home page, and say "What time is it?". If it hears you, you'll get a response.
+To test audio input, press 'Wake Up' on the home page, and say "What time is it?". If it hears you, you'll get a response, and the UI will update to show this:
+
+![AudioInputWorks](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/audioinputworks.png)
 
 If there's no response, try relaunching rhasspy, by going back to your terminal, and typing
 ```
