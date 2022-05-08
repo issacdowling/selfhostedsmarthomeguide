@@ -4,7 +4,13 @@
 ## What's needed
 Raspberry Pi 4
 
-Micro SD Card - >=16GB (or other boot device, USB drives work too)
+Micro SD Card >=16GB (or other boot device, USB drives work too)
+
+FOR TESTING ONLY
+
+USB Mic
+
+3.5mm Speakers
 
 # Setting Up the Pi
 
@@ -136,7 +142,19 @@ docker-compose up -d --force-recreate
 ```
 This may get your mic detected if it wasn't before.
 
+# Some small improvements
+## TTS
+I reccommend going back to the settings page, switching your Text To Speech to Larynx, and choosing a voice you think sounds good. Southern-english-female is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response. Low Quality is perfectly fine, as you'll see when you test it. Though, speaking of testing, trying Larynx was somewhat awkward in the settings page for the first minute-or-so of restarting after selecting a new voice, so don't be alarmed if this happens to you. Remember to save your settings and restart afterwards.
 
+![TTSsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Texttospeech.png)
+
+## Wake word
+In the settings page, click the green "Wake Word" dropdown, and type a wakeword for testing. This is what you'll say to activate the assistant. Make sure it has quite a few syllables so it's easy to recognise. Then, record yourself saying it in three different ways, and maybe even another person to be safe. Then, press save, and restart.
+
+![wakewordsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Wakeword.png)
+
+# Making it smart
+## Homeassistant
 
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
