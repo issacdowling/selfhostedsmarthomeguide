@@ -265,14 +265,7 @@ intent_script:
   GetTime:  # Intent name
     speech:
       text:  # What Rhasspy will say
-    action:
-      service: notify.notify
-      data:
-        message: Intent
 ```
-It should look like this.
-
-![editing config.yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/editingconfignow.png)
 
 Then, go down a bit, add a #, type 'Custom Sensors', add some more lines, two #s, and 'Time'. Then, you can paste this:
 ```
@@ -292,6 +285,12 @@ sensor:
 Now, move your cursor back up to the line beginning with 'text:'. We'll learn a little bit about how we get the assistant to say what we want. Add a space after the colon (:), and type "It is ". Then, add two curly brackets '{{', a space, then ```states.sensor.time ```, followed by two closing curly brackets '}}'.Make sure there's a space between the closing brackets and the #. In the end, it'll look like this. 
 
 ![config.yaml now](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/intheendconfig.png)
+
+And finally, go right to the top of the file, and look for the line ```default_config:```. Go one line below it, and add exactly:
+```
+intent:
+```
+This allows rhasspy to send "intents" for Homeassistant to carry out.
 
 Then, CTRL+X, Y, ENTER. Now, run ```sudo docker restart homeassistant```.
 
