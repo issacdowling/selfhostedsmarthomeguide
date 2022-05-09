@@ -282,7 +282,7 @@ sensor:
       - 'beat'
 ```
 
-Now, move your cursor back up to the line beginning with 'text:'. We'll learn a little bit about how we get the assistant to say what we want. Add a space after the colon (:), and type "It is ". Then, add two curly brackets '{{', a space, then ```states.sensor.time ```, followed by two closing curly brackets '}}'.Make sure there's a space between the closing brackets and the #. In the end, it'll look like this. 
+Now, move your cursor back up to the line beginning with 'text:'. We'll learn a little bit about how we get the assistant to say what we want. Add a space after the colon (:), and type "It is ". Then, add ```It is {{states('sensor.time')}}```.Make sure there's a space between the closing brackets and the #. In the end, it'll look like this. 
 
 ![config.yaml now](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/intheendconfig.png)
 
