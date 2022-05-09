@@ -217,7 +217,7 @@ Go back to your rhasspy tab, then settings, scroll down to intent handler, and s
 
 Then, press the green dropdown, and set the Hass URL to
 ```
-http://yourhostname.local:8123
+THE REVERSE-PROXIED HOSTNAME. ADDING PORTS BREAKS THINGS. ALSO, ADD REVERSE PROXYING TO THE GUIDE.
 ```
 And paste your token into the token section.
 
