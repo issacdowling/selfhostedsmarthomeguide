@@ -64,6 +64,30 @@ sudo apt update && sudo apt upgrade -y
 ```
 to get up to date
 
+### Now, set a static local IP
+
+In your terminal, type ```ip address```. Then, look for an IP on either **eth0** or **wlan0**. It'll likely be 192.168.x.x, but it may be different. Highlighted is mine.
+
+![my private IP for the Pi](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/selectIP.png)
+
+Now, run
+```
+sudo nano /etc/dhcpcd.conf
+```
+and navigate down to the bottom line using the arrow keys, then press enter a few times to add some lines. You should get to here:
+
+![dhcpcd](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/dhcpcd.png)
+
+Then, paste this in:
+
+```
+interface 
+static ip_address=/24
+```
+
+Next to interface, add a space, then either **eth0** or **wlan0** depending on which had an IP before. Now, for static ip_address, type the same IP you had earlier before the */24*. Then, press CTRL+X, then Y, then Enter, to save and exit. Finally, run ```sudo reboot``` to restart. Your SSH will disconnect, and you can just keep trying to reconnect until it works to check if you're booted.
+
+
 # Installing things
 Run
 ```
@@ -215,11 +239,7 @@ Go back to your rhasspy tab, then settings, scroll down to intent handler, and s
 
 ![hass intent handler](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/intenthass.png)
 
-Then, press the green dropdown, and set the Hass URL to
-```
-THE REVERSE-PROXIED HOSTNAME. ADDING PORTS BREAKS THINGS. ALSO, ADD REVERSE PROXYING TO THE GUIDE.
-```
-And paste your token into the token section.
+Then, press the green dropdown, and set the Hass URL to your Pi's local IP. The hostname is not sufficient, and paste your token into the token section.
 
 Now, you can press save and restart.
 
