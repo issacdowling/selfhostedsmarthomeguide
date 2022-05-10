@@ -367,8 +367,8 @@ Now, head back to Rhasspy. Then, on the left, go to the sentences section. Add s
 
 Then, using what you've learned, you could add the option to turn it off.
 
-![Turning off in automations yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoggspecificlightsyaml.png)
-![Turning off in automations rhasspy](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoggspecificlightsrhasspy.png)
+![Turning off in automations yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoffspecificlightsyaml.png)
+![Turning off in automations rhasspy](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoffspecificlightsrhasspy.png)
 
 Now,
 
