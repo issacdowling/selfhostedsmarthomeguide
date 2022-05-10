@@ -259,17 +259,20 @@ So, by default, your configuration.yaml should look like this:
 
 ![default config.yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/defaultyaml.png)
 
-We want to go to the bottom line, using the arrow keys to move our cursor, then add a few more lines with enter. Then, add a #, and afterwards type 'custom intents'.
+We want to go to the bottom line, using the arrow keys to move our cursor, then add a few more lines with enter. Then, add a #, and afterwards type 'Returning TTS to rhasspy'.
 
 Now, paste this below:
 ```
-intent_script:
-  GetTime:  # Intent name
-    speech:
-      text:  # What Rhasspy will say
+rest_command:
+  tts:
+    url: 'http://yourlocalip:12101/api/text-to-speech'
+    method: 'POST'
+    content_type: text/plain
+    payload: '{{payload}}'
 ```
+And replace **"yourlocalip"** with your Pi's local IP.
 
-Then, go down a bit, add a #, type 'Custom Sensors', add some more lines, two #s, and 'Time'. Then, you can paste this:
+Then, go down a bit, add a #, type 'Custom Sensors', add some more lines, a #, and 'Time Sensor'. Then, you can paste this:
 ```
 sensor:
   - platform: time_date
@@ -284,22 +287,90 @@ sensor:
       - 'beat'
 ```
 
-Now, move your cursor back up to the line beginning with 'text:'. We'll learn a little bit about how we get the assistant to say what we want. Add a space after the colon (:), and type "It is ". Then, add ```It is {{states('sensor.time')}}```.Make sure there's a space between the closing brackets and the #. In the end, it'll look like this. 
-
-![config.yaml now](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/intheendconfig.png)
-
-And finally, go right to the top of the file, and look for the line ```default_config:```. Go one line below it, and add exactly:
+Finally, go right to the top of the file, and look for the line ```default_config:```. Go one line below it, and add exactly:
 ```
-intent:
+api:
 ```
-This allows rhasspy to send "intents" for Homeassistant to carry out.
+Then, CTRL+X, Y, ENTER.
 
-Then, CTRL+X, Y, ENTER. Now, run ```sudo docker restart homeassistant```.
+Now, run
+```
+sudo nano ~/hass/config/automations.yaml
+```
+and remove anything from the file if something's already there.
+
+Now, copy this over:
+```
+- alias: "Time Check"
+  trigger:
+    platform: event
+    event_type: rhasspy_GetTime
+  action:
+     - service: rest_command.tts
+       data_template:
+         payload: "It's {{states('sensor.time')}}"
+```
+I'd like to explain what's happening here for when you - in the future - add your own automations. The **"Alias"** is the name that will be shown in the Homeassistant GUI. The **"Event_type"** is what your event will be called in Rhasspy (the name is whatever comes after the underscore). Then, the stuff within the parenthasis in the **"Payload"** section is what your assistant will say in response. Things within two curly brackets are being grabbed from a sensor, so if you had another sensor, you'd just change **sensor.time** to **sensor.sensorname**.
+
+Now, run ```sudo docker restart homeassistant```.
 
 ### Trying it
 
 With any luck, once things are restarted, you can go to rhasspy's web UI, click the wake button, say out loud **"What time is it?**, and it should respond with the current time in 24-hour format.
 
+## Actually controlling devices
+
+### Alright, we've learned how to make Rhasspy speak information grabbed from Homeassistant, but how do we make it control things?
+
+This gets much more complicated, and there are more ways to accomplish things. I'll be describing the methods I use, but if there's a better method, please feel free to share, I'd appreciate it.
+
+First, we need a thing to control. This isn't a homeassistant tutorial, but if you've got any WLED devices, they should automatically appear in the devices section to be configured like this:
+
+![Autoadd1](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Autoadd1.png)
+![Autoadd2](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Autoadd2.png)
+![Autoadd3](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Autoadd3.png)
+
+To check the device name, go to settings, then entities in Homeassistant. Then, click on the device you're intending to control. Note down the name at the bottom.
+
+![Wled device in entities](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/wledentities.png)
+
+Now, go back to your automations file, by running ```sudo nano ~/hass/config/automations.yaml```, and paste this blank template a few lines below the previous one.
+
+```
+- alias: "GUI Name"
+  trigger:
+  - event_data: {}
+    platform: event
+    event_type: rhasspy_NameInRhasspy
+  action:
+     - service: rest_command.tts
+       data_template:
+         payload: "What To Say"
+     - service:
+       data:
+         entity_id: "{{trigger.event.data.entity}}"
+```
+
+So, edit this using what we learned before. The alias for me will be **"Turn On Specific Light"**. The event type will be the same but without spaces, **"rhasspy_TurnOnSpecificLight"**. I don't want it to say anything in response, so I'll make the payload empty. I'm keeping it here in the example for you to use for other things, though. Then, next to the service with nothing next to it, we'll choose what we want to do. In my case, I'm turning a WLED device (a light) on, so I'll add **"light.turn_on"**, but **"homeassistant.turn_on"** would work too, and is how you'd interact with other devices. For further reading, [go here for the documentation](https://www.home-assistant.io/docs/scripts/service-calls/)
+
+Normally, we'd put something else in **"entity_id:"**, however we'll use Rhasspy to send this data, so we can specify it with our voice. Now you've got something which looks mildly similar to this:
+
+![Done WLED example](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/donewledexample.png)
+
+go to Homeassistant's developer tools, then YAML, and then reload automations.
+
+![reload automations](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/reloadautomations.png)
+
+Now, head back to Rhasspy. Then, on the left, go to the sentences section. Add some lines after any other text, then add - inside square brackets - the event type from earlier. So, in my case, ```TurnOnSpecificLight```. Then, below it, add what you want to say. I want to turn on the door light by saying **"turn on the door light"**. After writing that, add brackets around the text which represents your device *(so, in my case, the words 'door light')*, then add some curly brackets next to it. Type inside them: ```entity:```, then the name of your device within homeassistant which we checked earlier. For me, that's ```light.wled_door```. Repeat this for your other lights if following my example, and you should end up with something like this.
+
+![specificlighton](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnonspecificlight.png)
+
+Then, using what you've learned, you could add the option to turn it off.
+
+![Turning off in automations yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoggspecificlightsyaml.png)
+![Turning off in automations rhasspy](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoggspecificlightsrhasspy.png)
+
+Now,
 
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
