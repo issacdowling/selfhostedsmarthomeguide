@@ -144,7 +144,7 @@ Your browser *should* complain that this site is not secure. If it was a site on
 
 Then, go to the settings page using the left-side menu. Go through each service, and - for now - just select the default from the dropdown menu. Then, press the save settings button below the list, and restart. Once restarted, go to the top of the page, and press download. After that's done, things should look like this.
 
-![Settings page with defaults selected](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/settingspagedefault.png)
+![Settings page with defaults selected](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/settingdefault.png)
 
 ## Testing audio output
 ### Plug something in using the Pi's 3.5mm jack.
