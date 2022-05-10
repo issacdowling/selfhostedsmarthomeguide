@@ -370,7 +370,10 @@ Then, using what you've learned, you could add the option to turn it off.
 ![Turning off in automations yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoffspecificlightsyaml.png)
 ![Turning off in automations rhasspy](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoffspecificlightsrhasspy.png)
 
-Now,
+Now, save and retrain, then go to rhasspy's web UI, wake it up, and ask it one of your sentences. Ideally, it works.
+
+## Wake word
+To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. Save and restart, and it should work.
 
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
