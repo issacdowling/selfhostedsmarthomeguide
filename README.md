@@ -296,7 +296,9 @@ This allows rhasspy to send "intents" for Homeassistant to carry out.
 
 Then, CTRL+X, Y, ENTER. Now, run ```sudo docker restart homeassistant```.
 
+### Trying it
 
+With any luck, once things are restarted, you can go to rhasspy's web UI, click the wake button, say out loud **"What time is it?**, and it should respond with the current time in 24-hour format.
 
 
 # Credit
