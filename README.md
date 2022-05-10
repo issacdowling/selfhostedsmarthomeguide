@@ -66,9 +66,9 @@ to get up to date
 
 ### Now, set a static local IP
 
-In your terminal, type ```ip address```. Then, look for an IP on either **eth0** or **wlan0**. It'll likely be 192.168.x.x, but it may be different. Highlighted is mine.
+In your terminal, type ```ip route | grep default```. Then, note down three things: the first IP, the network device, and the second IP. The IPs will likely be 192.168.x.x, but may be different. In the image, I've highlighted these things in yellow so you know where to look.
 
-![my private IP for the Pi](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/selectIP.png)
+![my private IP for the Pi](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/ipdefault.png)
 
 Now, run
 ```
@@ -81,11 +81,13 @@ and navigate down to the bottom line using the arrow keys, then press enter a fe
 Then, paste this in:
 
 ```
-interface 
+interface
 static ip_address=/24
+static routers=
+static domain_name_servers=1.1.1.1
 ```
 
-Next to interface, add a space, then either **eth0** or **wlan0** depending on which had an IP before. Now, for static ip_address, type the same IP you had earlier before the */24*. Then, press CTRL+X, then Y, then Enter, to save and exit. Finally, run ```sudo reboot``` to restart. Your SSH will disconnect, and you can just keep trying to reconnect until it works to check if you're booted.
+Next to interface, add a space, then the network device (either **eth0** or **wlan0**). Now, for static ip_address, type the second IP before the */24*. Finally, add the first IP from earlier directly after **static routers=**. Then, press CTRL+X, then Y, then Enter, to save and exit. Finally, run ```sudo reboot``` to restart. Your SSH will disconnect, and you can just keep trying to reconnect until it works to check if you're booted.
 
 
 # Installing things
