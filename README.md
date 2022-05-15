@@ -372,6 +372,30 @@ Then, using what you've learned, you could add the option to turn it off.
 
 Now, save and retrain, then go to rhasspy's web UI, wake it up, and ask it one of your sentences. Ideally, it works.
 
+## Sending Extra Data
+Alright, but I don't *just* want **on** or **off**, I want to tell my lights to be a certain colour.
+
+Before we do that, lets improve the scalability of our previous light control setup. The way I did it previously was easier to explain, especially for small setups, but this works better in the long term.
+
+Click the circular "slots" tab,
+
+![slot tab](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/slottab.png)
+
+then make a new slot called lights. Within regular brackets, put the name you'd like to speak. If there are multiple, such as "Bed LEDS" and "Bedside LEDs", separate them with a pipe symbol (|). Then, immediately after the brackets, add a colon (:), and **without adding a space**, add the entity id from homeassistant. Here's what mine looks like with two lights.
+
+![Light slot](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/lightslot.png)
+
+Then, head back to your sentences section, and remove what you've already got. If you want to use my setup, paste this in:
+```
+[SetSpecificLightPower]
+light_name = ($lights){entity}
+light_state = (on | off){state}
+(set | turn) <light_state> [the] <light_name>
+(set | turn) [the] <light_name> <light_state>
+```
+What's within the top square brackets is what homeassistant will recognise when checking what event is being sent. Then, we set two variables. light_name equals what's in our lights slot (we know we're talking about a slot because of the $), and light_state can be on or off. Again, **or** is represented by a pipe (|). [The next bit was taught to me by a post on the rhasspy community page. Credit to them for this config!](https://community.rhasspy.org/t/access-from-home-assistant-the-raw-value-in-slots-array/3497) Then, we make some sentences. I made two, so I can say things in different orders. The first would allow me to say **"Turn on the bedside light"**, and the second allows **"Turn the bedside light on"**. Arrow brackets reference variables, regular brackets reference groups of words, square brackets reference optional words, and curly brackets reference the name that the sent data will have in the JSON file that Rhasspy sends to homeassistant.
+
+
 ## Wake word
 To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. Save and restart, and it should work.
 
