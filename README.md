@@ -393,7 +393,64 @@ light_state = (on | off){state}
 (set | turn) <light_state> [the] <light_name>
 (set | turn) [the] <light_name> <light_state>
 ```
-What's within the top square brackets is what homeassistant will recognise when checking what event is being sent. Then, we set two variables. light_name equals what's in our lights slot (we know we're talking about a slot because of the $), and light_state can be on or off. Again, **or** is represented by a pipe (|). [The next bit was taught to me by a post on the rhasspy community page. Credit to them for this config!](https://community.rhasspy.org/t/access-from-home-assistant-the-raw-value-in-slots-array/3497) Then, we make some sentences. I made two, so I can say things in different orders. The first would allow me to say **"Turn on the bedside light"**, and the second allows **"Turn the bedside light on"**. Arrow brackets reference variables, regular brackets reference groups of words, square brackets reference optional words, and curly brackets reference the name that the sent data will have in the JSON file that Rhasspy sends to homeassistant.
+What's within the top square brackets is what homeassistant will recognise when checking what event is being sent. Then, we set two variables. light_name equals what's in our lights slot (we know we're talking about a slot because of the $), and light_state can be on or off. Again, **or** is represented by a pipe (|). [The next bit was taught to me by a post on the rhasspy community page. Credit to them for this config!](https://community.rhasspy.org/t/access-from-home-assistant-the-raw-value-in-slots-array/3497) Then, we make some sentences. I made two, so I can say things in different orders. The first would allow me to say **"Turn on the bedside light"**, and the second allows **"Turn the bedside light on"**. Arrow brackets reference variables, regular brackets reference groups of words, square brackets reference optional words, and curly brackets reference the name that the sent data will have in the JSON file that Rhasspy sends to homeassistant. When saving, remember to allow training.
+
+
+### But we also need to update our homeassistant automations.
+
+So, while SSH'd into the pi, run
+```
+sudo nano ~/hass/config/automations.yaml
+```
+Then, just remove the old config, and paste this instead:
+```
+- alias: "Turn on/off specific light"
+  trigger:
+  - event_data: {}
+    platform: event
+    event_type: rhasspy_SetSpecificLightPower
+  action:
+     - service: rest_command.tts
+       data:
+         payload: ""
+     - service: light.turn_{{trigger.event.data.state}}
+       data:
+         entity_id: "{{trigger.event.data.entity}}"
+```
+If you changed what's within the square brackets, change what's after ```rhasspy_```. Otherwise, things should just work. If you'd like your assistant to respond verbally, you can add things within the parenthesis next to ```payload:```. Now, like we did earlier, go to homeassistant's dev tools, YAML, and reload automations. Now, you should be able to ask it to turn on the lights as before, but in a way that's much better for the future.
+
+And, now it's easy to add colours. Go back to your slots, add a new one called ```colours``` (the British spelling), and paste this:
+```
+(aqua | aquamarine | beige | black | blue | brown | chocolate | coral | crimson | cyan | firebrick | forest green | gold | gray | green | greenyellow | hot pink | indigo | khaki | lavender | light blue | light coral | light cyan | light green | light pink | light salmon | light yellow | lime | lime green | magenta | maroon | navy | olive | orange | orchid | pink | purple | red | salmon | tomato | violet | white | yellow){colour}
+```
+It actually supports all colours in [this list](https://www.w3.org/TR/css-color-3/#svg-color), so if I omitted your favourite colour, you can add it as long as it's in the page on that link.
+
+![Colour slot](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/colourslot.png)
+
+Then, go to your sentences, and duplicate your power control section. Change Power to Colour (or apply your own naming convention), and change ```light_state``` to ```light_colour```, and change ```on | off``` to ```$colours```. Remember to also change light_state in the actual sentence too, along with correcting the layout of the sentence so it makes sense when you say it. In the end, I've got this:
+
+![Colour sentence](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/coloursentence.png)
+
+Finally, go back to your terminal with automations.yaml open, and paste this below your power config:
+```
+- alias: "Set specific light colour"
+  trigger:
+  - event_data: {}
+    platform: event
+    event_type: rhasspy_SetSpecificLightColour
+  action:
+     - service: rest_command.tts
+       data:
+         payload: ""
+     - service: light.turn_on
+       data:
+         entity_id: "{{trigger.event.data.entity}}"
+         color_name: "{{trigger.event.data.colour}}"
+```
+
+All you should need to change is the event_type if you decided to name things differently. Save and exit (CTRL+X, Y, ENTER), then reload your automations in homeassistant, and things should work.
+
+
 
 
 ## Wake word
