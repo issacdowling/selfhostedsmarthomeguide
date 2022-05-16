@@ -425,7 +425,7 @@ And, now it's easy to add colours. Go back to your slots, add a new one called `
 ```
 It actually supports all colours in [this list](https://www.w3.org/TR/css-color-3/#svg-color), so if I omitted your favourite colour, you can add it as long as it's in the page on that link.
 
-![Colour slot](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/colourslot.png)
+![Colour slot](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/colourslotcorrected.png)
 
 Then, go to your sentences, and duplicate your power control section. Change Power to Colour (or apply your own naming convention), and change ```light_state``` to ```light_colour```, and change ```on | off``` to ```$colours```. Remember to also change light_state in the actual sentence too, along with correcting the layout of the sentence so it makes sense when you say it. In the end, I've got this:
 
