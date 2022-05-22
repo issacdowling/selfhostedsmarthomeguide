@@ -235,13 +235,13 @@ Now, you should be on the main homeassistant page. Click your name in the bottom
 
 ![llat](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/llat.png)
 
-Create one, name it whatever you'd like, and copy it.
+Create one, name it whatever you'd like, and save it for a minute.
 
-Go back to your rhasspy tab, then settings, scroll down to intent handler, and select homeassistant.
+Go back to your rhasspy tab, then settings, scroll down to intent handler, and select local command.
 
-![hass intent handler](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/intenthass.png)
+![local intent handler](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/localcommandintents.png)
 
-Then, press the green dropdown, and set the Hass URL to your Pi's local IP. The hostname is not sufficient, and paste your token into the token section.
+Then, press the green dropdown, and set the program to ```/profiles/intentHandler```
 
 Now, you can press save and restart.
 
@@ -249,80 +249,36 @@ Now, you can press save and restart.
 
 Now, we have to learn stuff, and edit yaml files. 
 
+
+### Our example will be getting the assistant to return the time.
+
+
+
+
+### Trying it
+
+With any luck, once things are restarted, you can go to rhasspy's web UI, click the wake button, say out loud **"What time is it?**, and it should respond with the current time.
+
+## Actually controlling devices
+
+### Alright, how do we make it control things?
+
 Go to your terminal (still SSH'd into the Pi), and type 
 ```
 sudo nano ~/hass/config/configuration.yaml
 ```
-### Our example will be getting the assistant to return the time.
 
-So, by default, your configuration.yaml should look like this:
+By default, your configuration.yaml should look like this:
 
 ![default config.yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/defaultyaml.png)
 
-We want to go to the bottom line, using the arrow keys to move our cursor, then add a few more lines with enter. Then, add a #, and afterwards type 'Returning TTS to rhasspy'.
-
-Now, paste this below:
-```
-rest_command:
-  tts:
-    url: 'http://yourlocalip:12101/api/text-to-speech'
-    method: 'POST'
-    content_type: text/plain
-    payload: '{{payload}}'
-```
-And replace **"yourlocalip"** with your Pi's local IP.
-
-Then, go down a bit, add a #, type 'Custom Sensors', add some more lines, a #, and 'Time Sensor'. Then, you can paste this:
-```
-sensor:
-  - platform: time_date
-    display_options:
-      - 'time'
-      - 'date'
-      - 'date_time'
-      - 'date_time_utc'
-      - 'date_time_iso'
-      - 'time_date'
-      - 'time_utc'
-      - 'beat'
-```
-
-Finally, go right to the top of the file, and look for the line ```default_config:```. Go one line below it, and add exactly:
+Go right to the top of the file, and look for the line ```default_config:```. Go one line below it, and add exactly:
 ```
 api:
 ```
 Then, CTRL+X, Y, ENTER.
 
-Now, run
-```
-sudo nano ~/hass/config/automations.yaml
-```
-and remove anything from the file if something's already there.
-
-Now, copy this over:
-```
-- alias: "Time Check"
-  trigger:
-    platform: event
-    event_type: rhasspy_GetTime
-  action:
-     - service: rest_command.tts
-       data_template:
-         payload: "It's {{states('sensor.time')}}"
-```
-I'd like to explain what's happening here for when you - in the future - add your own automations. The **"Alias"** is the name that will be shown in the Homeassistant GUI. The **"Event_type"** is what your event will be called in Rhasspy (the name is whatever comes after the underscore). Then, the stuff within the parenthasis in the **"Payload"** section is what your assistant will say in response. Things within two curly brackets are being grabbed from a sensor, so if you had another sensor, you'd just change **sensor.time** to **sensor.sensorname**.
-
-Now, run ```sudo docker restart homeassistant```.
-
-### Trying it
-
-With any luck, once things are restarted, you can go to rhasspy's web UI, click the wake button, say out loud **"What time is it?**, and it should respond with the current time in 24-hour format.
-
-## Actually controlling devices
-
-### Alright, we've learned how to make Rhasspy speak information grabbed from Homeassistant, but how do we make it control things?
-
-This gets much more complicated, and there are more ways to accomplish things. I'll be describing the methods I use, but if there's a better method, please feel free to share, I'd appreciate it.
+So you know, there are more ways to accomplish things. I'll be describing the methods I use, but if there's a better method, please feel free to share, I'd appreciate it.
 
 First, we need a thing to control. This isn't a homeassistant tutorial, but if you've got any WLED devices, they should automatically appear in the devices section to be configured like this:
 
@@ -343,9 +299,6 @@ Now, go back to your automations file, by running ```sudo nano ~/hass/config/aut
     platform: event
     event_type: rhasspy_NameInRhasspy
   action:
-     - service: rest_command.tts
-       data_template:
-         payload: "What To Say"
      - service:
        data:
          entity_id: "{{trigger.event.data.entity}}"
