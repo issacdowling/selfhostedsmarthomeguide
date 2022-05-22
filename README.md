@@ -245,38 +245,67 @@ Then, press the green dropdown, and set the program to ```/profiles/intentHandle
 
 Now, you can press save and restart.
 
-## It gets difficult.
+While it's restarting, run this:
+```
+sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+```
+Then, paste this in [(we're building from the Rhasspy example)](https://github.com/synesthesiam/rhasspy/blob/master/bin/mock-commands/handle.py):
+```
+#!/usr/bin/env python
 
-Now, we have to learn stuff, and edit yaml files. 
+import sys
+import json
+import random
+import datetime
+import requests
 
+def speech(text):
+    global o
+    o["speech"] = {"text": text}
 
-### Our example will be getting the assistant to return the time.
+# Set Homeassistant URL
+hassurl = "http://"
+hassauth = ""
+headers = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
+# get json from stdin and load into python dict
+o = json.loads(sys.stdin.read())
 
+intent = o["intent"]["name"]
 
+if intent == "GetTime":
+    now = datetime.datetime.now()
+    speech("It's %s %d %s." % (now.strftime('%H'), now.minute, now.strftime('%p')))
 
-### Trying it
+elif intent == "Greet":
+    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
+    speech(random.choice(replies))
 
-With any luck, once things are restarted, you can go to rhasspy's web UI, click the wake button, say out loud **"What time is it?**, and it should respond with the current time.
+# convert dict to json and print to stdout
+print(json.dumps(o))
+```
+Now, add your Pi's IP (adding ```:8123``` to the end) to the hassurl section, and your auth token to the hassauth section.
+
+CTRL+X, Y, ENTER.
+
+Now, go to rhasspy's web UI, click the wake button, and say out loud, "What time is it?". It should respond with the current time. If not, give it about 20 seconds, the TTS may be doing first-time setup.
 
 ## Actually controlling devices
 
-### Alright, how do we make it control things?
+Now, we have to learn stuff, and edit yaml files. 
 
 Go to your terminal (still SSH'd into the Pi), and type 
 ```
 sudo nano ~/hass/config/configuration.yaml
 ```
 
-By default, your configuration.yaml should look like this:
-
-![default config.yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/defaultyaml.png)
-
 Go right to the top of the file, and look for the line ```default_config:```. Go one line below it, and add exactly:
 ```
 api:
 ```
 Then, CTRL+X, Y, ENTER.
+
+You can also run ```sudo docker restart homeassistant``` now too.
 
 So you know, there are more ways to accomplish things. I'll be describing the methods I use, but if there's a better method, please feel free to share, I'd appreciate it.
 
@@ -290,47 +319,7 @@ To check the device name, go to settings, then entities in Homeassistant. Then, 
 
 ![Wled device in entities](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/wledentities.png)
 
-Now, go back to your automations file, by running ```sudo nano ~/hass/config/automations.yaml```, and paste this blank template a few lines below the previous one.
-
-```
-- alias: "GUI Name"
-  trigger:
-  - event_data: {}
-    platform: event
-    event_type: rhasspy_NameInRhasspy
-  action:
-     - service:
-       data:
-         entity_id: "{{trigger.event.data.entity}}"
-```
-
-So, edit this using what we learned before. The alias for me will be **"Turn On Specific Light"**. The event type will be the same but without spaces, **"rhasspy_TurnOnSpecificLight"**. I don't want it to say anything in response, so I'll make the payload empty. I'm keeping it here in the example for you to use for other things, though. Then, next to the service with nothing next to it, we'll choose what we want to do. In my case, I'm turning a WLED device (a light) on, so I'll add **"light.turn_on"**, but **"homeassistant.turn_on"** would work too, and is how you'd interact with other devices. For further reading, [go here for the documentation](https://www.home-assistant.io/docs/scripts/service-calls/)
-
-Normally, we'd put something else in **"entity_id:"**, however we'll use Rhasspy to send this data, so we can specify it with our voice. Now you've got something which looks mildly similar to this:
-
-![Done WLED example](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/donewledexample.png)
-
-go to Homeassistant's developer tools, then YAML, and then reload automations.
-
-![reload automations](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/reloadautomations.png)
-
-Now, head back to Rhasspy. Then, on the left, go to the sentences section. Add some lines after any other text, then add - inside square brackets - the event type from earlier. So, in my case, ```TurnOnSpecificLight```. Then, below it, add what you want to say. I want to turn on the door light by saying **"turn on the door light"**. After writing that, add brackets around the text which represents your device *(so, in my case, the words 'door light')*, then add some curly brackets next to it. Type inside them: ```entity:```, then the name of your device within homeassistant which we checked earlier. For me, that's ```light.wled_door```. Repeat this for your other lights if following my example, and you should end up with something like this.
-
-![specificlighton](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnonspecificlight.png)
-
-Then, using what you've learned, you could add the option to turn it off.
-
-![Turning off in automations yaml](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoffspecificlightsyaml.png)
-![Turning off in automations rhasspy](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/turnoffspecificlightsrhasspy.png)
-
-Now, save and retrain, then go to rhasspy's web UI, wake it up, and ask it one of your sentences. Ideally, it works.
-
-## Sending Extra Data
-Alright, but I don't *just* want **on** or **off**, I want to tell my lights to be a certain colour.
-
-Before we do that, lets improve the scalability of our previous light control setup. The way I did it previously was easier to explain, especially for small setups, but this works better in the long term.
-
-Click the circular "slots" tab,
+Back in Rhasspy, click the circular "slots" tab,
 
 ![slot tab](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/slottab.png)
 
@@ -348,14 +337,11 @@ light_state = (on | off){state}
 ```
 What's within the top square brackets is what homeassistant will recognise when checking what event is being sent. Then, we set two variables. light_name equals what's in our lights slot (we know we're talking about a slot because of the $), and light_state can be on or off. Again, **or** is represented by a pipe (|). [The next bit was taught to me by a post on the rhasspy community page. Credit to them for this config!](https://community.rhasspy.org/t/access-from-home-assistant-the-raw-value-in-slots-array/3497) Then, we make some sentences. I made two, so I can say things in different orders. The first would allow me to say **"Turn on the bedside light"**, and the second allows **"Turn the bedside light on"**. Arrow brackets reference variables, regular brackets reference groups of words, square brackets reference optional words, and curly brackets reference the name that the sent data will have in the JSON file that Rhasspy sends to homeassistant. When saving, remember to allow training.
 
-
-### But we also need to update our homeassistant automations.
-
-So, while SSH'd into the pi, run
+While SSH'd into the pi, run
 ```
 sudo nano ~/hass/config/automations.yaml
 ```
-Then, just remove the old config, and paste this instead:
+Then, paste this in some empty space:
 ```
 - alias: "Turn on/off specific light"
   trigger:
@@ -363,16 +349,30 @@ Then, just remove the old config, and paste this instead:
     platform: event
     event_type: rhasspy_SetSpecificLightPower
   action:
-     - service: rest_command.tts
-       data:
-         payload: ""
      - service: light.turn_{{trigger.event.data.state}}
        data:
          entity_id: "{{trigger.event.data.entity}}"
 ```
-If you changed what's within the square brackets, change what's after ```rhasspy_```. Otherwise, things should just work. If you'd like your assistant to respond verbally, you can add things within the parenthesis next to ```payload:```. Now, like we did earlier, go to homeassistant's dev tools, YAML, and reload automations. Now, you should be able to ask it to turn on the lights as before, but in a way that's much better for the future.
+If you changed what's within the square brackets in the sentence section, change what's after ```rhasspy_```. Otherwise, things should just work. Now, go to homeassistant's dev tools, YAML, and reload automations. 
 
-And, now it's easy to add colours. Go back to your slots, add a new one called ```colours``` (the British spelling), and paste this:
+Now, run:
+```
+sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+```
+And paste this below the last elif statement:
+```
+elif intent == "SetSpecificLightPower":
+    entity = o["slots"]["entity"]
+    state = o["slots"]["state"]
+    speech("Alright, I'll turn it " + state )
+    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = headers, json = {"entity": entity,"state": state})
+```
+Things should look like this:
+![add intents](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/addintents.png)
+
+Anything within ```speech()``` will be spoken. Now, we'll learn how to add colour.
+
+Go back to your slots, add a new one called ```colours``` (the British spelling), and paste this:
 ```
 (aqua | aquamarine | beige | black | blue | brown | chocolate | coral | crimson | cyan | firebrick | forest green | gold | gray | green | greenyellow | hot pink | indigo | khaki | lavender | light blue | light coral | light cyan | light green | light pink | light salmon | light yellow | lime | lime green | magenta | maroon | navy | olive | orange | orchid | pink | purple | red | salmon | tomato | violet | white | yellow){colour}
 ```
@@ -392,17 +392,27 @@ Finally, go back to your terminal with automations.yaml open, and paste this bel
     platform: event
     event_type: rhasspy_SetSpecificLightColour
   action:
-     - service: rest_command.tts
-       data:
-         payload: ""
      - service: light.turn_on
        data:
          entity_id: "{{trigger.event.data.entity}}"
          color_name: "{{trigger.event.data.colour}}"
 ```
 
-All you should need to change is the event_type if you decided to name things differently. Save and exit (CTRL+X, Y, ENTER), then reload your automations in homeassistant, and things should work.
+All you should need to change is the event_type if you decided to name things differently. Save and exit (CTRL+X, Y, ENTER), then reload your automations in homeassistant. 
 
+Then, run:
+```
+sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+```
+We'll paste another elif block, very similar to our last:
+```
+elif intent == "SetSpecificLightColour":
+    entity = o["slots"]["entity"]
+    colour = o["slots"]["colour"]
+    speech("Alright, I'll make it " + colour )
+    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = headers, json = {"entity": entity,"colour": colour})
+```
+Once you've saved an exited, it should work immediately. 
 
 
 
