@@ -411,7 +411,54 @@ elif intent == "SetSpecificLightColour":
 ```
 Once you've saved an exited, it should work immediately. 
 
+## Doing basic maths
 
+What if we want to ask the assistant to perform calculations? I'll explain the basic multiplication, subtraction, and addition stuff, and if you want to make it better, you should be able to figure it out from what you learn here.
+
+First, go back to the slots section in the left menu.
+
+![slot tab](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/slottab.png)
+
+Then, we'll define our operations. Make a new slot called **"operations"**, then paste this in:
+```
+(add | plus | and):+
+(times | multiplied by):*
+(minus | subtract | take | take away):-
+```
+If you'd like to be able to call a certain operation with another word, just add it within the brackets, along with a pipe (|) symbol to separate it from the other words. Save this.
+
+Now, go to the sentences tab, and add a [DoMaths] section. Paste in what's below:
+```
+
+[DoMaths]
+operator = ($operators){operator}
+what is (-1000..1000){num1} <operator> (-1000..1000){num2}
+
+```
+This lets us perform those three operations on two numbers between -1000 and 1000. You can increase the range by changing the numbers at either end of the two dots (**".."**), but I was concerned that the assistant may find it harder to tell exactly what number you're saying as the range of numbers increases, so 1000 seemed an alright compromise.
+
+Finally, head over to the intentHandler by running:
+```
+sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+```
+And paste this below the last elif section:
+```
+elif intent == "DoMaths":
+    operator = o["slots"]["operator"]
+    num1 = o["slots"]["num1"]
+    num2 = o["slots"]["num2"]
+    if operator == "*":
+        speech("That's "+ str(num1*num2))
+    if operator == "+":
+        speech("That's " + str(num1+num2))
+    if operator == "-":
+        speech("That's " + str(num1-num2))
+```
+Which should look like this:
+
+![add maths intent](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/addmathsintent.png)
+
+Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven.
 
 ## Wake word
 To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. Save and restart, and it should work.
