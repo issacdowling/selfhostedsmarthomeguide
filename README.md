@@ -1,5 +1,5 @@
 # SelfhostedVoiceAssistantGuide
-### This is not done yet. In-progress.
+### This is not done yet. In-progress. You assume all responsibility for if *anything* goes wrong for *any reason*.
 
 ## What's needed
 * Raspberry Pi 4
@@ -89,6 +89,56 @@ static domain_name_servers=1.1.1.1
 
 Next to interface, add a space, then the network device (either **eth0** or **wlan0**). Now, for static ip_address, type the second IP before the */24*. Finally, add the first IP from earlier directly after **static routers=**. Then, press CTRL+X, then Y, then Enter, to save and exit. Finally, run ```sudo reboot``` to restart. Your SSH will disconnect, and you can just keep trying to reconnect until it works to check if you're booted.
 
+# Optimisations
+
+### We can make our pi run better, and use less power on things we're not using.
+
+## Running better
+
+The Pi can be overclocked. Run this:
+```
+sudo nano /boot/config.txt
+```
+then go down to where it says **"#uncomment to overclock the arm"**
+
+![default boot config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/defaultarmover.png)
+
+Remove the **#** from the line beginning ```#arm_freq```, and change the number to 1750. Add another line below the **"#uncomment to overclock the arm"** bit, and copy this in:
+```
+over_voltage=2
+```
+Then, if you're not going to be using the HDMI ports, below the ```#arm_freq``` line, paste this:
+```
+gpu_freq=0
+```
+In the end, it'll look like this:
+
+![better boot config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/betterarmover.png)
+
+If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however this config should be doable by practically all Pi 4s, and remain at safe temperatures. 
+
+## Using less power
+
+Now, to disable all LEDs on the board, go down to the section starting with **```[pi4]```** and paste what's below:
+```
+# Disable the power LED
+dtparam=pwr_led_trigger=none
+dtparam=pwr_led_activelow=off
+# Disable the Activity LED
+dtparam=act_led_trigger=none
+dtparam=act_led_activelow=off
+# Disable ethernet LEDs
+dtparam=eth_led0=4
+dtparam=eth_led1=4
+```
+
+And, if you're not using the GPU, you can also add ```gpu_mem=16``` to the **"[all]"** section above. It likely won't affect anything though. Something that will help power consumption is the line **```dtoverlay=disable-bt```**. If you're not using wifi either, you can duplicate that line and change **bt** to **wifi**.
+
+In the end, it'll look like this:
+
+![better led config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/betterled.png)
+
+You can now do CTRL+X, Y, ENTER, to save and exit, then run ```sudo reboot``` to restart your pi. Once you're back, continue with the next section.
 
 # Installing things
 Run
