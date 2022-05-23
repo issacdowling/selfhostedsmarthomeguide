@@ -174,11 +174,6 @@ I reccommend going back to the settings page, switching your Text To Speech to L
 
 ![TTSsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Texttospeech.png)
 
-## Wake word
-In the settings page, click the green "Wake Word" dropdown, and type a wakeword for testing. This is what you'll say to activate the assistant. Make sure it has quite a few syllables so it's easy to recognise. Then, record yourself saying it in three different ways, and maybe even another person to be safe. Then, press save, and restart.
-
-![wakewordsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Wakeword.png)
-
 # Making it smart
 ## Setting up Homeassistant
 ### If you've already got a homassistant instance, scroll down until we start entering URLs
