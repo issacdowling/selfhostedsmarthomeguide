@@ -193,7 +193,7 @@ services:
     container_name: homeassistant
     image: "ghcr.io/home-assistant/home-assistant:stable"
     volumes:
-      - ./config:/config
+      - './.config/rhasspy/profiles:/profiles'
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     privileged: true
