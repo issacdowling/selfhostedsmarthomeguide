@@ -38,10 +38,12 @@ then **Raspberry Pi OS 64-bit lite**
 ![Boot device list](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/selectboot.png)
 
 ### And finally, press write, and wait for it to finish.
+
 ![Writing Media](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/writingprogress.png)
 
 # Booting and initial install
 Assuming you have a Micro-HDMI cable, you can turn on the Pi without anything inserted to ensure it boots fine. You'll likely get a screen like this.
+
 ![Boot with no device](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/bootnodevice.png)
 
 But if - like most people - you don't own a Micro HDMI cable, that's alright. We can run *headlessly* (without a display)
