@@ -116,6 +116,7 @@ services:
         volumes:
             - '$HOME/.config/rhasspy/profiles:/profiles'
             - '/etc/localtime:/etc/localtime:ro'
+             - './.config:/config'
         devices:
             - '/dev/snd:/dev/snd'
         image: rhasspy/rhasspy
