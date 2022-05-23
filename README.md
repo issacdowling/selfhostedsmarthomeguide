@@ -2,15 +2,15 @@
 ### This is not done yet. In-progress.
 
 ## What's needed
-Raspberry Pi 4
+* Raspberry Pi 4
 
-Micro SD Card >=16GB (or other boot device, USB drives work too)
+* Micro SD Card >=16GB (or other boot device, USB drives work too)
 
-FOR TESTING ONLY
+===BELOW IS FOR TESTING ONLY===
 
-USB Mic
+* USB Mic
 
-3.5mm Speakers
+* 3.5mm Speakers
 
 # Setting Up the Pi
 
@@ -51,7 +51,7 @@ But if - like most people - you don't own a Micro HDMI cable, that's alright. We
 If you've got a display connected, wait until there's a line with your username in green at the bottom of the screen, like this.
 ![Linux bootup scene](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/withdisplaybootup.png)
 
-If you don't have a display connected, go to a computer on the same network as your Pi (so, if you didn't set up Wifi, connect an ethernet cable). Then, search terminal, same on Linux, Windows 11, or MacOS. On Windows 10, search cmd. Now, type ```ssh yourusername@yourhostname.local```, and replace 'yourusername' with your username, and 'yourhostname' with the hostname you typed in the settings page. At first, it'll likely error out, since the Pi isn't done booting yet, but you can press the up arrow and enter to run the command again. You know you've succeeded once you see this page.
+If you don't have a display connected, go to a computer on the same network as your Pi (so, if you didn't set up Wifi, connect an ethernet cable). Then, run **"terminal"** (same on Linux, Windows 11, or MacOS, but on Windows 10, run cmd). Now, type ```ssh yourusername@yourhostname.local```, and replace 'yourusername' with your username, and 'yourhostname' with the hostname you typed in the settings page. At first, it'll likely error out, since the Pi isn't done booting yet, but you can press the up arrow and enter to run the command again. You know you've succeeded once you see this page.
 ![SSH fingerprint question](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/fingerprint.png)
 
 Type yes, enter, then type your password (which won't show up onscreen as a security measure, but it *is* still going through). 
@@ -140,11 +140,11 @@ Your browser *should* complain that this site is not secure. If it was a site on
 ### And now you'll be here!
 ![Rhasspy main page](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/rhasspyhome.png)
 
-# Testing things
-
 Then, go to the settings page using the left-side menu. Go through each service, and - for now - just select the default from the dropdown menu. Then, press the save settings button below the list, and restart. Once restarted, go to the top of the page, and press download. After that's done, things should look like this.
 
 ![Settings page with defaults selected](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/settingdefault.png)
+
+# Testing things
 
 ## Testing audio output
 ### Plug something in using the Pi's 3.5mm jack.
@@ -176,7 +176,7 @@ I reccommend going back to the settings page, switching your Text To Speech to L
 
 # Making it smart
 ## Setting up Homeassistant
-### If you've already got a homassistant instance, scroll down until we start entering URLs
+### If you've already got a homassistant instance, scroll down until we need our access tokens.
 To set up homeassistant, first we need a docker-compose file, just like what we had for rhasspy.
 So, run:
 ```
