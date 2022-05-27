@@ -502,9 +502,9 @@ elif intent == "DoMaths":
     num2 = o["slots"]["num2"]
     if operator == "*":
         speech("That's "+ str(num1*num2))
-    if operator == "+":
+    elif operator == "+":
         speech("That's " + str(num1+num2))
-    if operator == "-":
+    elif operator == "-":
         speech("That's " + str(num1-num2))
     elif operator == "/":
         speech("That's " + str(num1/num2))
