@@ -476,6 +476,7 @@ Then, we'll define our operations. Make a new slot called **"operations"**, then
 (add | plus | and):+
 (times | multiplied by):*
 (minus | subtract | take | take away):-
+(divided by | over):/
 ```
 If you'd like to be able to call a certain operation with another word, just add it within the brackets, along with a pipe (|) symbol to separate it from the other words. Save this.
 
@@ -505,6 +506,8 @@ elif intent == "DoMaths":
         speech("That's " + str(num1+num2))
     if operator == "-":
         speech("That's " + str(num1-num2))
+    elif operator == "/":
+        speech("That's " + str(num1/num2))
 ```
 Which should look like this:
 
