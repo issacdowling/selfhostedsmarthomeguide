@@ -515,6 +515,36 @@ Which should look like this:
 
 Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven.
 
+## Setting basic timers
+What if you want to set a timer? It's not a super complex one, you can only pick minutes **or** seconds, meaning you couldn't ask for a 2 minute and 17 second timer, but it works well enough.
+
+Go to your sentences section, and add this:
+```
+[DoTimer]
+(set | make | start) a (1..60){time} (second | minute){unit} timer
+```
+it should look like this:
+
+![timer sentence](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerSentence.png)
+
+Then, go to the intentHandler script (```sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler```) and paste this below the last elif statement:
+
+```
+elif intent == "DoTimer":
+    number = o["slots"]["time"]
+    unit = o["slots"]["unit"]
+    if unit == "second":
+        timerLength = number-1
+    elif unit == "minute":
+        timerLength = (number*60)-1
+    speech("Starting " + str(number) + " " + unit + " timer")
+    while timerLength:
+        time.sleep(1)
+        timerLength -=1
+    speech("Timer complete")
+```
+It receives a number between 1-60, and the unit (whether you said "Seconds" or "Minutes"). It then sets a variable to the correct number of seconds, either by taking 1 away from the number you said, or multiplying it by 60, then still removing one. Afterwards, it just runs a timer, and will speak once it's complete. You can still run other voice commands while the timer is running.
+
 ## Wake word
 To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. Save and restart, and it should work.
 
