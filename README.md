@@ -523,9 +523,7 @@ Go to your sentences section, and add this:
 [DoTimer]
 (set | make | start) a (1..60){time} (second | minute){unit} timer
 ```
-it should look like this:
-
-![timer sentence](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerSentence.png)
+Remember to save and train.
 
 Then, go to the intentHandler script (```sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler```) and paste this below the last elif statement:
 
@@ -544,6 +542,36 @@ elif intent == "DoTimer":
     speech("Timer complete")
 ```
 It receives a number between 1-60, and the unit (whether you said "Seconds" or "Minutes"). It then sets a variable to the correct number of seconds, either by taking 1 away from the number you said, or multiplying it by 60, then still removing one. Afterwards, it just runs a timer, and will speak once it's complete. You can still run other voice commands while the timer is running.
+
+## The weather
+What if I want it to tell me the weather?
+
+First, go to [openweathermap](https://openweathermap.org/) and sign up for a free account. Then, check your email for an API key. It's important to do this first, since they key will take a little bit to properly activate. Then, you can go to your rhasspy sentences tab, and add this:
+```
+[GetWeather]
+(what's | tell me) the (weather | temperature)
+how (hot | cold | warm ) is it [today | right now]
+```
+If you want to customise the way you speak to it, you can do it from here. Remember to save and train.
+
+Then, go to your intent handler, and below the last elif statement, paste this:
+```
+elif intent == "GetWeather":
+    weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
+    currentTemp = weather["main"]["temp"]
+    currentDesc = weather["weather"][0]["main"]
+    speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
+```
+However, we're not done. You'll also want to go back to the top (near where your homeassistant details are), and add a line below them, called ```#Set OpenWeatherMap data```. Below it, paste this:
+```
+opnwthrurl = "https://api.openweathermap.org/data/2.5/weather?"
+opnwthrauth = "YOURAUTHKEY"
+opnwthrlat, opnwthrlon = "LAT" , "LONG"
+opnwthrunits = "metric"
+```
+Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG** to your current latitude and longitude. They don't have to be exactly on your location, but you can use a tool [like this](https://www.latlong.net/) to get the numbers for your general area.
+
+Then, save and exit, and ask your assistant **"What's the weather"**, and it should tell you the current temperature, along with a word to describe it, like **Sun** or **Clouds**.
 
 ## Wake word
 To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. Save and restart, and it should work.
