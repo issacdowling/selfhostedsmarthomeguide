@@ -226,6 +226,8 @@ This may get your mic detected if it wasn't before.
 I reccommend going back to the settings page, switching your Text To Speech to Larynx, and choosing a voice you think sounds good. Southern-english-female is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response. Low Quality is perfectly fine, as you'll see when you test it. Though, speaking of testing, trying Larynx was somewhat awkward in the settings page for the first minute-or-so of restarting after selecting a new voice, so don't be alarmed if this happens to you. Remember to save your settings and restart afterwards.
 
 ![TTSsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Texttospeech.png)
+## Wake word
+To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to 0.8. Save and restart, and it should work.
 
 # Making it smart
 ## Setting up Homeassistant
@@ -573,8 +575,7 @@ Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG
 
 Then, save and exit, and ask your assistant **"What's the weather"**, and it should tell you the current temperature, along with a word to describe it, like **Sun** or **Clouds**.
 
-## Wake word
-To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. Save and restart, and it should work.
+
 
 # Credit
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
