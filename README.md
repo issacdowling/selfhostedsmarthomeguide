@@ -545,6 +545,24 @@ elif intent == "DoTimer":
 ```
 It receives a number between 1-60, and the unit (whether you said "Seconds" or "Minutes"). It then sets a variable to the correct number of seconds, either by taking 1 away from the number you said, or multiplying it by 60, then still removing one. Afterwards, it just runs a timer, and will speak once it's complete. You can still run other voice commands while the timer is running.
 
+### But that's not a great way of announcing the completion of a timer
+
+We want a sound. Let's get one. If you've got something on your computer (a .wav file), you can copy it over to the Pi by running this:
+
+```
+scp pathtoyourfile piusername@pihostname:/home/assistant-main-node/
+```
+Then, you can do
+```
+sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/.config/rhasspy/profiles
+```
+
+Replace pathtoyourfile with the path to your wav file. Replace piusername with the username you picked for your Pi. Replace hostname with the hostname you picked for your Pi. If you're using the same file structure and docker compose files as me, you can keep the rest of the command the same. When you press enter, it'll ask for your Pi's password. This copies your file to the Pi over ssh. If you choose another method to get the file to the Pi, that's fine, just make sure it's in a directory accessible from the docker container, which is why I chose the profiles folder.
+
+Now, go to the top of your intentHandler script, and add ```from subprocess import call```.
+
+Then, go further down to the ```speech("Timer complete")``` line. Replace it with ```call(["aplay", "/profiles/yourfile.wav"])```.
+
 ## The weather
 What if I want it to tell me the weather?
 
