@@ -609,7 +609,7 @@ stop [the] [alarm | timer | sound]
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop. Once the current loop is over, it will finish. 
 
 ### Some notes about the audio
-Due to it finishing the current audio loop, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, and uploaded it here.
+Due to it finishing the current audio loop, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/resources/sounds/timerchime.wav)
 
 ## The weather
 What if I want it to tell me the weather?
