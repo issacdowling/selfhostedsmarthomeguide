@@ -663,6 +663,7 @@ if intent == "GetTime":
 Because of the interesitng methods of writing AM ("ey em") and PM ("pe yem"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
 
-# Credit
+# Extras
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
+
 [Homeassistant Documentation](https://www.home-assistant.io/docs/)
