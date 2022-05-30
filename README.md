@@ -365,6 +365,7 @@ Also, I highly reccomend going some lines below, and pasting this, which will pr
 ```
 # Remove history to save space
 recorder:
+  auto_purge:
   purge_keep_days: 14
   commit_interval: 30
 ```
