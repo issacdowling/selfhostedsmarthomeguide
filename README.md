@@ -651,7 +651,7 @@ but we can do it better. It normally responds in 24-hour (at least, it does for 
 if intent == "GetTime":
     now = datetime.datetime.now()
     if now.strftime('%p') == "PM":
-        apm = "pe yem"
+        apm = "peey em"
     else:
         apm = "ey em"
     if now.strftime('%M') == 00:
@@ -660,7 +660,7 @@ if intent == "GetTime":
         speech("It's " + now.strftime('%I') + " " + now.strftime('%M') + " " + apm)
 ```
 
-Because of the interesitng methods of writing AM ("ey em") and PM ("pe yem"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
+Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
 
 # Extras
