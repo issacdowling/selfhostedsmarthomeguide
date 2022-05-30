@@ -585,6 +585,12 @@ if os.path.exists(stopPlayPath):
     os.remove(stopPlayPath)
 ```
 
+In this image, I've also done some other cleaning up, but fundamentally your code should now look like this:
+
+![Timer statement](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerStatement.png)
+
+
+
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
 elif intent == "StopPlaying":
