@@ -593,7 +593,8 @@ If you were now to ask for a timer, it would finish by infinitely repeating what
 ```
 elif intent == "StopPlaying":
     path = "/profiles"
-    with open(os.path.join(path, "stopPlaying"), 'w') as stopFile:
+    file = "stopPlaying"
+    with open(os.path.join(path, file), 'w') as stopFile:
         pass
     stopFile.write("stop")
 ```
