@@ -117,7 +117,7 @@ In the end, it'll look like this:
 
 ![better boot config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/betterarmover.png)
 
-If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however this config should be doable by practically all Pi 4s, and remain at safe temperatures. 
+If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however this config should be doable by practically all Pi 4s, and remain at safe temperatures. I do **over_voltage=4**, **arm_freq=2000**
 
 ## Using less power
 
