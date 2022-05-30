@@ -538,8 +538,7 @@ Then, go to the intentHandler script (```sudo nano ~/assistant/.config/rhasspy/p
 
 ```
 elif intent == "DoTimer":
-    number = o["slots"]["time"]
-    unit = o["slots"]["unit"]
+    number, unit = o["slots"]["time"], o["slots"]["unit"]
     if unit == "second":
         timerLength = number-1
     elif unit == "minute":
@@ -568,7 +567,43 @@ Replace pathtoyourfile with the path to your wav file. Replace piusername with t
 
 Now, go to the top of your intentHandler script, and add ```from subprocess import call```.
 
-Then, go further down to the ```speech("Timer complete")``` line. Replace it with ```call(["aplay", "/profiles/yourfile.wav"])```.
+Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
+```
+audio, stopPlayPath = "/profiles/yourfile.wav", "/profiles/stopPlaying"
+if os.path.exists(stopPlayPath):
+    os.remove(stopPlayPath)
+```
+If you understand what this is doing, you can probably tell where we're going from here. We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
+
+Now, you can replace the **```speech("Timer complete")```** line with this:
+```
+while True:
+    call(["aplay", audio])
+    if os.path.exists(stopPlayPath):
+        break
+if os.path.exists(stopPlayPath):
+    os.remove(stopPlayPath)
+```
+
+If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
+```
+elif intent == "StopPlaying":
+    path = "/profiles"
+    with open(os.path.join(path, "stopPlaying"), 'w') as stopFile:
+        pass
+    stopFile.write("stop")
+```
+If you're using a different file structure, you can change the path inside the path variable. Remember to save and exit (CTRL+X, Y, ENTER)
+
+Now, go to your rhasspy sentences section, and make a new section that looks like this:
+```
+[StopPlaying]
+stop [the] [alarm | timer | sound]
+```
+Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop. Once the current loop is over, it will finish. 
+
+### Some notes about the audio
+Due to it finishing the current audio loop, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out.
 
 ## The weather
 What if I want it to tell me the weather?
