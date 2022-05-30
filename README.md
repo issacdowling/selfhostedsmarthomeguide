@@ -588,7 +588,7 @@ if os.path.exists(stopPlayPath):
 
 In this image, I've also cleaned up assigning the number and unit variables to be on one line, but your code should otherwise now look like this:
 
-![Timer statement](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerSection.png)
+![Timer statement](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerCode.png)
 
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
