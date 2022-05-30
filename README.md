@@ -641,6 +641,26 @@ Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG
 
 Then, save and exit, and ask your assistant **"What's the weather"**, and it should tell you the current temperature, along with a word to describe it, like **Sun** or **Clouds**.
 
+## Getting the time (but better)
+
+### The examples provided by Rhasspy can already do this...
+
+but we can do it better. It normally responds in 24-hour (at least, it does for me, though my system is set to 24-hour), which is great for reading the time, but not for speaking it. Also, despite technically telling our assistant to say whether it's AM or PM, it sends the strings "am" and "pm", meaning that they're pronounced very awkwardly. To fix this, you can replace the GetTime intent near the top of the intentHandler with this:
+
+```
+if intent == "GetTime":
+    now = datetime.datetime.now()
+    if now.strftime('%p') == "PM":
+        apm = "pe yem"
+    else:
+        apm = "ey em"
+    if now.strftime('%M') == 00:
+        speech("It's " + now.strftime('%I') + " " + apm)
+    else:
+        speech("It's " + now.strftime('%I') + " " + now.strftime('%M') + " " + apm)
+```
+
+Because of the interesitng methods of writing AM ("ey em") and PM ("pe yem"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
 
 # Credit
