@@ -170,12 +170,12 @@ and paste in the following. This will be much easier if being run from another P
 version: '3.3'
 services:
     rhasspy:
+        container_name: rhasspy
         ports:
             - '12101:12101'
         volumes:
-            - '$HOME/.config/rhasspy/profiles:/profiles'
+            - '/profiles:/profiles'
             - '/etc/localtime:/etc/localtime:ro'
-             - './.config:/config'
         devices:
             - '/dev/snd:/dev/snd'
         image: rhasspy/rhasspy
@@ -254,7 +254,7 @@ services:
     container_name: homeassistant
     image: "ghcr.io/home-assistant/home-assistant:stable"
     volumes:
-      - './.config/rhasspy/profiles:/profiles'
+      - ./config:/config
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     privileged: true
@@ -304,7 +304,7 @@ Now, you can press save and restart.
 
 While it's restarting, run this:
 ```
-sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+sudo nano ~/assistant/profiles/intentHandler
 ```
 Then, paste this in [(we're building from the Rhasspy example)](https://github.com/synesthesiam/rhasspy/blob/master/bin/mock-commands/handle.py):
 ```
@@ -415,7 +415,7 @@ If you changed what's within the square brackets in the sentence section, change
 
 Now, run:
 ```
-sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+sudo nano ~/assistant/profiles/intentHandler
 ```
 And paste this below the last elif statement:
 ```
@@ -460,7 +460,7 @@ All you should need to change is the event_type if you decided to name things di
 
 Then, run:
 ```
-sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+sudo nano ~/assistant/profiles/intentHandler
 ```
 We'll paste another elif block, very similar to our last:
 ```
@@ -501,7 +501,7 @@ This lets us perform those three operations on two numbers between -1000 and 100
 
 Finally, head over to the intentHandler by running:
 ```
-sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler
+sudo nano ~/assistant/profiles/intentHandler
 ```
 And paste this below the last elif section:
 ```
@@ -534,7 +534,7 @@ Go to your sentences section, and add this:
 ```
 Remember to save and train.
 
-Then, go to the intentHandler script (```sudo nano ~/assistant/.config/rhasspy/profiles/intentHandler```) and paste this below the last elif statement:
+Then, go to the intentHandler script (```sudo nano ~/assistant/profiles/intentHandler```) and paste this below the last elif statement:
 
 ```
 elif intent == "DoTimer":
@@ -560,7 +560,7 @@ scp pathtoyourfile piusername@pihostname:/home/assistant-main-node/
 ```
 Then, you can do
 ```
-sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/.config/rhasspy/profiles
+sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/profiles
 ```
 
 Replace pathtoyourfile with the path to your wav file. Replace piusername with the username you picked for your Pi. Replace hostname with the hostname you picked for your Pi. If you're using the same file structure and docker compose files as me, you can keep the rest of the command the same. When you press enter, it'll ask for your Pi's password. This copies your file to the Pi over ssh. If you choose another method to get the file to the Pi, that's fine, just make sure it's in a directory accessible from the docker container, which is why I chose the profiles folder.
