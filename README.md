@@ -360,6 +360,14 @@ Go right to the top of the file, and look for the line ```default_config:```. Go
 ```
 api:
 ```
+
+Also, I highly reccomend going some lines below, and pasting this, which will prevent homeassistant from taking up lots of space on your (presumably quite limited) Pi storage, and reduce disk usage, prolonging life:
+```
+# Remove history to save space
+recorder:
+  purge_keep_days: 14
+  commit_interval: 30
+```
 Then, CTRL+X, Y, ENTER.
 
 You can also run ```sudo docker restart homeassistant``` now too.
