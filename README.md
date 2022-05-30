@@ -578,16 +578,17 @@ If you understand what this is doing, you can probably tell where we're going fr
 Now, you can replace the **```speech("Timer complete")```** line with this:
 ```
 while True:
-    call(["aplay", audio])
     if os.path.exists(stopPlayPath):
         break
+    call(["aplay", audio])
+    
 if os.path.exists(stopPlayPath):
     os.remove(stopPlayPath)
 ```
 
 In this image, I've also cleaned up assigning the number and unit variables to be on one line, but your code should otherwise now look like this:
 
-![Timer statement](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerStatement.png)
+![Timer statement](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerSection.png)
 
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
@@ -608,7 +609,7 @@ stop [the] [alarm | timer | sound]
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop. Once the current loop is over, it will finish. 
 
 ### Some notes about the audio
-Due to it finishing the current audio loop, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used the android 12 timer sound.
+Due to it finishing the current audio loop, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, and uploaded it here.
 
 ## The weather
 What if I want it to tell me the weather?
