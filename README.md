@@ -671,6 +671,13 @@ if intent == "GetTime":
 
 Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
+Also, I earlier asked you to remove all of the predone sentences in rhasspy, which would include the GetTime ones. Here's what to add to your sentences:
+```
+[GetTime]
+what's [the] time
+tell [me the] time
+what time [is it]
+```
 
 # Extras
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
