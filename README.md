@@ -578,7 +578,7 @@ Now, go to the top of your intentHandler script, and add ```from subprocess impo
 
 Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
 ```
-timerFinishedAudio, stopFilePath = workingDir+"timerchime.wav", workingDir+"stopFile"
+timerFinishedAudio = workingDir+"timerchime.wav"
 if os.path.exists(stopFilePath):
     os.remove(stopFilePath)
 ```
@@ -607,8 +607,9 @@ elif intent == "StopPlaying":
 
 Now, go to the top of the file, and paste this:
 ```
-# Set working directory
+# Set directories
 workingDir = "/profiles/"
+stopFilePath = workingDir+"stopFile"
 ```
 
 If you're using a different file structure, you can change the data inside the workingDir variable. Remember to save and exit (CTRL+X, Y, ENTER)
@@ -621,14 +622,43 @@ stop [the] [alarm | timer | sound]
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop. Once the current loop is over, it will finish. 
 
 ### Some notes about the audio
-Due to it finishing the current audio loop, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/resources/sounds/timerchime.wav)
+Due to it finishing the current audio loop before stopping, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/resources/sounds/timerchime.wav)
 
 ### Check Timer Progress While Running
 Ideally, you could ask the assistant how far along the timer is. Let's make that.
 
-First, add a variable to the top line called timerTimeRemainingPath, and set it to ```workingDir+"timerTimeRemaining"```. Then, go below your ```if os.path.exists(stopFilePath)``` line, and add an identical statement (including what's inside), but replace stopFilePath with timerTimeRemainingPath. Then below it, we'll create that file we just tried to delete, by pasting this:
+First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"timerRemaining"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
+```
+with open(os.path.join(workingDir, "timerLeft"), "w") as timerLeft:
+    timerLeft.write(str(timerLength))
 ```
 
+Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change ```stopFilePath``` to ```workingDir+"timerLeft"```. It should look like this:
+```
+if os.path.exists(workingDir+"timerLeft"):
+    os.remove(workingDir+"timerLeft")
+```
+Now we've got a file that contains the number of seconds remaining, and it'll delete itself once the timer is done. (I am aware that the way I'm handling variables is odd around this bit of code, I did a lot of experimentation. Things will be cleaned up at some point)
+
+Go to the bottom of your intentHandler, and paste this:
+```
+elif intent == "TimerRemaining":
+    if os.path.exists(timerLeftPath):
+        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 2
+        if timerRemainingNumber >= 60:
+            speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
+        else:
+            speech("There are " + str(timerRemainingNumber) + " seconds left")
+```
+This checks if the file exists, and if it does, checks whether the time remaining should be measured in minutes (number is > 60) or seconds (number is < 60). Then, if minutes are needed, we divide the number of seconds by 60, then truncate (remove **but not round** the decimals) it, as well as telling us the number of seconds by finding the remainder when dividing by 60. If just seconds are needed, we only need to speak the number we've gotten from the file. Also, since I expect a response to take 2-ish seconds after reading the value, I remove 2 from the number we get at the start.
+
+Now, in rhasspy's sentences tab, you just need to add this:
+```
+[TimerRemaining]
+how long left on timer
+what is [the] timer [at]
+```
+The broken English is intentional, since our speech-to-text system will turn whatever you say into the *closest* sentence possible, so having a shorter sentence that misses words is alright, and I believe *(with no tested evidence)* that it could speed things up.
 
 ## The weather
 What if I want it to tell me the weather?
