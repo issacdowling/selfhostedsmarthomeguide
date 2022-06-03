@@ -578,7 +578,7 @@ Now, go to the top of your intentHandler script, and add ```from subprocess impo
 
 Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
 ```
-audio, stopPlayPath = "/profiles/yourfile.wav", "/profiles/stopPlaying"
+timerAudio, stopPlayPath = "/profiles/yourfile.wav", "/profiles/stopPlaying"
 if os.path.exists(stopPlayPath):
     os.remove(stopPlayPath)
 ```
@@ -589,7 +589,7 @@ Now, you can replace the **```speech("Timer complete")```** line with this:
 while True:
     if os.path.exists(stopPlayPath):
         break
-    call(["aplay", audio])
+    call(["aplay", timerAudio])
     
 if os.path.exists(stopPlayPath):
     os.remove(stopPlayPath)
@@ -603,8 +603,8 @@ If you were now to ask for a timer, it would finish by infinitely repeating what
 ```
 elif intent == "StopPlaying":
     path = "/profiles"
-    file = "stopPlaying"
-    with open(os.path.join(path, file), 'w') as stopFile:
+    stopFileName = "stopPlaying"
+    with open(os.path.join(path, stopFileName), 'w') as stopFile:
         pass
     stopFile.write("stop")
 ```
