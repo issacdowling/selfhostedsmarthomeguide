@@ -578,21 +578,20 @@ Now, go to the top of your intentHandler script, and add ```from subprocess impo
 
 Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
 ```
-timerAudio, stopPlayPath = "/profiles/yourfile.wav", "/profiles/stopPlaying"
-if os.path.exists(stopPlayPath):
-    os.remove(stopPlayPath)
+timerFinishedAudio, stopFilePath = workingDir+"timerchime.wav", workingDir+"stopFile"
+if os.path.exists(stopFilePath):
+    os.remove(stopFilePath)
 ```
 If you understand what this is doing, you can probably tell where we're going from here. We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
 
 Now, you can replace the **```speech("Timer complete")```** line with this:
 ```
 while True:
-    if os.path.exists(stopPlayPath):
+    if os.path.exists(stopFilePath):
         break
-    call(["aplay", timerAudio])
-    
-if os.path.exists(stopPlayPath):
-    os.remove(stopPlayPath)
+    call(["aplay", timerFinishedAudio])
+if os.path.exists(stopFilePath):
+    os.remove(stopFilePath)
 ```
 
 In this image, I've also cleaned up assigning the number and unit variables to be on one line, but your code should otherwise now look like this:
@@ -602,13 +601,19 @@ In this image, I've also cleaned up assigning the number and unit variables to b
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
 elif intent == "StopPlaying":
-    path = "/profiles"
-    stopFileName = "stopPlaying"
-    with open(os.path.join(path, stopFileName), 'w') as stopFile:
+    stopFileName = "stopFile"
+    with open(os.path.join(workingDir, stopFileName), 'w') as stopFile:
         pass
     stopFile.write("stop")
 ```
-If you're using a different file structure, you can change the path inside the path variable. Remember to save and exit (CTRL+X, Y, ENTER)
+
+Now, go to the top of the file, and paste this:
+```
+# Set working directory
+workingDir = "/profiles/"
+```
+
+If you're using a different file structure, you can change the data inside the workingDir variable. Remember to save and exit (CTRL+X, Y, ENTER)
 
 Now, go to your rhasspy sentences section, and make a new section that looks like this:
 ```
