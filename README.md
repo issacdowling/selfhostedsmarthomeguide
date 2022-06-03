@@ -744,6 +744,10 @@ tell [me the] time
 what time [is it]
 ```
 
+# Resources
+There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
+
+
 # Extras
 [Rhasspy Documentation](https://rhasspy.readthedocs.io)
 
