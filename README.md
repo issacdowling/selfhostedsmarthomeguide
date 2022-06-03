@@ -586,9 +586,7 @@ If you understand what this is doing, you can probably tell where we're going fr
 
 Now, you can replace the **```speech("Timer complete")```** line with this:
 ```
-while True:
-    if os.path.exists(stopFilePath):
-        break
+while not os.path.exists(stopFilePath):
     call(["aplay", timerFinishedAudio])
 if os.path.exists(stopFilePath):
     os.remove(stopFilePath)
@@ -624,6 +622,13 @@ Remember to save and retrain Rhasspy once done. Now, you should be able to ask f
 
 ### Some notes about the audio
 Due to it finishing the current audio loop, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/resources/sounds/timerchime.wav)
+
+### Check Timer Progress While Running
+Ideally, you could ask the assistant how far along the timer is. Let's make that.
+
+First, add a variable to the top line called timerTimeRemainingPath, and set it to ```workingDir+"timerTimeRemaining"```. Then, go below your ```if os.path.exists(stopFilePath)``` line, and add an identical statement (including what's inside), but replace stopFilePath with timerTimeRemainingPath. Then below it, we'll create that file we just tried to delete, by pasting this:
+```
+
 
 ## The weather
 What if I want it to tell me the weather?
