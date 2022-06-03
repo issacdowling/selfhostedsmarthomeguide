@@ -660,6 +660,31 @@ what is [the] timer [at]
 ```
 The broken English is intentional, since our speech-to-text system will turn whatever you say into the *closest* sentence possible, so having a shorter sentence that misses words is alright, and I believe *(with no tested evidence)* that it could speed things up.
 
+### The end result
+This timer section was massive. My code at the end of it looks like this:
+```
+elif intent == "DoTimer":
+    timerFinishedAudio = workingDir+"timerchime.wav"
+    number, unit = o["slots"]["time"], o["slots"]["unit"]
+    if os.path.exists(stopFilePath):
+        os.remove(stopFilePath)
+    if unit == "second":
+        timerLength = number-1
+    elif unit == "minute":
+        timerLength = (number*60)-1
+    while timerLength:
+        time.sleep(1)
+        timerLength -=1
+        with open(os.path.join(workingDir, "timerLeft"), "w") as timerLeft:
+            timerLeft.write(str(timerLength))
+    while not os.path.exists(stopFilePath):
+        call(["aplay", timerFinishedAudio])
+    if os.path.exists(stopFilePath):
+        os.remove(stopFilePath)
+    if os.path.exists(workingDir+"timerLeft"):
+        os.remove(workingDir+"timerLeft")
+```
+
 ## The weather
 What if I want it to tell me the weather?
 
