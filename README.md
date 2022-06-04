@@ -6,7 +6,9 @@
 
 [**Setting up the Pi**](README.md#setting-up-the-pi)
 
-[**Installing things**](README.md#installing-things)
+[**Initally Setting Up Rhasspy**](README.md#initally-setting-up-rhasspy)
+
+
 
 # Prerequisites
 
@@ -156,7 +158,7 @@ In the end, it'll look like this:
 
 You can now do CTRL+X, Y, ENTER, to save and exit, then run ```sudo reboot``` to restart your pi. Once you're back, continue with the next section.
 
-# Installing things
+## Installing things
 Run
 ```
 curl -sSL https://get.docker.com | sh
@@ -218,10 +220,10 @@ Then, go to the settings page using the left-side menu. Go through each service,
 
 ![Settings page with defaults selected](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/settingdefault.png)
 
-# Testing things
+## Testing things
 
-## Testing audio output
-### Plug something in using the Pi's 3.5mm jack.
+### Testing audio output
+#### Plug something in using the Pi's 3.5mm jack.
 
 To test audio output, go back to the home page, and type something into the 'speak' box, and see if it comes out of your speakers. 
 
@@ -229,8 +231,8 @@ To test audio output, go back to the home page, and type something into the 'spe
 
 It will likely sound quite bad, but should work.
 
-## Testing audio input
-### Plug a USB microphone into a USB port
+### Testing audio input
+#### Plug a USB microphone into a USB port
 
 To test audio input, press 'Wake Up' on the home page, and say "What time is it?". If it hears you, you'll get a response, and the UI will update to show this:
 
@@ -242,12 +244,13 @@ sudo docker-compose up -d --force-recreate
 ```
 This may get your mic detected if it wasn't before.
 
-# Some improvements
-## TTS
+## Some improvements
+### TTS
 I reccommend going back to the settings page, switching your Text To Speech to Larynx, pressing refresh, and choosing a voice you think sounds good. Southern-english-female is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response. Low Quality is perfectly fine, as you'll see when you test it. Though, speaking of testing, trying Larynx was somewhat awkward in the settings page for the first minute-or-so of restarting after selecting a new voice, so don't be alarmed if this happens to you. Remember to save your settings and restart afterwards.
 
 ![TTSsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Texttospeech.png)
-## Wake word
+
+### Wake word
 To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to 0.8. Save and restart, and it should work.
 
 # Making it smart
