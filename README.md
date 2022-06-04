@@ -10,6 +10,8 @@
 
 [**Making it smart**](README.md#making-it-smart)
 
+[Adding features (skills)](README.md#features)
+
 
 
 # Prerequisites
