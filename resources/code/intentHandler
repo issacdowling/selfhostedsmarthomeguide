@@ -18,7 +18,7 @@ hassurl, hassauth = "http://YOURIP:8123", "YOURAUTH"
 hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
 # Set OpenWeatherMap data
-opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "YOURAUTHKEY", "YOURLAT" , "YOURLONG", "metric"
+opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "YOURAUTH", "YOURLAT" , "YOURLONG", "metric"
 
 # Set paths
 workingDir = "/profiles/"
@@ -81,14 +81,14 @@ elif intent == "DoTimer":
     while timerLength:
         time.sleep(1)
         timerLength -=1
-        with open(os.path.join(workingDir, "timerLeft"), "w") as timerLeft:
+        with open(timerLeftPath, "w") as timerLeft:
             timerLeft.write(str(timerLength))
     while not os.path.exists(stopFilePath):
         call(["aplay", timerFinishedAudio])
     if os.path.exists(stopFilePath):
         os.remove(stopFilePath)
-    if os.path.exists(workingDir+"timerLeft"):
-        os.remove(workingDir+"timerLeft")
+    if os.path.exists(timerLeftPath):
+        os.remove(timerLeftPath)
 
 elif intent == "GetWeather":
     weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
@@ -96,14 +96,13 @@ elif intent == "GetWeather":
     speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
 
 elif intent == "StopPlaying":
-    stopFileName = "stopFile"
-    with open(os.path.join(workingDir, stopFileName), 'w') as stopFile:
+    with open(stopFilePath, 'w') as stopFile:
         pass
     stopFile.write("stop")
 
 elif intent == "TimerRemaining":
     if os.path.exists(timerLeftPath):
-        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 2
+        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
         if timerRemainingNumber >= 60:
             speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
         else:
