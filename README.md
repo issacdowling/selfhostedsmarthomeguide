@@ -12,6 +12,13 @@
 
 [**Adding features (skills)**](README.md#features)
 
+[Controlling Devices](README.md#controlling-devices)
+
+[Setting timers](README.md#setting-timers)
+
+[Getting the weather](README.md#the-weather)
+
+[Getting the time](README.md#getting-the-time-but-better)
 
 
 # Prerequisites
