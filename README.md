@@ -4,7 +4,7 @@
 # Table of Contents
 [**Prerequisites**](README.md#prerequisites)
 
-[**Setting up the Pi](README.md#setting-up-the-pi)
+[**Setting up the Pi**](README.md#setting-up-the-pi)
 
 [**Installing things**](README.md#installing-things)
 
