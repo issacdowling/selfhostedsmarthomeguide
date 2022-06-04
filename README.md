@@ -10,7 +10,7 @@
 
 [**Making it smart**](README.md#making-it-smart)
 
-[Adding features (skills)](README.md#features)
+[**Adding features (skills)**](README.md#features)
 
 
 
@@ -368,12 +368,6 @@ CTRL+X, Y, ENTER.
 
 Now, go to rhasspy's web UI, click the wake button, and say out loud, "What time is it?". It should respond with the current time. If not, give it about 20 seconds, the TTS may be doing first-time setup.
 
-# Features
-
-## Actually controlling devices
-
-Now, we have to learn stuff, and edit yaml files. 
-
 Go to your terminal (still SSH'd into the Pi), and type 
 ```
 sudo nano ~/hass/config/configuration.yaml
@@ -396,9 +390,14 @@ Then, CTRL+X, Y, ENTER.
 
 You can also run ```sudo docker restart homeassistant``` now too.
 
+# Features
+
+## Controlling devices
+
 So you know, there are more ways to accomplish things. I'll be describing the methods I use, but if there's a better method, please feel free to share, I'd appreciate it.
 
 ### First, we need a thing to control. 
+
 This isn't a homeassistant tutorial, but if you've got any WLED devices, they should automatically appear in the devices section to be configured like this:
 
 ![Autoadd1](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Autoadd1.png)
