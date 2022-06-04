@@ -21,7 +21,8 @@ hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "applicati
 opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "YOURAUTH", "YOURLAT" , "YOURLONG", "metric"
 
 # Set paths
-workingDir, stopFilePath, timerLeftPath = "/profiles/", workingdir+"stopFile", workingDir+"timerLeft"
+workingDir = "/profiles/"
+stopFilePath, timerLeftPath =  workingdir+"stopFile", workingDir+"timerLeft"
 
 # get json from stdin and load into python dict
 o = json.loads(sys.stdin.read())
