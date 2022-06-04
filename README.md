@@ -599,8 +599,7 @@ In this image, I've also cleaned up assigning the number and unit variables to b
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
 elif intent == "StopPlaying":
-    stopFileName = "stopFile"
-    with open(os.path.join(workingDir, stopFileName), 'w') as stopFile:
+    with open(stopFilePath, 'w') as stopFile:
         pass
     stopFile.write("stop")
 ```
@@ -627,18 +626,18 @@ Due to it finishing the current audio loop before stopping, I suggest having a s
 ### Check Timer Progress While Running
 Ideally, you could ask the assistant how far along the timer is. Let's make that.
 
-First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"timerRemaining"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
+First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"timerLeft"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
 ```
-with open(os.path.join(workingDir, "timerLeft"), "w") as timerLeft:
+with open(timerLeftPath, "timerLeft"), "w") as timerLeft:
     timerLeft.write(str(timerLength))
 ```
 
 Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change ```stopFilePath``` to ```workingDir+"timerLeft"```. It should look like this:
 ```
-if os.path.exists(workingDir+"timerLeft"):
-    os.remove(workingDir+"timerLeft")
+if os.path.exists(timerLeftPath):
+    os.remove(timerLeftPath)
 ```
-Now we've got a file that contains the number of seconds remaining, and it'll delete itself once the timer is done. (I am aware that the way I'm handling variables is odd around this bit of code, I did a lot of experimentation. Things will be cleaned up at some point)
+Now we've got a file that contains the number of seconds remaining, and it'll delete itself once the timer is done.
 
 Go to the bottom of your intentHandler, and paste this:
 ```
@@ -675,16 +674,32 @@ elif intent == "DoTimer":
     while timerLength:
         time.sleep(1)
         timerLength -=1
-        with open(os.path.join(workingDir, "timerLeft"), "w") as timerLeft:
+        with open(timerLeftPath, "w") as timerLeft:
             timerLeft.write(str(timerLength))
     while not os.path.exists(stopFilePath):
         call(["aplay", timerFinishedAudio])
     if os.path.exists(stopFilePath):
         os.remove(stopFilePath)
-    if os.path.exists(workingDir+"timerLeft"):
-        os.remove(workingDir+"timerLeft")
+    if os.path.exists(timerLeftPath):
+        os.remove(timerLeftPath)
 ```
-
+And here's the StopPlaying section:
+```
+elif intent == "StopPlaying":
+    with open(stopFilePath, 'w') as stopFile:
+        pass
+    stopFile.write("stop")
+```
+And here's the TimerRemaining section:
+```
+elif intent == "TimerRemaining":
+    if os.path.exists(timerLeftPath):
+        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 2
+        if timerRemainingNumber >= 60:
+            speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
+        else:
+            speech("There are " + str(timerRemainingNumber) + " seconds left")
+```
 ## The weather
 What if I want it to tell me the weather?
 
