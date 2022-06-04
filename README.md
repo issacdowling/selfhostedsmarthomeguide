@@ -1,6 +1,18 @@
 # SelfhostedVoiceAssistantGuide
 ### This is not done yet. In-progress. You assume all responsibility for if *anything* goes wrong for *any reason*.
 
+# Table of Contents
+[**Prerequisites**](README.md#prerequisites)
+
+[**Setting up the Pi](README.md#setting-up-the-pi)
+
+[**Installing things**](README.md#installing-things)
+
+# Prerequisites
+
+## *What's this?*
+A project that aims to make a self-hosted smart speaker with a reasonable amount of functionality, speed, and ease of use once complete. It won't be perfect, but it'll work. We'll use [Rhasspy](https://rhasspy.readthedocs.io/en/latest/)  to tie together all of the separate bits we need to assemble an assistant (TTS, STT, Wake Word, etc), and [Homeassistant](https://www.home-assistant.io/docs/) to interface with any smart devices. Our equivalent of an Alexa Skill would be an Intent, and whenever Rhasspy recognises one of these, it'll be passed along to a Python script to be handled. This means we can do anything Python can do, assuming we've got the patience to program it.
+
 ## What's needed
 * Raspberry Pi 4
 
@@ -13,6 +25,8 @@
 * 3.5mm Speakers
 
 # Setting Up the Pi
+
+## Flashing the OS
 
 ### Download the [Raspberry Pi Imager](https://www.raspberrypi.com/software/), and install/run it.
 
@@ -41,7 +55,7 @@ then **Raspberry Pi OS 64-bit lite**
 
 ![Writing Media](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/writingprogress.png)
 
-# Booting and initial install
+## Booting and initial install
 Assuming you have a Micro-HDMI cable, you can turn on the Pi without anything inserted to ensure it boots fine. You'll likely get a screen like this.
 
 ![Boot with no device](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/bootnodevice.png)
@@ -91,11 +105,11 @@ static domain_name_servers=1.1.1.1
 
 Next to interface, add a space, then the network device (either **eth0** or **wlan0**). Now, for static ip_address, type the second IP before the */24*. Finally, add the first IP from earlier directly after **static routers=**. Then, press CTRL+X, then Y, then Enter, to save and exit. Finally, run ```sudo reboot``` to restart. Your SSH will disconnect, and you can just keep trying to reconnect until it works to check if you're booted.
 
-# Optimisations
+## Optimisations
 
 ### We can make our pi run better, and use less power on things we're not using.
 
-## Running better
+#### Running better
 
 The Pi can be overclocked. Run this:
 ```
@@ -119,7 +133,7 @@ In the end, it'll look like this:
 
 If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however this config should be doable by practically all Pi 4s, and remain at safe temperatures. I do **over_voltage=4**, **arm_freq=2000**
 
-## Using less power
+#### Using less energy
 
 Now, to disable all LEDs on the board, go down to the section starting with **```[pi4]```** and paste what's below:
 ```
