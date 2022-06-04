@@ -22,7 +22,7 @@ opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.ope
 
 # Set paths
 workingDir = "/profiles/"
-stopFilePath, timerLeftPath =  workingdir+"stopFile", workingDir+"timerLeft"
+stopFilePath, timerLeftPath =  workingDir+"stopFile", workingDir+"timerLeft"
 
 # get json from stdin and load into python dict
 o = json.loads(sys.stdin.read())
