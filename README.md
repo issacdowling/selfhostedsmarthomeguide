@@ -643,13 +643,13 @@ Go to the bottom of your intentHandler, and paste this:
 ```
 elif intent == "TimerRemaining":
     if os.path.exists(timerLeftPath):
-        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 2
+        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
         if timerRemainingNumber >= 60:
             speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
         else:
             speech("There are " + str(timerRemainingNumber) + " seconds left")
 ```
-This checks if the file exists, and if it does, checks whether the time remaining should be measured in minutes (number is > 60) or seconds (number is < 60). Then, if minutes are needed, we divide the number of seconds by 60, then truncate (remove **but not round** the decimals) it, as well as telling us the number of seconds by finding the remainder when dividing by 60. If just seconds are needed, we only need to speak the number we've gotten from the file. Also, since I expect a response to take 2-ish seconds after reading the value, I remove 2 from the number we get at the start.
+This checks if the file exists, and if it does, checks whether the time remaining should be measured in minutes (number is > 60) or seconds (number is < 60). Then, if minutes are needed, we divide the number of seconds by 60, then truncate (remove **but not round** the decimals) it, as well as telling us the number of seconds by finding the remainder when dividing by 60. If just seconds are needed, we only need to speak the number we've gotten from the file. Also, since I expect the words to be spoken 3-ish seconds after reading the value, I remove 3 from the number we get at the start.
 
 Now, in rhasspy's sentences tab, you just need to add this:
 ```
@@ -694,7 +694,7 @@ And here's the TimerRemaining section:
 ```
 elif intent == "TimerRemaining":
     if os.path.exists(timerLeftPath):
-        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 2
+        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
         if timerRemainingNumber >= 60:
             speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
         else:
