@@ -6,7 +6,9 @@
 
 [**Setting up the Pi**](README.md#setting-up-the-pi)
 
-[**Initally Setting Up Rhasspy**](README.md#initally-setting-up-rhasspy)
+[**Initally setting up Rhasspy**](README.md#initally-setting-up-rhasspy)
+
+[**Making it smart**](README.md#making-it-smart)
 
 
 
@@ -363,6 +365,8 @@ Now, add your Pi's IP (adding ```:8123``` to the end) to the hassurl section, an
 CTRL+X, Y, ENTER.
 
 Now, go to rhasspy's web UI, click the wake button, and say out loud, "What time is it?". It should respond with the current time. If not, give it about 20 seconds, the TTS may be doing first-time setup.
+
+# Features
 
 ## Actually controlling devices
 
