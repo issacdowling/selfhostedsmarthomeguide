@@ -81,7 +81,7 @@ If you've got a display connected, wait until there's a line with your username 
 
 ![Linux bootup scene](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/withdisplaybootup.png)
 
-If you don't have a display connected, go to a computer on the same network as your Pi (so, if you didn't set up Wifi, connect an ethernet cable). Then, run **"terminal"** (same on Linux, Windows 11, or MacOS, but on Windows 10, run cmd). Now, type ```ssh yourusername@yourhostname.local```, and replace 'yourusername' with your username, and 'yourhostname' with the hostname you typed in the settings page. At first, it'll likely error out, since the Pi isn't done booting yet, but you can press the up arrow and enter to run the command again. You know you've succeeded once you see this page.
+If you don't have a display connected, go to a computer on the same network as your Pi (so, if you didn't set up Wifi, connect an ethernet cable). Then, run **"terminal"** (same on Linux, Windows 11, or MacOS, but on Windows 10, run cmd). Now, type ```ssh yourusername@yourhostname.local```, and replace 'yourusername' with your Pi username, and 'yourhostname' with the hostname you typed in the settings page. At first, it'll likely error out, since the Pi isn't done booting yet, but you can press the up arrow and enter to run the command again. You know you've succeeded once you see this page.
 ![SSH fingerprint question](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/fingerprint.png)
 
 Type yes, enter, then type your password (which won't show up onscreen as a security measure, but it *is* still going through). 
@@ -145,7 +145,7 @@ In the end, it'll look like this:
 
 ![better boot config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/betterarmover.png)
 
-If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however this config should be doable by practically all Pi 4s, and remain at safe temperatures. I do **over_voltage=4**, **arm_freq=2000**
+If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however the above config should be doable by practically all Pi 4s, and remain at safe temperatures. I do **over_voltage=4**, **arm_freq=2000**, and have not had any cooling or stability issues despite running the Pi bare.
 
 #### Using less energy
 
@@ -252,18 +252,20 @@ To test audio input, press 'Wake Up' on the home page, and say "What time is it?
 
 If there's no response, try relaunching rhasspy, by going back to your terminal, and typing
 ```
-sudo docker-compose up -d --force-recreate
+sudo docker-compose up -d
 ```
 This may get your mic detected if it wasn't before.
 
 ## Some improvements
 ### TTS
-I reccommend going back to the settings page, switching your Text To Speech to Larynx, pressing refresh, and choosing a voice you think sounds good. Southern-english-female is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response. Low Quality is perfectly fine, as you'll see when you test it. Though, speaking of testing, trying Larynx was somewhat awkward in the settings page for the first minute-or-so of restarting after selecting a new voice, so don't be alarmed if this happens to you. Remember to save your settings and restart afterwards.
+I reccommend going back to the settings page, switching your **Text To Speech** to ```Larynx```, pressing refresh, and choosing a voice you think sounds good. **Southern-english-female** is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response, and I believe it to be the most natural sounding. **Low Quality Vocoder** is perfectly fine, as you'll see when you test it, and is necesary for fast responses on a Pi. Though, **Larynx takes around 15 seconds to initialise each time you reboot, and doesn't do this automatically,** meaning the first question you ask will be highly delayed. 
+
+### Remember to save your settings and restart afterwards.
 
 ![TTSsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Texttospeech.png)
 
 ### Wake word
-To wake things without using the web UI, you *could* set a custom word using Rhasspy Raven, however I had trouble with being recognised. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to 0.8. Save and restart, and it should work.
+To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.7**. Save and restart, and it should work.
 
 # Making it smart
 ## Setting up Homeassistant
