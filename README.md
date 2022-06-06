@@ -20,6 +20,8 @@
 
 [Getting the time](README.md#getting-the-time-but-better)
 
+[Giving greetings](README.md#giving-greetings)
+
 
 # Prerequisites
 
@@ -790,6 +792,31 @@ what's [the] time
 tell [me the] time
 what time [is it]
 ```
+
+## Giving greetings
+
+This is **part of the Rhasspy-provided example script,** however it's a feature nonetheless. 
+
+In your Rhasspy sentences section, add this:
+```
+[Greet]
+Hello
+Hi
+Good (morning | afternoon | evening)
+```
+and remember to save and retrain.
+
+It should work immediately, since it was part of the example we pasted in earlier, however we'll look at the code anyway.
+
+```
+elif intent == "Greet":
+    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
+    speech(random.choice(replies))
+```
+
+If the intent is **"Greet"**, we make a list of items, each of which is a string. In this case, they're just different ways of greeting the user. Then, we randomly pick one of the items and say t. If you want to add extra things to say, just add a string to the list. 
+
+I soon intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
 
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
