@@ -183,7 +183,7 @@ sudo gpasswd -a $USER docker
 ```
 to install docker and docker compose. This may take a while.
 
-### Then reboot before continuing, by running sudo reboot
+### Then reboot before continuing, by running ```sudo reboot```
 
 Then run
 
