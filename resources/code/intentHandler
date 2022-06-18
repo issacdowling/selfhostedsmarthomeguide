@@ -106,6 +106,10 @@ elif intent == "TimerRemaining":
             speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
         else:
             speech("There are " + str(timerRemainingNumber) + " seconds left")
+    else:
+        speech("You've got no timers set")
+        
+
 
 # convert dict to json and print to stdout
 print(json.dumps(o))
