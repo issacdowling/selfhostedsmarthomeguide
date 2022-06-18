@@ -14,15 +14,15 @@ def speech(text):
     o["speech"] = {"text": text}
 
 # Set Homeassistant data
-hassurl, hassauth = "http://YOURIP:8123", "YOURAUTH"
+hassurl, hassauth = "http://10.0.0.200:8123", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJkYWNlMDY1MjY3NDQ0MGYxOThiYTVlMWRkODUwZTczYSIsImlhdCI6MTY1MzI1MTQyMiwiZXhwIjoxOTY4NjExNDIyfQ.dMFOtHsvAPFhkZTso0Vzc6sqe7PIKhASTvGalsPTSTw"
 hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
 # Set OpenWeatherMap data
-opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "YOURAUTH", "YOURLAT" , "YOURLONG", "metric"
+opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "6e482a186d0c85dd469b05202f835659", "53.5" , "-2.3", "metric"
 
 # Set paths
 workingDir = "/profiles/"
-stopFilePath, timerLeftPath =  workingDir+"stopFile", workingDir+"timerLeft"
+bluetoothFilePath, stopFilePath, timerLeftPath = workingDir+"bluetoothFile", workingDir+"stopFile", workingDir+"timerLeft"
 
 # get json from stdin and load into python dict
 o = json.loads(sys.stdin.read())
@@ -45,7 +45,7 @@ elif intent == "Greet":
 
 elif intent == "SetSpecificLightPower":
     entity, state = o["slots"]["entity"], o["slots"]["state"]
-    speech("Alright, I'll turn it " + state )
+    speech("Alright, I'll turn it " + state)
     requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
 
 elif intent == "SetSpecificLightColour":
@@ -97,7 +97,6 @@ elif intent == "GetWeather":
 elif intent == "StopPlaying":
     with open(stopFilePath, 'w') as stopFile:
         pass
-    stopFile.write("stop")
 
 elif intent == "TimerRemaining":
     if os.path.exists(timerLeftPath):
@@ -108,8 +107,12 @@ elif intent == "TimerRemaining":
             speech("There are " + str(timerRemainingNumber) + " seconds left")
     else:
         speech("You've got no timers set")
-        
 
+elif intent == "BluetoothPairing":
+    with open(bluetoothFilePath, "w") as bluetoothFile:
+        bluetoothFile.write("bluetooth")
+        time.sleep(3)
+        os.remove(bluetoothFilePath)
 
 # convert dict to json and print to stdout
 print(json.dumps(o))
