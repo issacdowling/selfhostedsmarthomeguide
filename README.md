@@ -1,4 +1,4 @@
-# SelfhostedVoiceAssistantGuide
+# SelfhostedSmartHomeGuide
 ### This is not done yet. In-progress. You assume all responsibility for if *anything* goes wrong for *any reason*.
 
 # Table of Contents
