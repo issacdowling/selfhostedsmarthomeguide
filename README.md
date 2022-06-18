@@ -820,8 +820,62 @@ If the intent is **"Greet"**, we make a list of items, each of which is a string
 
 I soon intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
 
+## Bluetooth Audio Streaming (highly imperfect)
+You can use an Echo or Google Home as a bluetooth speaker, why not this?
+
+First, run this to install all of the (originally difficult for me to find) dependencies
+
+```
+sudo apt-get install libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-1.0
+pip install dbus-python
+```
+
+Then, put this into your terminal
+```
+sudo hostnamectl --pretty set-hostname ""
+```
+and put what you want the speaker to appear as within the quotes, then run it
+
+Then, run 
+```
+sudo nano /etc/bluetooth/main.conf
+```
+and go to the ```#DiscoverableTimeout``` line. Remove the #, and set it to ```DiscoverableTimeout = 30```
+
+Then ```CTRL+X, Y, ENTER``` to save and exit.
+
+Now, run ```sudo reboot now``` to reboot and apply these changes.
+
+Once you're back in, run 
+```
+cd ~/assistant/profiles/
+sudo curl -O https://raw.githubusercontent.com/elwint/bt-audio/master/bt-audio.py
+```
+
+Then, run 
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+and go to near the bottom, where you'll add another elif statement:
+```
+
+```
+
+CTRL+X+Y to save and exit.
+
+Then, go to your rhasspy sentences section, and paste this at the bottom:
+```
+[BluetoothPairing]
+\[turn on] bluetooth [pairing]
+```
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
+
+
+
+
+
+
 
 
 # Extras
