@@ -913,7 +913,7 @@ Now, run ```sudo systemctl enable speakerbluetoothpair.path```
 Then, go to your rhasspy sentences section, and paste this at the bottom:
 ```
 [BluetoothPairing]
-\[turn on] bluetooth [pairing]
+turn on bluetooth [pairing]
 ```
 
 ```sudo reboot now``` to reboot.
