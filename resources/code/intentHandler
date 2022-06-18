@@ -14,11 +14,11 @@ def speech(text):
     o["speech"] = {"text": text}
 
 # Set Homeassistant data
-hassurl, hassauth = "http://10.0.0.200:8123", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJkYWNlMDY1MjY3NDQ0MGYxOThiYTVlMWRkODUwZTczYSIsImlhdCI6MTY1MzI1MTQyMiwiZXhwIjoxOTY4NjExNDIyfQ.dMFOtHsvAPFhkZTso0Vzc6sqe7PIKhASTvGalsPTSTw"
+hassurl, hassauth = "http://YOURIP:8123", "YOURHASSKEY"
 hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
 # Set OpenWeatherMap data
-opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "6e482a186d0c85dd469b05202f835659", "53.5" , "-2.3", "metric"
+opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "OPENWEATHERAPIKEY", "YOURLAT" , "YOURLONG", "metric"
 
 # Set paths
 workingDir = "/profiles/"
