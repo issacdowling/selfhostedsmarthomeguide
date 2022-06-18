@@ -828,7 +828,9 @@ First, run this to install all of the (originally difficult for me to find) depe
 ```
 sudo apt-get install libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-1.0
 pip install dbus-python
+sudo pip install dbus-python
 ```
+(we are installing dbus-python twice so root can access it too)
 
 Then, put this into your terminal
 ```
@@ -858,16 +860,63 @@ sudo nano ~/assistant/profiles/intentHandler
 ```
 and go to near the bottom, where you'll add another elif statement:
 ```
+elif intent == "BluetoothPairing":
+    with open(bluetoothFilePath, "w") as bluetoothFile:
+        bluetoothFile.write("bluetooth")
+        time.sleep(3)
+        os.remove(bluetoothFilePath)
+```
 
+Then, go to the ```# Set paths``` section at the top, and add 
+```
+bluetoothFilePath = workingDir+"bluetoothFile"
+```
+Save and exit.
+
+Now, run
+```
+sudo nano /etc/systemd/system/speakerbluetoothpair.service
+```
+and paste in
+```
+[Unit]
+Description=Starts bluetooth pairing script
+
+[Service]
+Type=oneshot
+ExecStart=/home/assistant-main-node/assistant/profiles/bt-audio.py
+```
+(replace assistant-main-node with your username if different).
+
+Save and exit.
+
+Then, run
+```
+sudo nano /etc/systemd/system/speakerbluetoothpair.path
+```
+And paste in:
+```
+[Unit]
+Description=Checks for bluetooth pairing file from rhasspy
+
+[Path]
+PathExists=/home/assistant-main-node/assistant/profiles/bluetoothFile
+
+[Install]
+WantedBy=multi-user.target
 ```
 
 CTRL+X+Y to save and exit.
+
+Now, run ```sudo systemctl enable speakerbluetoothpair.path```
 
 Then, go to your rhasspy sentences section, and paste this at the bottom:
 ```
 [BluetoothPairing]
 \[turn on] bluetooth [pairing]
 ```
+
+```sudo reboot now``` to reboot.
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
 
