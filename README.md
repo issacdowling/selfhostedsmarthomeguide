@@ -164,7 +164,7 @@ dtparam=eth_led0=4
 dtparam=eth_led1=4
 ```
 
-And, if you're not using the GPU, you can also add ```gpu_mem=16``` to the **"[all]"** section above. It likely won't affect anything though. Something that will help power consumption is the line **```dtoverlay=disable-bt```**. If you're not using wifi either, you can duplicate that line and change **bt** to **wifi**.
+And, if you're not using the GPU, you can also add ```gpu_mem=16``` to the **"[all]"** section above. It likely won't affect anything though. Something that will help power consumption is the line **```dtoverlay=disable-bt```**. If you're not using wifi either, you can duplicate that line and change **bt** to **wifi**. However, if you intend on using this like a regular smart-speaker (including the ability to play music as a bluetooth speaker, and not needing to run an ethernet cable to it), I suggest leaving both Wifi and bluetooth enbaled.
 
 In the end, it'll look like this:
 
