@@ -22,6 +22,8 @@
 
 [Giving greetings](README.md#giving-greetings)
 
+[Using as bluetooth speaker](README.md#bluetooth-audio-streaming-highly-imperfect)
+
 
 # Prerequisites
 
@@ -969,6 +971,12 @@ turn on bluetooth [pairing]
 
 
 **It's a mess, but it works.**
+
+Except for if you repair your phone. It likely won't let you re-pair.
+
+To fix that, there's no elegant solution right now. Open the terminal, run ```bluetoothctl```, then type ```remove ```, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
+
+### Optimal.
 
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
