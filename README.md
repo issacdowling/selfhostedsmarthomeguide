@@ -890,6 +890,21 @@ ExecStart=/home/assistant-main-node/assistant/profiles/bt-audio.py
 
 Save and exit.
 
+Then, make practically the same thing by running:
+```
+sudo nano /etc/systemd/system/speakerbluetoothpairstop.service
+```
+and pasting:
+```
+[Unit]
+Description=Starts bluetooth pairing script
+
+[Service]
+Type=oneshot
+ExecStart=/home/assistant-main-node/assistant/profiles/stop-bluetooth-pairing.sh
+```
+(replace assistant-main-node with your username if different).
+
 Then, run
 ```
 sudo nano /etc/systemd/system/speakerbluetoothpair.path
@@ -906,9 +921,43 @@ PathExists=/home/assistant-main-node/assistant/profiles/bluetoothFile
 WantedBy=multi-user.target
 ```
 
+And again run
+```
+sudo nano /etc/systemd/system/speakerbluetoothpairstop.path
+```
+And paste in:
+```
+[Unit]
+Description=Checks for bluetooth pairing file from rhasspy
+
+[Path]
+PathExists=/home/assistant-main-node/assistant/profiles/bluetoothFile
+
+[Install]
+WantedBy=multi-user.target
+```
+
+
 CTRL+X+Y to save and exit.
 
-Now, run ```sudo systemctl enable speakerbluetoothpair.path```
+Run
+```
+sudo nano ~/assistant/profiles/stop-bluetooth-pairing.sh
+```
+and add
+```
+sleep 30
+systemctl stop speakerbluetoothpair.service
+systemctl reset-failed speakerbluetoothpair.service
+```
+
+Now, run 
+```
+sudo chmod +x ~/assistant/profiles/stop-bluetooth-pairing.sh
+sudo chmod +x ~/assistant/profiles/bt-audio.py
+sudo systemctl enable speakerbluetoothpair.path
+sudo systemctl enable speakerbluetoothpairstop.path
+```
 
 Then, go to your rhasspy sentences section, and paste this at the bottom:
 ```
@@ -917,6 +966,10 @@ turn on bluetooth [pairing]
 ```
 
 ```sudo reboot now``` to reboot.
+
+
+**It's a mess, but it works.**
+
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
 
