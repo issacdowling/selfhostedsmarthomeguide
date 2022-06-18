@@ -733,6 +733,8 @@ elif intent == "TimerRemaining":
             speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
         else:
             speech("There are " + str(timerRemainingNumber) + " seconds left")
+    else:
+        speech("You've got no timers set")
 ```
 ## The weather
 What if I want it to tell me the weather?
