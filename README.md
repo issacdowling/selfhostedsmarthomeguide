@@ -527,7 +527,7 @@ First, go back to the slots section in the left menu.
 
 Then, we'll define our operations. Make a new slot called **"operations"**, then paste this in:
 ```
-(add | plus | and):+
+(add | plus):+
 (times | multiplied by):*
 (minus | subtract | take | take away):-
 (divided by | over):/
