@@ -899,7 +899,7 @@ sudo nano /etc/systemd/system/speakerbluetoothpairstop.service
 and pasting:
 ```
 [Unit]
-Description=Starts bluetooth pairing script
+Description=Stops bluetooth pairing script after 30s
 
 [Service]
 Type=oneshot
