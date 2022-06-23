@@ -615,17 +615,17 @@ Now, go to the top of your intentHandler script, and add ```from subprocess impo
 Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
 ```
 timerFinishedAudio = workingDir+"timerchime.wav"
-if os.path.exists(stopFilePath):
-    os.remove(stopFilePath)
+if os.path.exists(stopTimerSoundPath):
+    os.remove(stopTimerSoundPath)
 ```
 If you understand what this is doing, you can probably tell where we're going from here. We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
 
 Now, you can replace the **```speech("Timer complete")```** line with this:
 ```
-while not os.path.exists(stopFilePath):
+while not os.path.exists(stopTimerSoundFilePath):
     call(["aplay", timerFinishedAudio])
-if os.path.exists(stopFilePath):
-    os.remove(stopFilePath)
+if os.path.exists(stopTimerSoundPath):
+    os.remove(stopTimerSoundPath)
 ```
 
 In this image, I've also cleaned up assigning the number and unit variables to be on one line, but your code should otherwise now look like this:
@@ -635,16 +635,15 @@ In this image, I've also cleaned up assigning the number and unit variables to b
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
 elif intent == "StopTimer":
-    with open(stopFilePath, 'w') as stopFile:
+    with open(stopTimerSoundFilePath, 'w') as stopTimerSoundFile:
         pass
-    stopFile.write("stop")
 ```
 
 Now, go to the top of the file, and paste this:
 ```
 # Set directories
 workingDir = "/profiles/"
-stopFilePath = workingDir+"stopFile"
+stopTimerSoundFilePath = workingDir+"stopTimerSoundFile"
 ```
 
 If you're using a different file structure, you can change the data inside the workingDir variable. Remember to save and exit (CTRL+X, Y, ENTER)
@@ -695,14 +694,64 @@ what is [the] timer [at]
 ```
 The broken English is intentional, since our speech-to-text system will turn whatever you say into the *closest* sentence possible, so having a shorter sentence that misses words is alright, and I believe *(with no tested evidence)* that it could speed things up.
 
+### Cancelling a timer
+
+But what if you decide that you don't want your timer anymore? (or, more likely, STT picks up the wrong number)
+
+First, add a variable to your ```# Set Paths``` section called cancelFilePath, with the value ```workingDir+"cancelFile"```.
+
+Now, to account for any errors or remaining files, add this line to the other sections where we delete files. One at the start of the timer **elif** statement, one at the end.
+
+```
+if os.path.exists(cancelFilePath):
+    os.remove(cancelFilePath)
+```
+
+Within the ```while timerLength``` section, at the end, add this, which will stop the timer if it detects the cancel file:
+
+```
+if os.path.exists(cancelFilePath):
+    break
+```
+
+We'll now be working within the ```while not os.path.exists(stopFilePath)``` section.
+
+At the same level of indentation as the ```call aplay``` line, right at the top, add:
+```
+if os.path.exists(cancelFilePath):
+    speech("Timer cancelled")
+    break
+else:
+````
+Then, correct your ```call aplay``` line to be at the right level of indentation.
+
+Now, add a new elif statement for making the cancelFile:
+
+```
+elif intent == "CancelTimer":
+    with open(cancelFilePath, "w") as cancelFile:
+        pass
+```
+
+All that's left to do is go to your Rhasspy sentences, and add this new one:
+
+```
+[CancelTimer]
+(stop | cancel) [the] timer
+```
+
+And remember, if you don't like *anything at all* about how I handle things, **you can change it**. All of the code is free for you to make exactly how you like it, even for things as basic as how you phrase sentences. You don't need to follow everything verbatim, but you can, it's up to you.
+
 ### The end result
 This timer section was massive. My code at the end of it looks like this:
 ```
 elif intent == "DoTimer":
     timerFinishedAudio = workingDir+"timerchime.wav"
     number, unit = o["slots"]["time"], o["slots"]["unit"]
-    if os.path.exists(stopFilePath):
-        os.remove(stopFilePath)
+    if os.path.exists(stopTimerSoundFilePath):
+        os.remove(stopTimerSoundFilePath)
+    if os.path.exists(cancelFilePath):
+        os.remove(cancelFilePath)
     if unit == "second":
         timerLength = number-1
     elif unit == "minute":
@@ -712,19 +761,32 @@ elif intent == "DoTimer":
         timerLength -=1
         with open(timerLeftPath, "w") as timerLeft:
             timerLeft.write(str(timerLength))
-    while not os.path.exists(stopFilePath):
-        call(["aplay", timerFinishedAudio])
-    if os.path.exists(stopFilePath):
-        os.remove(stopFilePath)
+        if os.path.exists(cancelFilePath):
+            break
+    while not os.path.exists(stopTimerSoundFilePath):
+        if os.path.exists(cancelFilePath):
+            speech("Timer cancelled")
+            break
+        else:
+            call(["aplay", timerFinishedAudio])
+    if os.path.exists(stopTimerSoundFilePath):
+        os.remove(stopTimerSoundFileFilePath)
     if os.path.exists(timerLeftPath):
         os.remove(timerLeftPath)
+    if os.path.exists(cancelFilePath):
+        os.remove(cancelFilePath)
 ```
-And here's the StopPlaying section:
+Here's the StopTimerSound section:
 ```
-elif intent == "StopTimer":
-    with open(stopFilePath, 'w') as stopFile:
+elif intent == "StopTimerSound":
+    with open(stopTimerSoundFilePath, 'w') as stopTimerSoundFile:
         pass
-    stopFile.write("stop")
+```
+Here's the cancelTimer section:
+```
+elif intent == "CancelTimer":
+    with open(cancelFilePath, "w") as cancelFile:
+        pass
 ```
 And here's the TimerRemaining section:
 ```
@@ -864,7 +926,6 @@ and go to near the bottom, where you'll add another elif statement:
 ```
 elif intent == "BluetoothPairing":
     with open(bluetoothFilePath, "w") as bluetoothFile:
-        bluetoothFile.write("bluetooth")
         time.sleep(3)
         os.remove(bluetoothFilePath)
 ```
