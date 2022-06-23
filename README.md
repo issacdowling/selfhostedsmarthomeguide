@@ -634,7 +634,7 @@ In this image, I've also cleaned up assigning the number and unit variables to b
 
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
-elif intent == "StopPlaying":
+elif intent == "StopTimer":
     with open(stopFilePath, 'w') as stopFile:
         pass
     stopFile.write("stop")
@@ -651,7 +651,7 @@ If you're using a different file structure, you can change the data inside the w
 
 Now, go to your rhasspy sentences section, and make a new section that looks like this:
 ```
-[StopPlaying]
+[StopTimer]
 stop [the] [alarm | timer | sound]
 ```
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop. Once the current loop is over, it will finish. 
