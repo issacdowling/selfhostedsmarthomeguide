@@ -650,7 +650,7 @@ If you're using a different file structure, you can change the data inside the w
 
 Now, go to your rhasspy sentences section, and make a new section that looks like this:
 ```
-[StopTimer]
+[StopTimerSound]
 stop [the] [alarm | timer | sound]
 ```
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop. Once the current loop is over, it will finish. 
