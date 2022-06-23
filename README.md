@@ -721,7 +721,7 @@ elif intent == "DoTimer":
 ```
 And here's the StopPlaying section:
 ```
-elif intent == "StopPlaying":
+elif intent == "StopTimer":
     with open(stopFilePath, 'w') as stopFile:
         pass
     stopFile.write("stop")
