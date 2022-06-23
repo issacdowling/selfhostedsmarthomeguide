@@ -94,7 +94,7 @@ elif intent == "GetWeather":
     currentTemp, currentDesc = weather["main"]["temp"], weather["weather"][0]["main"]
     speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
 
-elif intent == "StopPlaying":
+elif intent == "StopTimer":
     with open(stopFilePath, 'w') as stopFile:
         pass
 
