@@ -46,18 +46,18 @@ elif intent == "Greet":
 elif intent == "SetSpecificLightPower":
     entity, state = o["slots"]["entity"], o["slots"]["state"]
     speech("Alright, I'll turn it " + state)
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
 
 elif intent == "SetSpecificLightColour":
     entity, colour = o["slots"]["entity"], o["slots"]["colour"]
     speech("Alright, I'll make it " + colour )
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
 
 elif intent == "SetSpecificLightBrightness":
     entity = o["slots"]["entity"]
     brightness = o["slots"]["brightness"]
     speech("Alright, I'll make it " + str(brightness) + " percent")
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
 
 elif intent == "DoMaths":
     operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
