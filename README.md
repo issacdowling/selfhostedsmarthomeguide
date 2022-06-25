@@ -358,7 +358,7 @@ def speech(text):
 # Set Homeassistant URL
 hassurl = "http://"
 hassauth = ""
-headers = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
+hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
 # get json from stdin and load into python dict
 o = json.loads(sys.stdin.read())
@@ -468,12 +468,14 @@ elif intent == "SetSpecificLightPower":
     entity = o["slots"]["entity"]
     state = o["slots"]["state"]
     speech("Alright, I'll turn it " + state )
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = headers, json = {"entity": entity,"state": state})
+    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
 ```
 Things should look like this:
 ![add intents](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/addintents.png)
 
-Anything within ```speech()``` will be spoken. Now, we'll learn how to add colour.
+Anything within ```speech()``` will be spoken. 
+
+### Now, we'll learn how to add colour.
 
 Go back to your slots, add a new one called ```colours``` (the British spelling), and paste this:
 ```
@@ -513,9 +515,57 @@ elif intent == "SetSpecificLightColour":
     entity = o["slots"]["entity"]
     colour = o["slots"]["colour"]
     speech("Alright, I'll make it " + colour )
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = headers, json = {"entity": entity,"colour": colour})
+    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
 ```
 Once you've saved an exited, it should work immediately. 
+
+### Adding brightness settings
+
+It would be nice to be able to control brightness, but we can't yet, so let's add it.
+
+First, go back into your intentHandler file:
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+And add this elif statement, just like the colour one:
+```
+elif intent == "SetSpecificLightBrightness":
+    entity = o["slots"]["entity"]
+    brightness = o["slots"]["brightness"]
+    speech("Alright, I'll make it " + str(brightness) + " percent")
+    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+```
+You can probably see how things work now, based on how little has changed from the version of that code which modifies colour instead.
+
+Now, go to your automations.yaml file:
+```
+sudo nano ~/hass/config/automations.yaml
+```
+and at the bottom, paste this:
+```
+- alias: "Set specific light brightness"
+  trigger:
+  - event_data: {}
+    platform: event
+    event_type: rhasspy_SetSpecificLightBrightness
+  action:
+     - service: light.turn_on
+       data:
+         entity_id: "{{trigger.event.data.entity}}"
+         brightness_pct: "{{trigger.event.data.brightness}}"
+```
+
+All that's left is to reload your automations.yaml (if you don't remember, that's **developer tools --> yaml --> reload automations**) and add your Rhasspy sentences.
+
+Go to rhasspy's web ui at ```yourip:12101```, then click sentences on the left, and add this:
+
+```
+[SetSpecificLightBrightness]
+light_name = ($lights){entity}
+(set | turn | make) [the] <light_name> [to] (1..100){brightness} percent [brightness]
+```
+
+Save and retrain rhasspy, and things should work.
 
 ## Doing basic maths
 
