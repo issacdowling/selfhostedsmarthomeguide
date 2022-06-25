@@ -450,13 +450,13 @@ Then, paste this in some empty space:
   trigger:
   - event_data: {}
     platform: event
-    event_type: rhasspy_SetSpecificLightPower
+    event_type: assistant_SetSpecificLightPower
   action:
      - service: light.turn_{{trigger.event.data.state}}
        data:
          entity_id: "{{trigger.event.data.entity}}"
 ```
-If you changed what's within the square brackets in the sentence section, change what's after ```rhasspy_```. Otherwise, things should just work. Now, go to homeassistant's dev tools, YAML, and reload automations. 
+If you changed what's within the square brackets in the sentence section, change what's after ```assistant_``` to match. Otherwise, things should just work. Now, go to homeassistant's dev tools, YAML, and reload automations. 
 
 Now, run:
 ```
@@ -468,7 +468,7 @@ elif intent == "SetSpecificLightPower":
     entity = o["slots"]["entity"]
     state = o["slots"]["state"]
     speech("Alright, I'll turn it " + state )
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
 ```
 Things should look like this:
 ![add intents](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/addintents.png)
@@ -495,7 +495,7 @@ Finally, go back to your terminal with automations.yaml open, and paste this bel
   trigger:
   - event_data: {}
     platform: event
-    event_type: rhasspy_SetSpecificLightColour
+    event_type: assistant_SetSpecificLightColour
   action:
      - service: light.turn_on
        data:
@@ -515,7 +515,7 @@ elif intent == "SetSpecificLightColour":
     entity = o["slots"]["entity"]
     colour = o["slots"]["colour"]
     speech("Alright, I'll make it " + colour )
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
 ```
 Once you've saved an exited, it should work immediately. 
 
@@ -533,7 +533,7 @@ elif intent == "SetSpecificLightBrightness":
     entity = o["slots"]["entity"]
     brightness = o["slots"]["brightness"]
     speech("Alright, I'll make it " + str(brightness) + " percent")
-    requests.post(hassurl+"/api/events/rhasspy_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
 ```
 You can probably see how things work now, based on how little has changed from the version of that code which modifies colour instead.
 
@@ -547,7 +547,7 @@ and at the bottom, paste this:
   trigger:
   - event_data: {}
     platform: event
-    event_type: rhasspy_SetSpecificLightBrightness
+    event_type: assistant_SetSpecificLightBrightness
   action:
      - service: light.turn_on
        data:
