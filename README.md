@@ -12,7 +12,7 @@
 
 [**Adding features (skills)**](README.md#features)
 
-[Controlling Devices](README.md#controlling-devices)
+[Controlling Lights](README.md#controlling-devices)
 
 [Setting timers](README.md#setting-timers)
 
@@ -23,6 +23,8 @@
 [Giving greetings](README.md#giving-greetings)
 
 [Using as bluetooth speaker](README.md#bluetooth-audio-streaming-highly-imperfect)
+
+[Adding natural and varied responses](README.md#natural-and-varied-responses)
 
 
 # Prerequisites
