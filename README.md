@@ -1109,7 +1109,7 @@ and go to just below your ```# Set paths``` section.
 
 Add a new section called ```# Set responses```. Then, add your responses below - here's how you would add the example from before:
 ```
-agreeResponse = ["Ok, ", "Alright, ", "Will do, ", "Got it, ", "Sure, "] 
+agreeResponse = ["Okay, ", "Alright, ", "Will do, ", "Got it, ", "Sure, "] 
 ```
 In this case, I want a small pause after the phrase, so I've added a comma and a space within the quotes for all of them, and used a comma after the parenthesis to separate each one. 
 
