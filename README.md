@@ -12,7 +12,7 @@
 
 [**Adding features (skills)**](README.md#features)
 
-[Controlling Devices](README.md#controlling-devices)
+[Controlling Lights](README.md#controlling-devices)
 
 [Setting timers](README.md#setting-timers)
 
@@ -23,6 +23,8 @@
 [Giving greetings](README.md#giving-greetings)
 
 [Using as bluetooth speaker](README.md#bluetooth-audio-streaming-highly-imperfect)
+
+[Adding natural and varied responses](README.md#natural-and-varied-responses)
 
 
 # Prerequisites
@@ -894,10 +896,12 @@ if intent == "GetTime":
     else:
         apm = "ey em"
     if now.strftime('%M') == 00:
-        speech("It's " + now.strftime('%I') + " " + apm)
+        speech("Its " + now.strftime('%I') + " " + apm)
     else:
-        speech("It's " + now.strftime('%I') + " " + now.strftime('%M') + " " + apm)
+        speech("Its " + now.strftime('%I') + " " + now.strftime('%M') + " " + apm)
 ```
+
+I know that **"Its"** should have an apostrophe to represent a contraction, and it annoys me too, a lot, however I'm trying to avoid extra symbols when necessary.
 
 Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
@@ -1088,6 +1092,56 @@ Except for if you repair your phone. It likely won't let you re-pair.
 To fix that, there's no elegant solution right now. Open the terminal, run ```bluetoothctl```, then type ```remove ```, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
 
 ### Optimal.
+
+## Natural and varied responses
+
+Right now, the assistant will always respond in the same way to a given request. This is easy to program, but not very natural, and we can make it better.
+
+If you were paying attention to the **greetings** section, you'll probably understand how we'll implement this. All we need is a list of potential appropriate phrases, and then we pick a random one to speak each time.
+
+First, we need to figure out what we want it to say, and which possible situations they're appropriate for. For example, after turning on a light, it would make sense to preface "I'll turn it on" with **Ok / Alright / Will do / Got it / Sure**, but it wouldn't make sense to have that same list of words when answering a maths question.
+
+So, get into your intentHandler:
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+and go to just below your ```# Set paths``` section.
+
+Add a new section called ```# Set responses```. Then, add your responses below - here's how you would add the example from before:
+```
+agreeResponse = ["Ok, ", "Alright, ", "Will do, ", "Got it, ", "Sure, "] 
+```
+In this case, I want a small pause after the phrase, so I've added a comma and a space within the quotes for all of them, and used a comma after the parenthesis to separate each one. 
+
+Now, I can go down to the ```SetSpecificLight``` sections, and change this:
+```
+speech("Alright, I'll make it " + colour)
+```
+to this (doing the same change for all light sections):
+```
+speech(random.choice(agreeResponse) + "I'll make it " + colour)
+```
+All we've actually done is make it pick a random string from the list we made instead of just saying **"Alright, "**. If we just saved and exited here, it would work, but lets add it to other stuff too.
+
+Back in the ```# Set responses``` section, I've added this line:
+```
+currentlyResponse = ["Right now it's, ", "Its, ", "Currently its, ", "At the moment its, "]
+```
+Then, in the ```GetTime``` and ```GetWeather``` sections, we can replace the ```"Its "``` with
+```
+random.choice(currentlyResponse)
+```
+
+We could also implement different options for individual responses. For example, when cancelling a timer, I could add:
+```
+timerCancelResponse = ["Timer cancelled", "Cancelling timer", "I'll cancel the timer"]
+```
+and then just set it to pick one of those:
+```
+speech(random.choice(timerCancelResponse))
+```
+
+The way we're doing this is really simple and flexible, but makes the responses less repetitive. I like it.
 
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
