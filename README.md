@@ -447,7 +447,7 @@ While SSH'd into the pi, run
 ```
 sudo nano ~/hass/config/automations.yaml
 ```
-Then, paste this in some empty space:
+Then, paste this in some empty space (remove square brackets if there):
 ```
 - alias: "Turn on/off specific light"
   trigger:
