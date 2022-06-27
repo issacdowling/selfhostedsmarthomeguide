@@ -956,7 +956,7 @@ First, run this to install all of the (originally difficult for me to find) depe
 
 ```
 sudo apt-get install libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-1.0
-pip install dbus-python
+sudo pip install dbus-python
 ```
 
 Then, put this into your terminal
@@ -979,6 +979,11 @@ Once you're back in, run
 ```
 cd ~/assistant/
 sudo curl -O https://raw.githubusercontent.com/elwint/bt-audio/master/bt-audio.py
+```
+
+Now, run this:
+```
+sudo apt install pulseaudio-module-bluetooth
 ```
 
 Then, run 
@@ -1010,7 +1015,7 @@ Description=Starts bluetooth pairing script
 
 [Service]
 Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/profiles/bt-audio.py
+ExecStart=/home/assistant-main-node/assistant/bt-audio.py
 ```
 (replace assistant-main-node with your username if different).
 
@@ -1027,7 +1032,7 @@ Description=Stops bluetooth pairing script after 30s
 
 [Service]
 Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/profiles/stop-bluetooth-pairing.sh
+ExecStart=/home/assistant-main-node/assistant/stop-bluetooth-pairing.sh
 ```
 (replace assistant-main-node with your username if different).
 
@@ -1038,7 +1043,7 @@ sudo nano /etc/systemd/system/speakerbluetoothpair.path
 And paste in:
 ```
 [Unit]
-Description=Checks for bluetooth pairing file from rhasspy
+Description=Checks for bluetooth pairing file from rhasspy to start pairing
 
 [Path]
 PathExists=/home/assistant-main-node/assistant/profiles/bluetoothFile
@@ -1054,7 +1059,7 @@ sudo nano /etc/systemd/system/speakerbluetoothpairstop.path
 And paste in:
 ```
 [Unit]
-Description=Checks for bluetooth pairing file from rhasspy
+Description=Checks for bluetooth pairing file from rhasspy to stop pairing
 
 [Path]
 PathExists=/home/assistant-main-node/assistant/profiles/bluetoothFile
@@ -1068,7 +1073,7 @@ CTRL+X+Y to save and exit.
 
 Run
 ```
-sudo nano ~/assistant/profiles/stop-bluetooth-pairing.sh
+sudo nano ~/assistant/stop-bluetooth-pairing.sh
 ```
 and add
 ```
@@ -1079,8 +1084,8 @@ systemctl reset-failed speakerbluetoothpair.service
 
 Now, run 
 ```
-sudo chmod +x ~/assistant/profiles/stop-bluetooth-pairing.sh
-sudo chmod +x ~/assistant/profiles/bt-audio.py
+sudo chmod +x ~/assistant/stop-bluetooth-pairing.sh
+sudo chmod +x ~/assistant/bt-audio.py
 sudo systemctl enable speakerbluetoothpair.path
 sudo systemctl enable speakerbluetoothpairstop.path
 ```
