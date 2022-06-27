@@ -181,7 +181,6 @@ Run
 ```
 curl -sSL https://get.docker.com | sh
 sudo apt-get install -y uidmap libffi-dev libssl-dev python3 python3-pip python3-dev
-dockerd-rootless-setuptool.sh install
 sudo pip3 install docker-compose
 sudo groupadd docker
 sudo gpasswd -a $USER docker
