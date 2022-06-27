@@ -643,7 +643,6 @@ elif intent == "DoTimer":
         timerLength = number-1
     elif unit == "minute":
         timerLength = (number*60)-1
-    speech("Starting " + str(number) + " " + unit + " timer")
     while timerLength:
         time.sleep(1)
         timerLength -=1
@@ -676,7 +675,7 @@ if os.path.exists(stopTimerSoundPath):
 ```
 If you understand what this is doing, you can probably tell where we're going from here. We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
 
-Now, you can replace the **```speech("Timer complete")```** line with this:
+Now, you can add this above the ```while timerLength``` section:
 ```
 while not os.path.exists(stopTimerSoundFilePath):
     call(["aplay", timerFinishedAudio])
