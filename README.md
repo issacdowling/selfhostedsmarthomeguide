@@ -184,7 +184,6 @@ sudo apt-get install -y uidmap libffi-dev libssl-dev python3 python3-pip python3
 sudo pip3 install docker-compose
 sudo groupadd docker
 sudo gpasswd -a $USER docker
-
 ```
 to install docker and docker compose. This may take a while.
 
