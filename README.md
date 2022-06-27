@@ -667,20 +667,26 @@ Replace pathtoyourfile with the path to your wav file. Replace piusername with t
 
 Now, go to the top of your intentHandler script, and add ```from subprocess import call```.
 
+And on another line, add 
+```
+import os
+import time
+```
+
 Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
 ```
-timerFinishedAudio = workingDir+"timerchime.wav"
-if os.path.exists(stopTimerSoundPath):
-    os.remove(stopTimerSoundPath)
+timerFinishedAudio = workingDir+"yourfile.wav"
+if os.path.exists(stopTimerSoundFilePath):
+    os.remove(stopTimerSoundFilePath)
 ```
 If you understand what this is doing, you can probably tell where we're going from here. We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
 
-Now, you can add this above the ```while timerLength``` section:
+Now, you can replace the ```speech("Timer complete")``` line with this:
 ```
 while not os.path.exists(stopTimerSoundFilePath):
     call(["aplay", timerFinishedAudio])
-if os.path.exists(stopTimerSoundPath):
-    os.remove(stopTimerSoundPath)
+if os.path.exists(stopTimerSoundFilePath):
+    os.remove(stopTimerSoundFilePath)
 ```
 
 In this image, I've also cleaned up assigning the number and unit variables to be on one line, but your code should otherwise now look like this:
@@ -689,14 +695,14 @@ In this image, I've also cleaned up assigning the number and unit variables to b
 
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
-elif intent == "StopTimer":
+elif intent == "StopTimerSound":
     with open(stopTimerSoundFilePath, 'w') as stopTimerSoundFile:
         pass
 ```
 
 Now, go to the top of the file, and paste this:
 ```
-# Set directories
+# Set paths
 workingDir = "/profiles/"
 stopTimerSoundFilePath = workingDir+"stopTimerSoundFile"
 ```
@@ -718,7 +724,7 @@ Ideally, you could ask the assistant how far along the timer is. Let's make that
 
 First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"timerLeft"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
 ```
-with open(timerLeftPath, "timerLeft"), "w") as timerLeft:
+with open(timerLeftPath, "w") as timerLeft:
     timerLeft.write(str(timerLength))
 ```
 
@@ -738,6 +744,8 @@ elif intent == "TimerRemaining":
             speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
         else:
             speech("There are " + str(timerRemainingNumber) + " seconds left")
+    else:
+        speech("You've got no timers set")
 ```
 This checks if the file exists, and if it does, checks whether the time remaining should be measured in minutes (number is > 60) or seconds (number is < 60). Then, if minutes are needed, we divide the number of seconds by 60, then truncate (remove **but not round** the decimals) it, as well as telling us the number of seconds by finding the remainder when dividing by 60. If just seconds are needed, we only need to speak the number we've gotten from the file. Also, since I expect the words to be spoken 3-ish seconds after reading the value, I remove 3 from the number we get at the start.
 
@@ -825,7 +833,7 @@ elif intent == "DoTimer":
         else:
             call(["aplay", timerFinishedAudio])
     if os.path.exists(stopTimerSoundFilePath):
-        os.remove(stopTimerSoundFileFilePath)
+        os.remove(stopTimerSoundFilePath)
     if os.path.exists(timerLeftPath):
         os.remove(timerLeftPath)
     if os.path.exists(cancelFilePath):
