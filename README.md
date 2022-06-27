@@ -203,7 +203,7 @@ services:
         ports:
             - '12101:12101'
         volumes:
-            - '/profiles:/profiles'
+            - './profiles:/profiles'
             - '/etc/localtime:/etc/localtime:ro'
         devices:
             - '/dev/snd:/dev/snd'
@@ -320,7 +320,7 @@ Finally for the onboarding, just press finish! This page shows any services that
 
 ![hass auto find](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassautofind.png)
 
-Now, you should be on the main homeassistant page. Click your name in the bottom right, then scroll down to long-lived tokens.
+Now, you should be on the main homeassistant page. Click your name in the bottom left, then scroll down to long-lived tokens.
 
 ![llat](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/llat.png)
 
@@ -376,6 +376,12 @@ print(json.dumps(o))
 Now, add your Pi's IP (adding ```:8123``` to the end) to the hassurl section, and your auth token to the hassauth section.
 
 CTRL+X, Y, ENTER.
+
+Then, run
+```
+sudo chmod +x ~/assistant/profiles/intentHandler
+```
+which will allow the script to be executed.
 
 Now, go to rhasspy's web UI, click the wake button, and say out loud, "What time is it?". It should respond with the current time. If not, give it about 20 seconds, the TTS may be doing first-time setup.
 
