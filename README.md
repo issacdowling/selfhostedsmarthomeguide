@@ -653,7 +653,8 @@ It receives a number between 1-60, and the unit (whether you said "Seconds" or "
 
 ### But that's not a great way of announcing the completion of a timer
 
-We want a sound. Let's get one. If you've got something on your computer (a .wav file), you can copy it over to the Pi by running this:
+We want a sound. Let's get one. If you've got something on your computer (a .wav file), you can copy it over to the Pi by running this (and if you've not got one yet, you can find one at the bottom of this section)
+:
 
 ```
 scp pathtoyourfile piusername@pihostname:/home/assistant-main-node/
