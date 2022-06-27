@@ -957,9 +957,7 @@ First, run this to install all of the (originally difficult for me to find) depe
 ```
 sudo apt-get install libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-1.0
 pip install dbus-python
-sudo pip install dbus-python
 ```
-(we are installing dbus-python twice so root can access it too)
 
 Then, put this into your terminal
 ```
