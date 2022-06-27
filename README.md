@@ -977,7 +977,7 @@ Now, run ```sudo reboot now``` to reboot and apply these changes.
 
 Once you're back in, run 
 ```
-cd ~/assistant/profiles/
+cd ~/assistant/
 sudo curl -O https://raw.githubusercontent.com/elwint/bt-audio/master/bt-audio.py
 ```
 
