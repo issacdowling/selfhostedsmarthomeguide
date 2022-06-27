@@ -604,21 +604,21 @@ sudo nano ~/assistant/profiles/intentHandler
 And paste this below the last elif section:
 ```
 elif intent == "DoMaths":
-    operator = o["slots"]["operator"]
-    num1 = o["slots"]["num1"]
-    num2 = o["slots"]["num2"]
+    operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
     if operator == "*":
-        speech("That's "+ str(num1*num2))
+        calcResult = str(num1*num2)
     elif operator == "+":
-        speech("That's " + str(num1+num2))
+        calcResult = str(num1+num2)
     elif operator == "-":
-        speech("That's " + str(num1-num2))
+        calcResult = str(num1-num2)
     elif operator == "/":
-        speech("That's " + str(num1/num2))
+        calcResult = str(num1/num2)
+    if num1 == 9 and num2 == 10 and operator == "+":
+        speech("That's 21")
+    else:
+        speech("That's " + calcResult.replace("." , " point "))
 ```
-Which should look like this:
 
-![add maths intent](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/addmathsintent.png)
 
 Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven.
 
