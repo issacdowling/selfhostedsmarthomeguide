@@ -14,6 +14,8 @@
 
 [Controlling Lights](README.md#controlling-devices)
 
+[Basic maths](README.md#doing-basic-maths)
+
 [Setting timers](README.md#setting-timers)
 
 [Getting the weather](README.md#the-weather)
