@@ -659,7 +659,7 @@ We want a sound. Let's get one. If you've got something on your computer (a .wav
 ```
 scp pathtoyourfile piusername@pihostname:/home/assistant-main-node/
 ```
-Then, you can do
+Then, on the pi, you can do
 ```
 sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/profiles
 ```
