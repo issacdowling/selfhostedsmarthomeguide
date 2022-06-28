@@ -1,20 +1,20 @@
 #!/usr/bin/env python
+
 import sys
 import json
 import random
 import datetime
 import requests
-import time
 import os
-import math
+import time
 from subprocess import call
 
 def speech(text):
     global o
     o["speech"] = {"text": text}
 
-# Set Homeassistant data
-hassurl, hassauth = "http://yourip:8123", "yourauthkey"
+# Set Homeassistant URL
+hassurl, hassauth = "http://10.0.0.200:8123", "yourauthkey"
 hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
 # Set OpenWeatherMap data
@@ -22,10 +22,14 @@ opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.ope
 
 # Set paths
 workingDir = "/profiles/"
-bluetoothFilePath, stopTimerSoundFilePath, timerLeftPath, cancelFilePath = workingDir+"bluetoothFile", workingDir+"stopTimerSoundFile", workingDir+"timerLeft", workingDir+"cancelFile"
+stopTimerSoundFilePath, timerLeftPath, cancelFilePath, bluetoothFilePath = workingDir+"stopTimerSoundFile", workingDir+"timerLeft", workingDir+"cancelFile", workingDir+"bluetoothFile"
+
+# Set responses
+agreeResponse, currentlyResponse = ["Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "], ["Right now it's ", "Its ", "Currently its ", "At the moment its "]
 
 # get json from stdin and load into python dict
 o = json.loads(sys.stdin.read())
+
 intent = o["intent"]["name"]
 
 if intent == "GetTime":
@@ -35,9 +39,9 @@ if intent == "GetTime":
     else:
         apm = "ey em"
     if now.strftime('%M') == 00:
-        speech("Its " + now.strftime('%I') + " " + apm)
+        speech(random.choice(currentlyResponse) + now.strftime('%I') + " " + apm)
     else:
-        speech("Its " + now.strftime('%I') + " " + now.strftime('%M') + " " + apm) 
+        speech(random.choice(currentlyResponse) + now.strftime('%I') + " " + now.strftime('%M') + " " + apm) 
 
 elif intent == "Greet":
     replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
@@ -45,18 +49,17 @@ elif intent == "Greet":
 
 elif intent == "SetSpecificLightPower":
     entity, state = o["slots"]["entity"], o["slots"]["state"]
-    speech("Alright, I'll turn it " + state)
+    speech(random.choice(agreeResponse) + "I'll turn it " + state )
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
 
 elif intent == "SetSpecificLightColour":
     entity, colour = o["slots"]["entity"], o["slots"]["colour"]
-    speech("Alright, I'll make it " + colour )
+    speech(random.choice(agreeResponse) + "I'll make it " + colour )
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
 
 elif intent == "SetSpecificLightBrightness":
-    entity = o["slots"]["entity"]
-    brightness = o["slots"]["brightness"]
-    speech("Alright, I'll make it " + str(brightness) + " percent")
+    entity, brightness = o["slots"]["entity"], o["slots"]["brightness"]
+    speech(random.choice(agreeResponse) + "I'll make it " + str(brightness) + " percent")
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
 
 elif intent == "DoMaths":
@@ -104,18 +107,8 @@ elif intent == "DoTimer":
         os.remove(timerLeftPath)
     if os.path.exists(cancelFilePath):
         os.remove(cancelFilePath)
-
-elif intent == "GetWeather":
-    weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
-    currentTemp, currentDesc = weather["main"]["temp"], weather["weather"][0]["main"]
-    speech("Its currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
-
 elif intent == "StopTimerSound":
     with open(stopTimerSoundFilePath, 'w') as stopTimerSoundFile:
-        pass
-
-elif intent == "CancelTimer":
-    with open(cancelFilePath, "w") as cancelFile:
         pass
 
 elif intent == "TimerRemaining":
@@ -128,12 +121,20 @@ elif intent == "TimerRemaining":
     else:
         speech("You've got no timers set")
 
+elif intent == "CancelTimer":
+    with open(cancelFilePath, "w") as cancelFile:
+        pass
+
+elif intent == "GetWeather":
+    weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
+    currentTemp, currentDesc = weather["main"]["temp"], weather["weather"][0]["main"]
+    speech(random.choice(currentlyResponse) + str(round(currentTemp)) + " degrees and " + currentDesc)
+
 elif intent == "BluetoothPairing":
+    speech("Turning on bluetooth pairing")
     with open(bluetoothFilePath, "w") as bluetoothFile:
         time.sleep(3)
         os.remove(bluetoothFilePath)
-
-
 
 # convert dict to json and print to stdout
 print(json.dumps(o))
