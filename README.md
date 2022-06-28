@@ -1140,7 +1140,7 @@ All we've actually done is make it pick a random string from the list we made in
 
 Back in the ```# Set responses``` section, I've added this line:
 ```
-currentlyResponse = ["Right now it's, ", "Its, ", "Currently its, ", "At the moment its, "]
+currentlyResponse = ["Right now it's ", "Its ", "Currently its ", "At the moment its "]
 ```
 Then, in the ```GetTime``` and ```GetWeather``` sections, we can replace the ```"Its "``` with
 ```
