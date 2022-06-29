@@ -204,6 +204,7 @@ services:
         container_name: rhasspy
         ports:
             - '12101:12101'
+            - '12183:12183'
         volumes:
             - './profiles:/profiles'
             - '/etc/localtime:/etc/localtime:ro'
