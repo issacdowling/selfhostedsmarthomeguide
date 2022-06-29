@@ -749,6 +749,8 @@ elif intent == "TimerRemaining":
 ```
 This checks if the file exists, and if it does, checks whether the time remaining should be measured in minutes (number is > 60) or seconds (number is < 60). Then, if minutes are needed, we divide the number of seconds by 60, then truncate (remove **but not round** the decimals) it, as well as telling us the number of seconds by finding the remainder when dividing by 60. If just seconds are needed, we only need to speak the number we've gotten from the file. Also, since I expect the words to be spoken 3-ish seconds after reading the value, I remove 3 from the number we get at the start.
 
+In here, we use the **math** library, so you'll want to go to the top of your file, and add ```import math``` too.
+
 Now, in rhasspy's sentences tab, you just need to add this:
 ```
 [TimerRemaining]
