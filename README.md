@@ -1139,7 +1139,9 @@ to this (doing the same change for all light sections):
 ```
 speech(random.choice(agreeResponse) + "I'll make it " + colour)
 ```
-All we've actually done is make it pick a random string from the list we made instead of just saying **"Alright, "**. If we just saved and exited here, it would work, but lets add it to other stuff too.
+All we've actually done is make it pick a random string from the list we made instead of just saying **"Alright, "**. If we just saved and exited here, it would work.
+
+### But we can add it to other situations, like the time and weather
 
 Back in the ```# Set responses``` section, I've added this line:
 ```
@@ -1150,7 +1152,10 @@ Then, in the ```GetTime``` and ```GetWeather``` sections, we can replace the ```
 random.choice(currentlyResponse)
 ```
 
-We could also implement different options for individual responses. For example, when cancelling a timer, I could add:
+
+### We could also implement different options for individual responses. 
+
+For example, when cancelling a timer, I could add:
 ```
 timerCancelResponse = ["Timer cancelled", "Cancelling timer", "I'll cancel the timer"]
 ```
@@ -1158,6 +1163,22 @@ and then just set it to pick one of those:
 ```
 speech(random.choice(timerCancelResponse))
 ```
+
+### Or different ways of saying AM / PM
+
+We can add ```morningResponse = [" in the morning", " ey em"]``` and then ```eveningResponse = [" in the afternoon", " in the evening", " peey em"]```
+
+**(remember from the timer bit, AM and PM are spelt weirdly so that they're spoken correctly with my TTS choice. They might need changing for whatever voice you choose personally)**
+
+Now, we go down to the ```if intent == "GetTime":``` section, and make the a/pm variable sections with:
+```
+apm = random.choice(eveningResponse)
+```
+then the next one is
+```
+apm = random.choice(morningResponse)
+```
+and now your time announcements should be a bit more varied than before.
 
 The way we're doing this is really simple and flexible, but makes the responses less repetitive. I like it.
 
