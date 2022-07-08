@@ -1221,7 +1221,7 @@ Now, go to the sentences section, and paste this:
 ```
 [UnitConversion]
 unit = ($units)
-(whats | convert) (1..60){number} <unit>{unit1} (to | in) <unit>{unit2}
+(whats | convert) (1..1000){number} <unit>{unit1} (to | in) <unit>{unit2}
 ```
 
 All that's left is the awkward bit, coding the conversions. To simplify things, we'll be converting into an intermediary unit. So, rather than having to separately code the conversions between kilograms and tons, then grams and ounces, etc for every unit of mass, we can instead just turn every unit1 into kilograms, then go from kilograms to unit2.
