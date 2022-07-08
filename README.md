@@ -1000,7 +1000,7 @@ and go to near the bottom, where you'll add another elif statement:
 elif intent == "BluetoothPairing":
     speech("Turning on bluetooth pairing")
     with open(bluetoothFilePath, "w") as bluetoothFile:
-        time.sleep(3)
+        time.sleep(1)
         os.remove(bluetoothFilePath)
 ```
 
