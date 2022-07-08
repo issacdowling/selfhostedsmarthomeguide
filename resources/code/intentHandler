@@ -136,5 +136,91 @@ elif intent == "BluetoothPairing":
         time.sleep(3)
         os.remove(bluetoothFilePath)
 
+elif intent == "UnitConversion":
+    number, unit1, unit2 = float(o["slots"]["number"]), o["slots"]["unit1"], o["slots"]["unit2"]
+# Length
+    if unit1 == "metres":
+        toBeConverted = number
+    elif unit1 == "kilometres":
+        toBeConverted = number*1000
+    elif unit1 == "centimetres":
+        toBeConverted = number/100
+    elif unit1 == "millimetres":
+        toBeConverted = number/1000
+    elif unit1 == "miles":
+        toBeConverted = number*1609.344
+    elif unit1 == "feet":
+        toBeConverted = number*0.3048
+    elif unit1 == "inches":
+        toBeConverted = number*0.0254
+    elif unit1 == "yards":
+        toBeConverted = number*0.9144
+
+# Mass
+    elif unit1 == "kilograms":
+        toBeConverted = number
+    elif unit1 == "tons":
+        toBeConverted = number*1000
+    elif unit1 == "grams":
+        toBeConverted = number/1000
+    elif unit1 == "ounces":
+        toBeConverted = number*0.02834
+    elif unit1 == "pounds":
+        toBeConverted = number*0.4535
+    elif unit1 == "stones":
+        toBeConverted = number*6.35029
+
+# Volume
+    elif unit1 == "litres":
+        toBeConverted = number
+    elif unit1 == "millilitres":
+        toBeConverted = number/1000
+    elif unit1 == "centilitres":
+        toBeConverted = number/100
+    elif unit1 == "fluid ounces":
+        toBeConverted = number*0.02841
+
+# Doing the conversion
+    if unit2 == "kilometres":
+        finalValue = toBeConverted/1000
+    elif unit2 == "metres":
+        finalValue = toBeConverted
+    elif unit2 == "centimetres":
+        finalValue = toBeConverted*100
+    elif unit2 == "millimetres":
+        finalValue = toBeConverted*1000
+    elif unit2 == "miles":
+        finalValue = toBeConverted/1609.344
+    elif unit2 == "feet":
+        finalValue = toBeConverted*3.28084
+    elif unit2 == "inches":
+        finalValue = toBeConverted*39.37
+    elif unit2 == "yards":
+        finalValue = toBeConverted*1.093613
+
+    elif unit2 == "tons":
+        finalValue = toBeConverted/1000
+    elif unit2 == "kilograms":
+        finalValue = toBeConverted
+    elif unit2 == "grams":
+        finalValue = toBeConverted*1000
+    elif unit2 == "ounces":
+        finalValue = toBeConverted*35.27396
+    elif unit2 == "pounds":
+        finalValue = toBeConverted*2.2046
+    elif unit2 == "stones":
+        finalValue = toBeConverted*0.15747
+
+    elif unit2 == "litres":
+        finalValue = toBeConverted
+    elif unit2 == "millilitres":
+        finalValue = toBeConverted*1000
+    elif unit2 == "centilitres":
+        finalValue = toBeConverted*100
+    elif unit2 == "fluid ounces":
+        finalValue = toBeConverted*35.195
+
+    speech(str(number) + " " + unit1 + " is " + str(round(finalValue,3)).replace("." , " point ") + " " + unit2)
+        
 # convert dict to json and print to stdout
 print(json.dumps(o))
