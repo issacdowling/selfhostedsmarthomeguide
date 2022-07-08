@@ -28,6 +28,8 @@
 
 [Adding natural and varied responses](README.md#natural-and-varied-responses)
 
+[Converting Units](README.md#converting-units)
+
 
 # Prerequisites
 
@@ -1181,6 +1183,138 @@ apm = random.choice(morningResponse)
 and now your time announcements should be a bit more varied than before.
 
 The way we're doing this is really simple and flexible, but makes the responses less repetitive. I like it.
+
+## Converting units
+
+First, add a slot file called "units", and paste this in:
+```
+kilometres
+metres
+centimetres
+millimetres
+
+miles
+feet
+inches
+yards
+
+
+tons
+(kilograms | kilos):kilograms
+grams
+
+ounces
+pounds
+stones
+
+
+litres
+millilitres
+centilitres
+
+fluid ounces
+```
+I've separated the "types" of units (length, mass, volume) with two lines, and the metric / imperial units by one line. These are all of the units that I thought of immediately that could be useful, but if you ever need anything else, you could just add it here.
+
+
+Now, go to the sentences section, and paste this:
+```
+[UnitConversion]
+unit = ($units)
+(whats | convert) (1..60){number} <unit>{unit1} (to | in) <unit>{unit2}
+```
+
+All that's left is the awkward bit, coding the conversions. To simplify things, we'll be converting into an intermediary unit. So, rather than having to separately code the conversions between kilograms and tons, then grams and ounces, etc for every unit of mass, we can instead just turn every unit1 into kilograms, then go from kilograms to unit2.
+
+The code isn't nice, and it's massive. It works though. Paste this elif statement into your intentHandler:
+```
+elif intent == "UnitConversion":
+    number, unit1, unit2 = float(o["slots"]["number"]), o["slots"]["unit1"], o["slots"]["unit2"]
+# Length
+    if unit1 == "metres":
+        toBeConverted = number
+    elif unit1 == "kilometres":
+        toBeConverted = number*1000
+    elif unit1 == "centimetres":
+        toBeConverted = number/100
+    elif unit1 == "millimetres":
+        toBeConverted = number/1000
+    elif unit1 == "miles":
+        toBeConverted = number*1609.344
+    elif unit1 == "feet":
+        toBeConverted = number*0.3048
+    elif unit1 == "inches":
+        toBeConverted = number*0.0254
+    elif unit1 == "yards":
+        toBeConverted = number*0.9144
+
+# Mass
+    elif unit1 == "kilograms":
+        toBeConverted = number
+    elif unit1 == "tons":
+        toBeConverted = number*1000
+    elif unit1 == "grams":
+        toBeConverted = number/1000
+    elif unit1 == "ounces":
+        toBeConverted = number*0.02834
+    elif unit1 == "pounds":
+        toBeConverted = number*0.4535
+    elif unit1 == "stones":
+        toBeConverted = number*6.35029
+
+# Volume
+    elif unit1 == "litres":
+        toBeConverted = number
+    elif unit1 == "millilitres":
+        toBeConverted = number/1000
+    elif unit1 == "centilitres":
+        toBeConverted = number/100
+    elif unit1 == "fluid ounces":
+        toBeConverted = number*0.02841
+
+# Doing the conversion
+    if unit2 == "kilometres":
+        finalValue = toBeConverted/1000
+    elif unit2 == "metres":
+        finalValue = toBeConverted
+    elif unit2 == "centimetres":
+        finalValue = toBeConverted*100
+    elif unit2 == "millimetres":
+        finalValue = toBeConverted*1000
+    elif unit2 == "miles":
+        finalValue = toBeConverted/1609.344
+    elif unit2 == "feet":
+        finalValue = toBeConverted*3.28084
+    elif unit2 == "inches":
+        finalValue = toBeConverted*39.37
+    elif unit2 == "yards":
+        finalValue = toBeConverted*1.093613
+
+    elif unit2 == "tons":
+        finalValue = toBeConverted/1000
+    elif unit2 == "kilograms":
+        finalValue = toBeConverted
+    elif unit2 == "grams":
+        finalValue = toBeConverted*1000
+    elif unit2 == "ounces":
+        finalValue = toBeConverted*35.27396
+    elif unit2 == "pounds":
+        finalValue = toBeConverted*2.2046
+    elif unit2 == "stones":
+        finalValue = toBeConverted*0.15747
+
+    elif unit2 == "litres":
+        finalValue = toBeConverted
+    elif unit2 == "millilitres":
+        finalValue = toBeConverted*1000
+    elif unit2 == "centilitres":
+        finalValue = toBeConverted*100
+    elif unit2 == "fluid ounces":
+        finalValue = toBeConverted*35.195
+
+    speech(str(number) + " " + unit1 + " is " + str(round(finalValue,3)).replace("." , " point ") + " " + unit2)
+```
+
 
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
