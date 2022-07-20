@@ -22,6 +22,8 @@
 
 [Getting the time](README.md#getting-the-time-but-better)
 
+[Getting the date](README.md#getting-the-date)
+
 [Giving greetings](README.md#giving-greetings)
 
 [Using as bluetooth speaker](README.md#bluetooth-audio-streaming-highly-imperfect)
@@ -928,6 +930,34 @@ what's [the] time
 tell [me the] time
 what time [is it]
 ```
+
+## Getting the date
+To get the date, we'll need to import something new from datetime, so add this to the top of your intentHandler:
+```
+from datetime import datetime
+```
+
+Now, you can add this elif statement:
+```
+elif intent == "GetDate":
+    months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
+    weekdays = [" Monday ", " Tuesday ", " Wednesday ", " Thursday ", " Friday ", " Saturday ", " Sunday "]
+    dayNum = datetime.now().day
+    month = months[(datetime.now().month)-1]
+    weekday = weekdays[datetime.today().weekday()]
+    speech(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
+```
+We get a number for the day, day of week, and month, then convert these to words using lists. Then, we speak a sentence which puts it all together.
+
+Go to your Rhasspy sentences section, and add this:
+```
+[GetDate]
+what date [is it]
+whats [the] date
+tell me [the] date
+whats today
+```
+Save and retrain, and it should work.
 
 ## Giving greetings
 
