@@ -921,6 +921,12 @@ if intent == "GetTime":
 
 I know that **"Its"** should have an apostrophe to represent a contraction, and it annoys me too, a lot, however I'm trying to avoid extra symbols when necessary.
 
+Then, at the top of your python file, paste this:
+
+```
+from datetime import datetime
+```
+
 Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
 Also, I earlier asked you to remove all of the predone sentences in rhasspy, which would include the GetTime ones. Here's what to add to your sentences:
@@ -932,12 +938,9 @@ what time [is it]
 ```
 
 ## Getting the date
-To get the date, we'll need to import something new from datetime, so add this to the top of your intentHandler:
-```
-from datetime import datetime
-```
 
-Now, you can add this elif statement:
+Add this elif statement:
+
 ```
 elif intent == "GetDate":
     months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
@@ -947,6 +950,7 @@ elif intent == "GetDate":
     weekday = weekdays[datetime.today().weekday()]
     speech(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
 ```
+
 We get a number for the day, day of week, and month, then convert these to words using lists. Then, we speak a sentence which puts it all together.
 
 Go to your Rhasspy sentences section, and add this:
