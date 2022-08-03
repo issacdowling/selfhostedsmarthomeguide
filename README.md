@@ -1088,7 +1088,7 @@ And paste in:
 Description=Checks for bluetooth pairing file from rhasspy to start pairing
 
 [Path]
-PathExists=/home/assistant-main-node/assistant/profiles/bluetoothFile
+PathExists=/dev/shm/tmpassistant/bluetoothFile
 
 [Install]
 WantedBy=multi-user.target
@@ -1104,7 +1104,7 @@ And paste in:
 Description=Checks for bluetooth pairing file from rhasspy to stop pairing
 
 [Path]
-PathExists=/home/assistant-main-node/assistant/profiles/bluetoothFile
+PathExists=/dev/shm/tmpassistant/bluetoothFile
 
 [Install]
 WantedBy=multi-user.target
