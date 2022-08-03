@@ -709,10 +709,10 @@ Now, go to the top of the file, and paste this:
 ```
 # Set paths
 workingDir = "/profiles/"
-stopTimerSoundFilePath = workingDir+"stopTimerSoundFile"
+stopTimerSoundFilePath = workingDir+"tmp/"+"stopTimerSoundFile"
 ```
 
-If you're using a different file structure, you can change the data inside the workingDir variable. Remember to save and exit (CTRL+X, Y, ENTER)
+If you're using a different file structure, you can change the data inside the workingDir variable. In this case, we're actually saving things to memory to cut down on drive access. Remember to save and exit (CTRL+X, Y, ENTER)
 
 Now, go to your rhasspy sentences section, and make a new section that looks like this:
 ```
@@ -727,13 +727,13 @@ Due to it finishing the current audio loop before stopping, I suggest having a s
 ### Check Timer Progress While Running
 Ideally, you could ask the assistant how far along the timer is. Let's make that.
 
-First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"timerLeft"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
+First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"tmp/"+"timerLeft"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
 ```
 with open(timerLeftPath, "w") as timerLeft:
     timerLeft.write(str(timerLength))
 ```
 
-Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change ```stopFilePath``` to ```workingDir+"timerLeft"```. It should look like this:
+Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change ```stopFilePath``` to ```timerLeftPath```. It should look like this:
 ```
 if os.path.exists(timerLeftPath):
     os.remove(timerLeftPath)
@@ -768,7 +768,7 @@ The broken English is intentional, since our speech-to-text system will turn wha
 
 But what if you decide that you don't want your timer anymore? (or, more likely, STT picks up the wrong number)
 
-First, add a variable to your ```# Set Paths``` section called cancelFilePath, with the value ```workingDir+"cancelFile"```.
+First, add a variable to your ```# Set Paths``` section called cancelFilePath, with the value ```workingDir+"tmp/"+"cancelFile"```.
 
 Now, to account for any errors or remaining files, add this line to the other sections where we delete files. One at the start of the timer **elif** statement, one at the end.
 
@@ -1040,7 +1040,7 @@ elif intent == "BluetoothPairing":
 
 Then, go to the ```# Set paths``` section at the top, and add 
 ```
-bluetoothFilePath = workingDir+"bluetoothFile"
+bluetoothFilePath = workingDir+"tmp/"+"bluetoothFile"
 ```
 Save and exit.
 
