@@ -212,6 +212,8 @@ services:
         volumes:
             - './profiles:/profiles'
             - '/etc/localtime:/etc/localtime:ro'
+            - '/dev/shm/tmpassistant:/profiles/tmp'
+
         devices:
             - '/dev/snd:/dev/snd'
         image: rhasspy/rhasspy
