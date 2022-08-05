@@ -91,8 +91,8 @@ elif intent == "DoTimer":
     while timerLength:
         time.sleep(1)
         timerLength -=1
-        with open(timerLeftPath, "w") as timerLeft:
-            timerLeft.write(str(timerLength))
+        timerLeft = open(timerLeftPath, "w")
+        timerLeft.write(str(timerLength))
         if os.path.exists(cancelFilePath):
             break
     while not os.path.exists(stopTimerSoundFilePath):
@@ -107,6 +107,8 @@ elif intent == "DoTimer":
         os.remove(timerLeftPath)
     if os.path.exists(cancelFilePath):
         os.remove(cancelFilePath)
+    timerLeft.close()
+        
 elif intent == "StopTimerSound":
     with open(stopTimerSoundFilePath, 'w') as stopTimerSoundFile:
         pass
