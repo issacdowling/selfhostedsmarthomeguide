@@ -30,6 +30,8 @@
 
 [Adding natural and varied responses](README.md#natural-and-varied-responses)
 
+[Jellyfin Music Support](README.md#jellyfin-music-support)
+
 [Converting Units](README.md#converting-units)
 
 
@@ -1221,6 +1223,17 @@ apm = random.choice(morningResponse)
 and now your time announcements should be a bit more varied than before.
 
 The way we're doing this is really simple and flexible, but makes the responses less repetitive. I like it.
+
+## Jellyfin Music Support
+We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
+
+Progress made on this integration happens [here](https://github.com/IssacDowling/jellypy).
+
+Firstly, we'll make our slots. This is how the voice assistant will understand what words are valid, and luckily, is automated.
+
+#### Here is a reminder to myself to make this into a slots protgram eventually so that it's even more hands-off.
+
+But that's not how things are right now
 
 ## Converting units
 
