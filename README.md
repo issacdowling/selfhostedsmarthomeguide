@@ -1279,7 +1279,9 @@ play [the] song <songs>
 
 Remember to save and train. Speaking of, with my example slots files with approximately 10,000 songs, 1000 albums, and 100 artists, my time-to-train on a Pi 4 went from 16 seconds to 51, so don't worry if it takes longer than you're used to to train.
 
-But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition, I've set it so you need to say "the *song* songname", or "the *artist* artistname*.
+But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition, I've set it so you need to say "the *song* songname", or "the *artist* artistname*. You might have some conflicts with pronunciations of certain artists, but you can correct these in Rhasspy's UI anyway.
+
+
 
 
 
