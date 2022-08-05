@@ -731,8 +731,8 @@ Ideally, you could ask the assistant how far along the timer is. Let's make that
 
 First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"tmp/"+"timerLeft"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
 ```
-with open(timerLeftPath, "w") as timerLeft:
-    timerLeft.write(str(timerLength))
+timerLeft = open(timerLeftPath, "w")
+timerLeft.write(str(timerLength))
 ```
 
 Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change ```stopFilePath``` to ```timerLeftPath```. It should look like this:
