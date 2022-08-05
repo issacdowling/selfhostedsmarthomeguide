@@ -1229,11 +1229,59 @@ We can talk to the Jellyfin API to get music from a server, and integrate it wit
 
 Progress made on this integration happens [here](https://github.com/IssacDowling/jellypy).
 
-Firstly, we'll make our slots. This is how the voice assistant will understand what words are valid, and luckily, is automated.
-
 #### Here is a reminder to myself to make this into a slots protgram eventually so that it's even more hands-off.
 
-But that's not how things are right now
+#### Also, authenticating in a way that makes sense will come one day.
+
+But that's not how things are right now, so the setup is weird, but it works.
+
+### Making the slot files
+
+Firstly, we'll make our slots. This is how the voice assistant will understand what words are valid, and luckily, is automated.
+
+Automated once you've added the info from your Jellyfin server manually. So, on your Pi, run this:
+
+```
+cd ~/assistant/profiles/en/slots/
+sudo nano create-jf-slots.py
+```
+
+Now, go to [this link](https://raw.githubusercontent.com/IssacDowling/jellypy/main/main.py), CTRL+A to select everything, and paste it into that text editor we opened.
+
+Next, change the contents of ```jellyfinurl``` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the ```:portnumber``` at the end.
+
+Then, go to your Jellyfin server's web client, then click the profile icon in the top right, dashboard, then API keys on the left bar. Add one, pick whatever name you want, and copy that key to your ```jellyfinauth``` variable. 
+
+Next, press F12 to open your browser's dev tools, click the network tab, and enter ```userid``` into the search bar, then refresh the page. Hopefully you'll see something like this:
+
+![Firefox dev tools showing URL with userid](https://github.com/IssacDowling/SelfhostedSmartHomeGuide/blob/main/images/devtoolsuserid.png)
+
+Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for ```userid``` (remembering not to include the ```&``` symbol which will be at the end, and paste it into the ```userid``` section in the python script.
+
+Finally, go right to the bottom of the script, add some empty lines, and type ```genMusicSlots()```. 
+
+Then, save and exit by doing CTRL+X, Y, ENTER.
+
+Now, you can just run ```sudo python create-jf-slots.py```. We need ```sudo``` because otherwise it won't have permissions to create its files.
+
+### Test your sentences
+Assuming you haven't modified any names in the python script, you should just be able to go to your sentences section, and paste this at the bottom:
+
+```
+[JellyfinPlaySong]
+album_artists = ($albumartists){albumartist}
+albums = ($albums){album}
+songs = ($songs){song}
+(play | shuffle){playtype} the artist <album_artists>
+(play | shuffle){playtype} the album <albums>
+(play | shuffle){playtype} the song <songs>
+```
+
+Remember to save and train. Speaking of, with my example slots files with approximately 10,000 songs, 1000 albums, and 100 artists, my time-to-train on a Pi 4 went from 16 seconds to 51, so don't worry if it takes longer than you're used to to train.
+
+But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition, I've set it so you need to say "the *song* songname", or "the *artist* artistname*.
+
+
 
 ## Converting units
 
