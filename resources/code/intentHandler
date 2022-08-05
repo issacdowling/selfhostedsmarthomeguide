@@ -122,10 +122,10 @@ elif intent == "TimerRemaining":
             speech("There are " + str(timerRemainingNumber) + " seconds left")
     else:
         speech("You've got no timers set")
-
+        
 elif intent == "CancelTimer":
-    with open(cancelFilePath, "w") as cancelFile:
-        pass
+    cancelFile = open(cancelFilePath, "w") 
+    cancelFile.close()
 
 elif intent == "GetWeather":
     weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
