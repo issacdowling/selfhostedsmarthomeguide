@@ -1272,9 +1272,9 @@ Assuming you haven't modified any names in the python script, you should just be
 album_artists = ($albumartists){albumartist}
 albums = ($albums){album}
 songs = ($songs){song}
-(play | shuffle){playtype} the artist <album_artists>
-(play | shuffle){playtype} the album <albums>
-(play | shuffle){playtype} the song <songs>
+(play | shuffle){playtype} [the] artist <album_artists>
+(play | shuffle){playtype} [the] album <albums>
+play [the] song <songs>
 ```
 
 Remember to save and train. Speaking of, with my example slots files with approximately 10,000 songs, 1000 albums, and 100 artists, my time-to-train on a Pi 4 went from 16 seconds to 51, so don't worry if it takes longer than you're used to to train.
