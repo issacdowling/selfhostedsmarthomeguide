@@ -110,8 +110,8 @@ elif intent == "DoTimer":
         os.remove(cancelFilePath)
         
 elif intent == "StopTimerSound":
-    with open(stopTimerSoundFilePath, 'w') as stopTimerSoundFile:
-        pass
+    stopTimerSoundFile = open(stopTimerSoundFilePath, 'w')
+    stopTimerSoundFile.close()
 
 elif intent == "TimerRemaining":
     if os.path.exists(timerLeftPath):
