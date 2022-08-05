@@ -1304,6 +1304,8 @@ elif intent == "JellyfinPlaySong":
         currentSong.close()
 ```
 
+Just as before, add your jellyfin server URL and auth token to the variables.
+
 ## Converting units
 
 First, add a slot file called "units", and paste this in:
