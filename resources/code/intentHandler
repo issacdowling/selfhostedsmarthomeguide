@@ -134,9 +134,10 @@ elif intent == "GetWeather":
 
 elif intent == "BluetoothPairing":
     speech("Turning on bluetooth pairing")
-    with open(bluetoothFilePath, "w") as bluetoothFile:
-        time.sleep(3)
-        os.remove(bluetoothFilePath)
+    bleutoothFile = open(bluetoothFilePath, "w") 
+    time.sleep(0.1)
+    bluetoothFile.close()
+    os.remove(bluetoothFilePath)
 
 elif intent == "UnitConversion":
     number, unit1, unit2 = float(o["slots"]["number"]), o["slots"]["unit1"], o["slots"]["unit2"]
