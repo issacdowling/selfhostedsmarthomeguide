@@ -1286,7 +1286,7 @@ But now, while on the main page, ask it to play any song, artist, or album in yo
 Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your ```# Set paths``` section, and add this:
 ```
 currentMediaPath = workingdir+"tmp/"+"currentMedia"
-
+```
 Also, add this elif statement: (NOT DONE, WILL ONLY DOWNLOAD SONG ASKED FOR)
 
 ```
