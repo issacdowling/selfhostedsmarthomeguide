@@ -1269,9 +1269,9 @@ Assuming you haven't modified any names in the python script, you should just be
 
 ```
 [JellyfinPlaySong]
-album_artists = ($albumartists){albumartist}
-albums = ($albums){album}
-songs = ($songs){song}
+album_artists = ($albumartists){itemid}
+albums = ($albums){itemid}
+songs = ($songs){itemid}
 (play | shuffle){playtype} [the] artist <album_artists>
 (play | shuffle){playtype} [the] album <albums>
 play [the] song <songs>
@@ -1281,9 +1281,28 @@ Remember to save and train. Speaking of, with my example slots files with approx
 
 But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition, I've set it so you need to say "the *song* songname", or "the *artist* artistname*. You might have some conflicts with pronunciations of certain artists, but you can correct these in Rhasspy's UI anyway.
 
+### Downloading media
 
+Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your ```# Set paths``` section, and add this:
+```
+currentMediaPath = workingdir+"tmp/"+"currentMedia"
 
+Also, add this elif statement: (NOT DONE, WILL ONLY DOWNLOAD SONG ASKED FOR)
 
+```
+elif intent == "JellyfinPlaySong":
+    itemid = o["slots"]["itemid"]
+    jellyfinurl, jellyfinauth = "https://", ""
+    headers = {"X-Emby-Token": jellyfinauth,}
+
+    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+    get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
+    # If request successful, save file
+    if get.status_code == 200:
+        currentSong = open(currentMediaPath, "wb")
+        currentSong.write(get.content)  
+        currentSong.close()
+```
 
 ## Converting units
 
