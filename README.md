@@ -801,8 +801,8 @@ Now, add a new elif statement for making the cancelFile:
 
 ```
 elif intent == "CancelTimer":
-    with open(cancelFilePath, "w") as cancelFile:
-        pass
+    cancelFile = open(cancelFilePath, "w") 
+    cancelFile.close()
 ```
 
 All that's left to do is go to your Rhasspy sentences, and add this new one:
