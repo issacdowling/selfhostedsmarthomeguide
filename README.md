@@ -703,8 +703,8 @@ In this image, I've also cleaned up assigning the number and unit variables to b
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
 elif intent == "StopTimerSound":
-    with open(stopTimerSoundFilePath, 'w') as stopTimerSoundFile:
-        pass
+    stopTimerSoundFile = open(stopTimerSoundFilePath, 'w')
+    stopTimerSoundFile.close()
 ```
 
 Now, go to the top of the file, and paste this:
