@@ -1350,6 +1350,9 @@ Description=Activates script which handles playback for jellyfin song
 [Service]
 Type=oneshot
 ExecStart=/home/assistant-main-node/assistant/jellyfinPlaySong.py
+
+[Install]
+WantedBy=multi-user.target
 ```
 Now make that script by running:
 ```
