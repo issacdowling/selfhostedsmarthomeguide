@@ -1264,28 +1264,29 @@ Then, save and exit by doing CTRL+X, Y, ENTER.
 
 Now, you can just run ```sudo python create-jf-slots.py```. We need ```sudo``` because otherwise it won't have permissions to create its files.
 
+### Playing individual songs
+
+For now, we'll be adding functionality to play any specific song. Shuffling artists or albums will come later on.
+
 ### Test your sentences
 Assuming you haven't modified any names in the python script, you should just be able to go to your sentences section, and paste this at the bottom:
 
 ```
 [JellyfinPlaySong]
-album_artists = ($albumartists){itemid}
-albums = ($albums){itemid}
 songs = ($songs){itemid}
-(play | shuffle){playtype} [the] artist <album_artists>
-(play | shuffle){playtype} [the] album <albums>
 play [the] song <songs>
 ```
 
 Remember to save and train. Speaking of, with my example slots files with approximately 10,000 songs, 1000 albums, and 100 artists, my time-to-train on a Pi 4 went from 16 seconds to 51, so don't worry if it takes longer than you're used to to train.
 
-But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition, I've set it so you need to say "the *song* songname", or "the *artist* artistname*. You might have some conflicts with pronunciations of certain artists, but you can correct these in Rhasspy's UI anyway.
+But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition - for once we add artists and albums - I've set it so you need to say "the *song* songname", or "the *artist* artistname*. You might have some conflicts with pronunciations of certain things with interesting names (like having to say "twenty-four K magic" for the album *24K Magic* because it doesn't understand that K means karat) , but you can correct these in Rhasspy's UI if they bother you.
 
-### Downloading media
+### Downloading the media
 
 Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your ```# Set paths``` section, and add this:
 ```
 currentMediaPath = workingdir+"tmp/"+"currentMedia"
+jellyfinPlayFilePath = workingdir+"tmp/"+"jellyfinPlay"
 ```
 Also, add this elif statement: (NOT DONE, WILL ONLY DOWNLOAD SONG ASKED FOR)
 
@@ -1295,16 +1296,75 @@ elif intent == "JellyfinPlaySong":
     jellyfinurl, jellyfinauth = "https://", ""
     headers = {"X-Emby-Token": jellyfinauth,}
 
-    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+    # Send get request to Item Download API endpoint on the Jellyfin server with authent>
     get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
     # If request successful, save file
     if get.status_code == 200:
         currentSong = open(currentMediaPath, "wb")
-        currentSong.write(get.content)  
+        currentSong.write(get.content)
         currentSong.close()
+        jellyfinPlay = open(jellyfinPlayFilePath, "w")
+        jellyfinPlay.close()
+        time.sleep(0.1)
+        os.remove(jellyfinPlayFilePath)
 ```
 
 Just as before, add your jellyfin server URL and auth token to the variables.
+
+### To add playback support
+
+
+Now, we'll make another script. Just like with bluetooth support, we can't run everything in the docker container, so we'll be making a system service that is *activated* by the intentHandler.
+
+First, install miniaudio using pip
+
+```
+sudo pip install miniaudio
+```
+
+Then, make a systemd service which checks for the file made by the intenthandler by running this:
+```
+sudo nano /etc/systemd/system/jellyfinSongPlay.path
+```
+then paste:
+```
+[Unit]
+Description=Checks for jellyfin play file, and activates the service which runs script which handles playback
+
+[Path]
+PathExists=/dev/shm/tmpassistant/jellyfinPlay
+
+[Install]
+WantedBy=multi-user.target
+```
+Save and exit, then run:
+```
+sudo nano /etc/systemd/system/jellyfinSongPlay.service
+```
+and paste:
+```
+[Unit]
+Description=Activates script which handles playback for jellyfin song
+
+[Service]
+Type=oneshot
+ExecStart=/home/assistant-main-node/assistant/jellyfinPlaySong.py
+```
+Now make that script by running:
+```
+sudo nano ~/assistant/jellyfinPlaySong.py
+```
+and we paste:
+```
+import miniaudio
+```
+
+### Now enable it all
+Run
+```
+sudo systemctl enable jellyfinSongPlay.path
+sudo systemctl enable jellyfinSongPlay.service
+```
 
 ## Converting units
 
