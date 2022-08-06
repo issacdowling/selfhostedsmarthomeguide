@@ -1285,8 +1285,8 @@ But now, while on the main page, ask it to play any song, artist, or album in yo
 
 Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your ```# Set paths``` section, and add this:
 ```
-currentMediaPath = workingdir+"tmp/"+"currentMedia"
-jellyfinPlayFilePath = workingdir+"tmp/"+"jellyfinPlay"
+currentMediaPath = workingDir+"tmp/"+"currentMedia"
+jellyfinPlayFilePath = workingDir+"tmp/"+"jellyfinPlay"
 ```
 Also, add this elif statement: (NOT DONE, WILL ONLY DOWNLOAD SONG ASKED FOR)
 
@@ -1357,14 +1357,54 @@ sudo nano ~/assistant/jellyfinPlaySong.py
 and we paste:
 ```
 import miniaudio
+import time
+import os
+
+stream = miniaudio.stream_file("/dev/shm/tmpassistant/currentMedia")
+with miniaudio.PlaybackDevice() as device:
+    device.start(stream)
+    while True:
+      if os.path.exists("/dev/shm/tmpassistant/jellyfinStop"):
+        device.close()
+        os.remove("/dev/shm/tmpassistant/jellyfinStop")
+        break
+      elif os.path.exists("/dev/shm/tmpassistant/jellyfinPause"):
+        device.stop()
+        os.remove("/dev/shm/tmpassistant/jellyfinPause")
+      elif os.path.exists("/dev/shm/tmpassistant/jellyfinResume"):
+        device.start(stream)
+        os.remove("/dev/shm/tmpassistant/jellyfinResume")
 ```
 
 ### Now enable it all
 Run
 ```
-sudo systemctl enable jellyfinSongPlay.path
+sudo systemctl enable jellyfinSongPlay.path --now
 sudo systemctl enable jellyfinSongPlay.service
+sudo chmod +x ~/assistant/jellyfinPlaySong.py
 ```
+
+### Pause and resume
+
+First, go to the Rhasspy web UI, sentences, and add this:
+```
+[JellyfinPlaybackCtrl]
+(stop | pause | (continue | resume) ){playback} [the] song
+```
+
+Now, add this to the bottom of your intentHandler:
+```
+elif intent == "JellyfinPlaybackCtrl":
+    playback = o["slots"]["playback"]
+    if playback == "continue" or playback == "resume":
+      jellyfinResume = open("jellyfinresume", "w")
+    elif playback == "pause":
+      jellyfinPause = open("jellyfinPause", "w")
+    elif playback == "stop":
+      jellyfinStop = open("jellyfinStop", "w")
+```
+
+Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
 
 ## Converting units
 
