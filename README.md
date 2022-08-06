@@ -1123,6 +1123,7 @@ sudo nano ~/assistant/stop-bluetooth-pairing.sh
 ```
 and add
 ```
+#!/bin/sh
 sleep 30
 systemctl stop speakerbluetoothpair.service
 systemctl reset-failed speakerbluetoothpair.service
@@ -1356,6 +1357,7 @@ sudo nano ~/assistant/jellyfinPlaySong.py
 ```
 and we paste:
 ```
+#!/usr/bin/python3
 import miniaudio
 import time
 import os
@@ -1397,13 +1399,22 @@ Now, add this to the bottom of your intentHandler:
 elif intent == "JellyfinPlaybackCtrl":
     playback = o["slots"]["playback"]
     if playback == "continue" or playback == "resume":
-      jellyfinResume = open("jellyfinresume", "w")
-    elif playback == "pause":
-      jellyfinPause = open("jellyfinPause", "w")
-    elif playback == "stop":
-      jellyfinStop = open("jellyfinStop", "w")
+      jellyfinResume = open(jellyfinResumeFilePath, "w")
+      jellyfinResume.close()
+    if playback == "pause":
+      jellyfinPause = open(jellyfinPauseFilePath, "w")
+      jellyfinPause.close()
+    if playback == "stop":
+      jellyfinStop = open(jellyfinStopFilePath, "w")
+      jellyfinStop.close()
 ```
 
+Then, in your ```# Set paths``` section, add these:
+```
+jellyfinResumeFilePath = workingDir+"tmp/"+"jellyfinResume"
+jellyfinStopFilePath = workingDir+"tmp/"+"jellyfinStop"
+jellyfinPauseFilePath = workingDir+"tmp/"+"jellyfinPause"
+```
 Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
 
 ## Converting units
