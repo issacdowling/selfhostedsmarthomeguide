@@ -1366,19 +1366,19 @@ import time
 import os
 
 stream = miniaudio.stream_file("/dev/shm/tmpassistant/currentMedia")
-with miniaudio.PlaybackDevice() as device:
+deivce = miniaudio.PlaybackDevice() 
+device.start(stream)
+while True:
+  if os.path.exists("/dev/shm/tmpassistant/jellyfinStop"):
+    device.close()
+    os.remove("/dev/shm/tmpassistant/jellyfinStop")
+    break
+  if os.path.exists("/dev/shm/tmpassistant/jellyfinPause"):
+    device.stop()
+    os.remove("/dev/shm/tmpassistant/jellyfinPause")
+  if os.path.exists("/dev/shm/tmpassistant/jellyfinResume"):
     device.start(stream)
-    while True:
-      if os.path.exists("/dev/shm/tmpassistant/jellyfinStop"):
-        device.close()
-        os.remove("/dev/shm/tmpassistant/jellyfinStop")
-        break
-      elif os.path.exists("/dev/shm/tmpassistant/jellyfinPause"):
-        device.stop()
-        os.remove("/dev/shm/tmpassistant/jellyfinPause")
-      elif os.path.exists("/dev/shm/tmpassistant/jellyfinResume"):
-        device.start(stream)
-        os.remove("/dev/shm/tmpassistant/jellyfinResume")
+    os.remove("/dev/shm/tmpassistant/jellyfinResume")
 ```
 
 ### Now enable it all
