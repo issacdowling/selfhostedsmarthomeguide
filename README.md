@@ -896,7 +896,7 @@ Then, go to your intent handler, and below the last elif statement, paste this:
 elif intent == "GetWeather":
     weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
     currentTemp = weather["main"]["temp"]
-    currentDesc = weather["weather"][0]["main"]
+    currentDesc = weather["weather"][0]["description"]
     speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
 ```
 However, we're not done. You'll also want to go back to the top (near where your homeassistant details are), and add a line below them, called ```#Set OpenWeatherMap data```. Below it, paste this:
