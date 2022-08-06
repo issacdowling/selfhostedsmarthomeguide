@@ -1394,14 +1394,14 @@ sudo chmod +x ~/assistant/jellyfinPlaySong.py
 First, go to the Rhasspy web UI, sentences, and add this:
 ```
 [JellyfinPlaybackCtrl]
-(stop | pause | (continue | resume) ){playback} [the] song
+(stop | pause | unpause | continue | resume ){playback} [the] song
 ```
 
 Now, add this to the bottom of your intentHandler:
 ```
 elif intent == "JellyfinPlaybackCtrl":
     playback = o["slots"]["playback"]
-    if playback == "continue" or playback == "resume":
+    if playback == "continue" or playback == "resume" or playback == "unpause":
       jellyfinResume = open(jellyfinResumeFilePath, "w")
       jellyfinResume.close()
     if playback == "pause":
