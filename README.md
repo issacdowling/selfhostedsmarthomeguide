@@ -1366,7 +1366,7 @@ import time
 import os
 
 stream = miniaudio.stream_file("/dev/shm/tmpassistant/currentMedia")
-deivce = miniaudio.PlaybackDevice() 
+device = miniaudio.PlaybackDevice() 
 device.start(stream)
 while True:
   if os.path.exists("/dev/shm/tmpassistant/jellyfinStop"):
