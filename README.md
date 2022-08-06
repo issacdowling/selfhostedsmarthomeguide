@@ -277,6 +277,9 @@ I reccommend going back to the settings page, switching your **Text To Speech** 
 ### Wake word
 To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.85** so it can pick me up when I'm quieter. Save and restart, and it should work.
 
+### STT
+In your speech to text settings, I highly reccomend going to the bottom, and changing ```silence after``` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
+
 # Making it smart
 ## Setting up Homeassistant
 ### If you've already got a homassistant instance, scroll down until we need our access tokens.
