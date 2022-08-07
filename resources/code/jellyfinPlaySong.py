@@ -1,27 +1,40 @@
+#!/usr/bin/python3
 import miniaudio
 import time
 import os
 
-stream = miniaudio.stream_file("/dev/shm/tmpassistant/currentMedia")
+tmpDir = "/dev/shm/tmpassistant/"
+
+if os.path.exists(tmpDir + "jellyfinStop"):
+  os.remove(tmpDir + "jellyfinStop")
+if os.path.exists(tmpDir + "jellyfinPause"):
+  os.remove(tmpDir + "jellyfinPause")
+if os.path.exists(tmpDir + "jellyfinResume"):
+  os.remove(tmpDir + "jellyfinResume")
+if os.path.exists(tmpDir + "jellyfinIsPaused"):
+  os.remove(tmpDir + "jellyfinIsPaused")
+
+
+stream = miniaudio.stream_file(tmpDir + "currentMedia")
 device = miniaudio.PlaybackDevice()
 device.start(stream)
 
 #Get duration with very long line of code
-duration = int(miniaudio.flac_get_info((open("currentMedia", "rb")).read()).duration) 
+duration = int(miniaudio.flac_get_info((open("currentMedia", "rb")).read()).duration)
 
 progress = 0
 
 while True:
-  if os.path.exists("/dev/shm/tmpassistant/jellyfinStop"):
+  if os.path.exists(tmpDir + "jellyfinStop"):
     device.close()
-    os.remove("/dev/shm/tmpassistant/jellyfinStop")
+    os.remove(tmpDir + "jellyfinStop")
     break
-  if os.path.exists("/dev/shm/tmpassistant/jellyfinPause"):
+  if os.path.exists(tmpDir + "jellyfinPause"):
     device.stop()
-    os.remove("/dev/shm/tmpassistant/jellyfinPause")
-  if os.path.exists("/dev/shm/tmpassistant/jellyfinResume"):
+    os.remove(tmpDir + "jellyfinPause")
+  if os.path.exists(tmpDir + "jellyfinResume"):
     device.start(stream)
-    os.remove("/dev/shm/tmpassistant/jellyfinResume")
+    os.remove(tmpDir + "jellyfinResume")
   if progress >= duration:
     device.close()
     break
