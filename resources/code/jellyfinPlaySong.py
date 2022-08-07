@@ -32,11 +32,14 @@ while True:
   if os.path.exists(tmpDir + "jellyfinPause"):
     device.stop()
     os.remove(tmpDir + "jellyfinPause")
+    open(tmpDir + "jellyfinIsPaused", "w")
   if os.path.exists(tmpDir + "jellyfinResume"):
     device.start(stream)
     os.remove(tmpDir + "jellyfinResume")
+    os.remove(tmpDir + "jellyfinIsPaused")
   if progress >= duration:
     device.close()
     break
   time.sleep(1)
-  progress += 1
+  if not os.path.exists(tmpDir + "jellyfinIsPaused"):
+    progress += 1
