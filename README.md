@@ -279,6 +279,9 @@ I reccommend going back to the settings page, switching your **Text To Speech** 
 ### Wake word
 To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.85** so it can pick me up when I'm quieter. Save and restart, and it should work.
 
+### STT
+In your speech to text settings, I highly reccomend going to the bottom, and changing ```silence after``` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
+
 # Making it smart
 ## Setting up Homeassistant
 ### If you've already got a homassistant instance, scroll down until we need our access tokens.
@@ -617,21 +620,25 @@ And paste this below the last elif section:
 elif intent == "DoMaths":
     operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
     if operator == "*":
+        operator = " times "
         calcResult = str(num1*num2)
     elif operator == "+":
+        operator = " add "
         calcResult = str(num1+num2)
     elif operator == "-":
+        operator = " minus "
         calcResult = str(num1-num2)
     elif operator == "/":
+        operator = " over "
         calcResult = str(num1/num2)
     if num1 == 9 and num2 == 10 and operator == "+":
         speech("That's 21")
     else:
-        speech("That's " + calcResult.replace("." , " point "))
+        speech(str(num1) + operator + str(num2) + " is " + calcResult.replace("." , " point "))
 ```
 
 
-Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven.
+Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven. This is why it was important to change your STT settings earlier, increasing ```silence after``` time.
 
 ## Setting timers
 What if you want to set a timer? It's not a super complex one, you can only pick minutes **or** seconds, meaning you couldn't ask for a 2 minute and 17 second timer, but it works well enough.
@@ -891,7 +898,7 @@ Then, go to your intent handler, and below the last elif statement, paste this:
 elif intent == "GetWeather":
     weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
     currentTemp = weather["main"]["temp"]
-    currentDesc = weather["weather"][0]["main"]
+    currentDesc = weather["weather"][0]["description"]
     speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
 ```
 However, we're not done. You'll also want to go back to the top (near where your homeassistant details are), and add a line below them, called ```#Set OpenWeatherMap data```. Below it, paste this:
