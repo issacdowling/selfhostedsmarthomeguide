@@ -1317,7 +1317,7 @@ Firstly, we want to be able to download the media that's requested, since I don'
 currentMediaPath = workingDir+"tmp/"+"currentMedia"
 jellyfinPlayFilePath = workingDir+"tmp/"+"jellyfinPlay"
 ```
-Also, add this elif statement: (NOT DONE, WILL ONLY DOWNLOAD SONG ASKED FOR)
+Also, add this elif statement:
 
 ```
 elif intent == "JellyfinPlaySong":
