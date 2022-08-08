@@ -1530,7 +1530,7 @@ whats playing right now
 Then, we can add this elif statement to the intentHandler:
 ```
 elif intent == "JFGetPlayingMediaName":
-  songInfoFile = open(songInfoFilePath, "r").read()
+  songInfoFile = open(songInfoFilePath, "r").read()[1:-1].replace("'","").split(",")
   songName, songArtist = songInfoFile[0], songInfoFile[1]
   speech("This is " + songName + " by " + songArtist)
 ```
