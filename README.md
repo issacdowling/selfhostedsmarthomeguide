@@ -1568,7 +1568,7 @@ elif intent == "JellyfinPlayQueue":
   songsList = [[],[]]
   ps, itemid = o["slots"]["ps"], o["slots"]["itemid"]
   userid = ""
-  if ps == "favourites":
+  if itemid == "favourites":
     get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
   else:
     get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
