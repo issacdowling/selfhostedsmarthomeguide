@@ -1548,6 +1548,56 @@ It'll now read that file, separate out the name and artist, then say them in a s
 
 Now, we've got a fairly competent way to play, stop, pause, and resume individual songs from your library, but what about whole albums or artists?
 
+First, add these sentences:
+```
+[JellyfinPlayQueue]
+albums = ($albums){itemid}
+albumartists = ($albumartists){itemid}
+favourites = (favourites){itemid}
+(play | shuffle){ps} my <favourites>
+(play | shuffle){ps} the album <albums>
+(play | shuffle){ps} the artist <albumartists>
+```
+
+Then, paste this elif statement at the end of the intenthandler:
+```
+elif intent == "JellyfinPlayQueue":
+  jellyfinurl, jellyfinauth = "", ""
+  headers = {"X-Emby-Token": jellyfinauth,}
+  songsList = [[],[]]
+  ps, itemid = o["slots"]["ps"], o["slots"]["itemid"]
+  userid = ""
+  if ps == "favourites":
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
+  else:
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
+  receivedJson = json.loads(get.text)
+  songs = receivedJson["Items"]
+  for song in songs:
+    songsList[0].append(song["Name"])
+    songsList[1].append(song["Id"])
+  if ps == "shuffle":
+    tmpShuffle = list(zip(songsList[0],songsList[1]))
+    random.shuffle(tmpShuffle)
+    songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
+  for song in songsList[0]:
+    if os.path.exists(jellyfinStopFilePath):
+      break
+    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+    get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
+    # If request successful, save file
+    if get.status_code == 200:
+        currentSong = open(currentMediaPath, "wb")
+        currentSong.write(get.content)
+        currentSong.close()
+        jellyfinPlay = open(jellyfinPlayFilePath, "w")
+        jellyfinPlay.write(itemid)
+        jellyfinPlay.close()
+        time.sleep(1)
+        os.remove(jellyfinPlayFilePath)
+
+```
+Remember to add the server URL, auth, and userid.
 
 ## Converting units
 
