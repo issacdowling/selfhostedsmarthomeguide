@@ -18,6 +18,8 @@
 
 [Setting timers](README.md#setting-timers)
 
+[Generic "Stop" function](README.md#generic-stop-function)
+
 [Getting the weather](README.md#the-weather)
 
 [Getting the time](README.md#getting-the-time-but-better)
@@ -31,8 +33,6 @@
 [Adding natural and varied responses](README.md#natural-and-varied-responses)
 
 [Jellyfin Music Support](README.md#jellyfin-music-support)
-
-[Generic "Stop" function](README.md#generic-stop-function)
 
 [Converting Units](README.md#converting-units)
 
