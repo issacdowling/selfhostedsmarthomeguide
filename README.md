@@ -701,15 +701,14 @@ If you understand what this is doing, you can probably tell where we're going fr
 
 Now, you can replace the ```speech("Timer complete")``` line with this:
 ```
-while not os.path.exists(stopTimerSoundFilePath):
-    call(["aplay", timerFinishedAudio])
 if os.path.exists(stopTimerSoundFilePath):
-    os.remove(stopTimerSoundFilePath)
+  os.remove(stopTimerSoundFilePath)
+while not os.path.exists(stopTimerSoundFilePath):
+  call(["aplay", timerFinishedAudio])
+if os.path.exists(stopTimerSoundFilePath):
+  os.remove(stopTimerSoundFilePath)
 ```
-
-In this image, I've also cleaned up assigning the number and unit variables to be on one line, but your code should otherwise now look like this:
-
-![Timer statement](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerCode.png)
+As you can see, we delete the stopfile if it was made ***before*** the timer was complete, since that purpose will be served by the ***cancel*** file instead.
 
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
@@ -846,6 +845,8 @@ elif intent == "DoTimer":
         timerLeft.write(str(timerLength))
         if os.path.exists(cancelFilePath):
             break
+    if os.path.exists(stopTimerSoundFilePath):
+      os.remove(stopTimerSoundFilePath)
     while not os.path.exists(stopTimerSoundFilePath):
         if os.path.exists(cancelFilePath):
             speech("Timer cancelled")
