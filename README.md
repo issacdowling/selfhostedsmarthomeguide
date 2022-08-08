@@ -1333,6 +1333,7 @@ elif intent == "JellyfinPlaySong":
         currentSong.write(get.content)
         currentSong.close()
         jellyfinPlay = open(jellyfinPlayFilePath, "w")
+        jellyfinPlay.write(itemid, "w")
         jellyfinPlay.close()
         time.sleep(0.1)
         os.remove(jellyfinPlayFilePath)
