@@ -1476,6 +1476,10 @@ jellyfinPauseFilePath = workingDir+"tmp/"+"jellyfinPause"
 ```
 Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
 
+### Playing a queue of songs.
+
+Now, we've got a fairly competent way to play, stop, pause, and resume individual songs from your library, but what about whole albums or artists?
+
 
 ## Converting units
 
