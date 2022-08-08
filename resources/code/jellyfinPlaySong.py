@@ -18,6 +18,7 @@ if os.path.exists(tmpDir + "jellyfinIsPaused"):
 stream = miniaudio.stream_file(tmpDir + "currentMedia")
 device = miniaudio.PlaybackDevice()
 device.start(stream)
+itemid = open(tmpDir + "jellyfinPlay", "r").read()
 
 #Get duration with very long line of code
 duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
