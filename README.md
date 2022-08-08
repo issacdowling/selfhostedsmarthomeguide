@@ -1531,7 +1531,7 @@ Then, we can add this elif statement to the intentHandler:
 ```
 elif intent == "JFGetPlayingMediaName":
   songInfoFile = open(songInfoFilePath, "r").read()
-  songName, songArtist = songInfoFile[0][0], songInfoFile[0][1]
+  songName, songArtist = songInfoFile[0], songInfoFile[1]
   speech("This is " + songName + " by " + songArtist)
 ```
     
