@@ -1515,7 +1515,32 @@ Now, you should be able to ask for any song, then tell it to pause, stop, or res
 ### Getting currently playing song
 Although probably not the most useful while playing a single song, we'll add this feature now so we have it later.
 
-
+In the code previously added, we're already storing a lot of info about the currently playing song in RAM. All we need is to specify a way of accessing it. Although for future use (potentially in a UI? not sure) we've got lots of info available (release date, file format, bitrate, etc), all I want is the name and artist. I want to say "what song is this?" - or something similar - and for the assistant to respond: "This is <songname> by <artistname>"
+    
+The file with this info is called "songInfoFile".
+    
+First, we'll add this sentence to Rhasspy:
+```
+[JFGetPlayingMediaName]
+what song [is] [(this | playing | on)]
+whats the name of [this] song
+whats currently playing
+whats playing right now
+```
+Then, we can add this elif statement to the intentHandler:
+```
+elif intent == "JFGetPlayingMediaName":
+  songInfoFile = open(songInfoFilePath, "r").read()
+  songName, songArtist = songInfoFile[0][0], songInfoFile[0][1]
+  speech("This is " + songName + " by " + songArtist)
+```
+    
+And add this to our ```# Set Paths``` section
+```
+songInfoFilePath = workingDir+"tmp/"+"songInfoFile"
+```
+    
+It'll now read that file, separate out the name and artist, then say them in a sentence.
 
 
 ### Playing a queue of songs.
