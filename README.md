@@ -1470,6 +1470,7 @@ while True:
   if not os.path.exists(tmpDir + "jellyfinIsPaused"):
     progress += 1
 ```
+#### Remember to add the URL, authtoken, and user id to the variables at the top
 
 ### Now enable it all
 Run
@@ -1479,7 +1480,7 @@ sudo systemctl enable jellyfinSongPlay.service
 sudo chmod +x ~/assistant/jellyfinPlaySong.py
 ```
 
-### Pause and resume
+### Pause, stop, and resume
 
 First, go to the Rhasspy web UI, sentences, and add this:
 ```
