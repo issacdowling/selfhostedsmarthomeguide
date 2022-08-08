@@ -32,7 +32,7 @@
 
 [Adding natural and varied responses](README.md#natural-and-varied-responses)
 
-[Jellyfin Music Support](README.md#jellyfin-music-support)
+[Jellyfin Music Support (beta)](README.md#jellyfin-music-support)
 
 [Converting Units](README.md#converting-units)
 
