@@ -20,7 +20,7 @@ device = miniaudio.PlaybackDevice()
 device.start(stream)
 
 #Get duration with very long line of code
-duration = int(miniaudio.flac_get_info((open("currentMedia", "rb")).read()).duration)
+duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
 
 progress = 0
 
