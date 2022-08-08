@@ -1325,7 +1325,7 @@ elif intent == "JellyfinPlaySong":
     jellyfinurl, jellyfinauth = "https://", ""
     headers = {"X-Emby-Token": jellyfinauth,}
 
-    # Send get request to Item Download API endpoint on the Jellyfin server with authent>
+    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
     get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
     # If request successful, save file
     if get.status_code == 200:
@@ -1333,9 +1333,9 @@ elif intent == "JellyfinPlaySong":
         currentSong.write(get.content)
         currentSong.close()
         jellyfinPlay = open(jellyfinPlayFilePath, "w")
-        jellyfinPlay.write(itemid, "w")
+        jellyfinPlay.write(itemid)
         jellyfinPlay.close()
-        time.sleep(0.1)
+        time.sleep(1)
         os.remove(jellyfinPlayFilePath)
 ```
 
@@ -1395,6 +1395,9 @@ import time
 import os
 
 tmpDir = "/dev/shm/tmpassistant/"
+jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
+headers = {"X-Emby-Token": jellyfinauth,}
+
 
 if os.path.exists(tmpDir + "jellyfinStop"):
   os.remove(tmpDir + "jellyfinStop")
@@ -1404,14 +1407,45 @@ if os.path.exists(tmpDir + "jellyfinResume"):
   os.remove(tmpDir + "jellyfinResume")
 if os.path.exists(tmpDir + "jellyfinIsPaused"):
   os.remove(tmpDir + "jellyfinIsPaused")
+if os.path.exists(tmpDir + "songInfoFile"):
+  os.remove(tmpDir + "songInfoFile")
 
+def getSongDetails(userid,itemid):
+  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art I>
+  # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
+  get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
+  song = json.loads(get.text)
+  # add the values to a list
+  songInfo[0].append(song["Name"])
+  songInfo[0].append(song["AlbumArtist"])
+  songInfo[0].append(song["Album"])
+  songInfo[0].append(song["PremiereDate"].split("-"))
 
+  # Remove Extraneous Info From Date Field
+  songInfo[0][3][2] = songInfo[0][3][2][:2]
+
+  songInfo[0].append(song["UserData"]["IsFavorite"])
+  songInfo[0].append(song["GenreItems"][0]["Name"])
+  songInfo[0].append(song["UserData"]["PlayCount"])
+  songInfo[0].append(song["MediaStreams"][0]["Codec"])
+  songInfo[0].append(song["MediaStreams"][0]["BitRate"])
+  songInfo[0].append(song["MediaStreams"][0]["BitDepth"])
+  songInfo[0].append(song["Id"])
+  songInfo[0].append(song["AlbumPrimaryImageTag"])
+  return songInfo
+  
+  
 stream = miniaudio.stream_file(tmpDir + "currentMedia")
 device = miniaudio.PlaybackDevice()
 device.start(stream)
+itemid = open(tmpDir + "jellyfinPlay", "r").read()
 
+songInfo = getSongDetails(userid,itemid)
+songInfoFile = open(tmpDir + "songInfoFile", "w")
+songInfoFile.write(str(songInfo[0]))
+                  
 #Get duration with very long line of code
-duration = int(miniaudio.flac_get_info((open("currentMedia", "rb")).read()).duration)
+duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
 
 progress = 0
 
@@ -1430,6 +1464,7 @@ while True:
     os.remove(tmpDir + "jellyfinIsPaused")
   if progress >= duration:
     device.close()
+    os.remove(tmpDir + "songInfoFile")
     break
   time.sleep(1)
   if not os.path.exists(tmpDir + "jellyfinIsPaused"):
