@@ -18,6 +18,8 @@
 
 [Setting timers](README.md#setting-timers)
 
+[Generic "Stop" function](README.md#generic-stop-function)
+
 [Getting the weather](README.md#the-weather)
 
 [Getting the time](README.md#getting-the-time-but-better)
@@ -29,6 +31,8 @@
 [Using as bluetooth speaker](README.md#bluetooth-audio-streaming-highly-imperfect)
 
 [Adding natural and varied responses](README.md#natural-and-varied-responses)
+
+[Jellyfin Music Support (beta)](README.md#jellyfin-music-support)
 
 [Converting Units](README.md#converting-units)
 
@@ -697,15 +701,14 @@ If you understand what this is doing, you can probably tell where we're going fr
 
 Now, you can replace the ```speech("Timer complete")``` line with this:
 ```
-while not os.path.exists(stopTimerSoundFilePath):
-    call(["aplay", timerFinishedAudio])
 if os.path.exists(stopTimerSoundFilePath):
-    os.remove(stopTimerSoundFilePath)
+  os.remove(stopTimerSoundFilePath)
+while not os.path.exists(stopTimerSoundFilePath):
+  call(["aplay", timerFinishedAudio])
+if os.path.exists(stopTimerSoundFilePath):
+  os.remove(stopTimerSoundFilePath)
 ```
-
-In this image, I've also cleaned up assigning the number and unit variables to be on one line, but your code should otherwise now look like this:
-
-![Timer statement](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/timerCode.png)
+As you can see, we delete the stopfile if it was made ***before*** the timer was complete, since that purpose will be served by the ***cancel*** file instead.
 
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
@@ -726,9 +729,9 @@ If you're using a different file structure, you can change the data inside the w
 Now, go to your rhasspy sentences section, and make a new section that looks like this:
 ```
 [StopTimerSound]
-stop [the] [alarm | timer | sound]
+stop [the] (alarm)
 ```
-Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop. Once the current loop is over, it will finish. 
+Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop the alarm. Once the current loop is over, it will finish. **Once we've completed the timer section, there'll be a section about adding a generic "stop" function that applies to everything. If you want to be able to stop the timer by just saying "stop", you can go there now if you'd like.**
 
 ### Some notes about the audio
 Due to it finishing the current audio loop before stopping, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/resources/sounds/timerchime.wav)
@@ -842,6 +845,8 @@ elif intent == "DoTimer":
         timerLeft.write(str(timerLength))
         if os.path.exists(cancelFilePath):
             break
+    if os.path.exists(stopTimerSoundFilePath):
+      os.remove(stopTimerSoundFilePath)
     while not os.path.exists(stopTimerSoundFilePath):
         if os.path.exists(cancelFilePath):
             speech("Timer cancelled")
@@ -880,6 +885,24 @@ elif intent == "TimerRemaining":
     else:
         speech("You've got no timers set")
 ```
+
+## Generic stop function
+In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
+
+First, we'll add the sentence, since it's the most basic part. Go to your rhasspy web UI, sentences, and paste this:
+```
+[GenericStop]
+stop
+```
+Wonderful.
+
+Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping, we'll stop everything:
+```
+elif intent == "GenericStop":
+  open(stopTimerSoundFilePath, "w")
+```
+As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
+
 ## The weather
 What if I want it to tell me the weather?
 
@@ -1128,6 +1151,7 @@ sudo nano ~/assistant/stop-bluetooth-pairing.sh
 ```
 and add
 ```
+#!/bin/sh
 sleep 30
 systemctl stop speakerbluetoothpair.service
 systemctl reset-failed speakerbluetoothpair.service
@@ -1228,6 +1252,302 @@ apm = random.choice(morningResponse)
 and now your time announcements should be a bit more varied than before.
 
 The way we're doing this is really simple and flexible, but makes the responses less repetitive. I like it.
+
+## Jellyfin Music Support
+We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
+
+Progress made on this integration happens [here](https://github.com/IssacDowling/jellypy).
+
+#### Here is a reminder to myself to make this into a slots protgram eventually so that it's even more hands-off.
+
+#### Also, authenticating in a way that makes sense will come one day.
+
+But that's not how things are right now, so the setup is weird, but it works.
+
+### Making the slot files
+
+Firstly, we'll make our slots. This is how the voice assistant will understand what words are valid, and luckily, is automated.
+
+Automated once you've added the info from your Jellyfin server manually. So, on your Pi, run this:
+
+```
+cd ~/assistant/profiles/en/slots/
+sudo nano create-jf-slots.py
+```
+
+Now, go to [this link](https://raw.githubusercontent.com/IssacDowling/jellypy/main/main.py), CTRL+A to select everything, and paste it into that text editor we opened.
+
+Next, change the contents of ```jellyfinurl``` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the ```:portnumber``` at the end.
+
+Then, go to your Jellyfin server's web client, then click the profile icon in the top right, dashboard, then API keys on the left bar. Add one, pick whatever name you want, and copy that key to your ```jellyfinauth``` variable. 
+
+Next, press F12 to open your browser's dev tools, click the network tab, and enter ```userid``` into the search bar, then refresh the page. Hopefully you'll see something like this:
+
+![Firefox dev tools showing URL with userid](https://github.com/IssacDowling/SelfhostedSmartHomeGuide/blob/main/images/devtoolsuserid.png)
+
+Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for ```userid``` (remembering not to include the ```&``` symbol which will be at the end, and paste it into the ```userid``` section in the python script.
+
+Finally, go right to the bottom of the script, add some empty lines, and type ```genMusicSlots()```. 
+
+Then, save and exit by doing CTRL+X, Y, ENTER.
+
+Now, you can just run ```sudo python create-jf-slots.py```. We need ```sudo``` because otherwise it won't have permissions to create its files.
+
+### Playing individual songs
+
+For now, we'll be adding functionality to play any specific song. Shuffling artists or albums will come later on.
+
+### Test your sentences
+Assuming you haven't modified any names in the python script, you should just be able to go to your sentences section, and paste this at the bottom:
+
+```
+[JellyfinPlaySong]
+songs = ($songs){itemid}
+play [the] song <songs>
+```
+
+Remember to save and train. Speaking of, with my example slots files with approximately 10,000 songs, 1000 albums, and 100 artists, my time-to-train on a Pi 4 went from 16 seconds to 51, so don't worry if it takes longer than you're used to to train.
+
+But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition - for once we add artists and albums - I've set it so you need to say "the *song* songname", or "the *artist* artistname*. You might have some conflicts with pronunciations of certain things with interesting names (like having to say "twenty-four K magic" for the album *24K Magic* because it doesn't understand that K means karat) , but you can correct these in Rhasspy's UI if they bother you.
+
+### Downloading the media
+
+Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your ```# Set paths``` section, and add this:
+```
+currentMediaPath = workingDir+"tmp/"+"currentMedia"
+jellyfinPlayFilePath = workingDir+"tmp/"+"jellyfinPlay"
+```
+Also, add this elif statement:
+
+```
+elif intent == "JellyfinPlaySong":
+    itemid = o["slots"]["itemid"]
+    jellyfinurl, jellyfinauth = "https://", ""
+    headers = {"X-Emby-Token": jellyfinauth,}
+
+    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+    get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
+    # If request successful, save file
+    if get.status_code == 200:
+        currentSong = open(currentMediaPath, "wb")
+        currentSong.write(get.content)
+        currentSong.close()
+        jellyfinPlay = open(jellyfinPlayFilePath, "w")
+        jellyfinPlay.write(itemid)
+        jellyfinPlay.close()
+        time.sleep(1)
+        os.remove(jellyfinPlayFilePath)
+```
+
+Just as before, add your jellyfin server URL and auth token to the variables.
+
+### To add playback support
+
+
+Now, we'll make another script. Just like with bluetooth support, we can't run everything in the docker container, so we'll be making a system service that is *activated* by the intentHandler.
+
+First, install miniaudio using pip
+
+```
+sudo pip install miniaudio
+```
+
+Then, make a systemd service which checks for the file made by the intenthandler by running this:
+```
+sudo nano /etc/systemd/system/jellyfinSongPlay.path
+```
+then paste:
+```
+[Unit]
+Description=Checks for jellyfin play file, and activates the service which runs script which handles playback
+
+[Path]
+PathExists=/dev/shm/tmpassistant/jellyfinPlay
+
+[Install]
+WantedBy=multi-user.target
+```
+Save and exit, then run:
+```
+sudo nano /etc/systemd/system/jellyfinSongPlay.service
+```
+and paste:
+```
+[Unit]
+Description=Activates script which handles playback for jellyfin song
+
+[Service]
+Type=oneshot
+ExecStart=/home/assistant-main-node/assistant/jellyfinPlaySong.py
+
+[Install]
+WantedBy=multi-user.target
+```
+Now make that script by running:
+```
+sudo nano ~/assistant/jellyfinPlaySong.py
+```
+and we paste:
+```
+#!/usr/bin/python3
+import miniaudio
+import time
+import os
+
+tmpDir = "/dev/shm/tmpassistant/"
+jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
+headers = {"X-Emby-Token": jellyfinauth,}
+
+
+if os.path.exists(tmpDir + "jellyfinStop"):
+  os.remove(tmpDir + "jellyfinStop")
+if os.path.exists(tmpDir + "jellyfinPause"):
+  os.remove(tmpDir + "jellyfinPause")
+if os.path.exists(tmpDir + "jellyfinResume"):
+  os.remove(tmpDir + "jellyfinResume")
+if os.path.exists(tmpDir + "jellyfinIsPaused"):
+  os.remove(tmpDir + "jellyfinIsPaused")
+if os.path.exists(tmpDir + "songInfoFile"):
+  os.remove(tmpDir + "songInfoFile")
+
+def getSongDetails(userid,itemid):
+  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
+  # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
+  get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
+  song = json.loads(get.text)
+  # add the values to a list
+  songInfo[0].append(song["Name"])
+  songInfo[0].append(song["AlbumArtist"])
+  songInfo[0].append(song["Album"])
+  songInfo[0].append(song["PremiereDate"].split("-"))
+
+  # Remove Extraneous Info From Date Field
+  songInfo[0][3][2] = songInfo[0][3][2][:2]
+
+  songInfo[0].append(song["UserData"]["IsFavorite"])
+  songInfo[0].append(song["GenreItems"][0]["Name"])
+  songInfo[0].append(song["UserData"]["PlayCount"])
+  songInfo[0].append(song["MediaStreams"][0]["Codec"])
+  songInfo[0].append(song["MediaStreams"][0]["BitRate"])
+  songInfo[0].append(song["MediaStreams"][0]["BitDepth"])
+  songInfo[0].append(song["Id"])
+  songInfo[0].append(song["AlbumPrimaryImageTag"])
+  return songInfo
+  
+  
+stream = miniaudio.stream_file(tmpDir + "currentMedia")
+device = miniaudio.PlaybackDevice()
+device.start(stream)
+itemid = open(tmpDir + "jellyfinPlay", "r").read()
+
+songInfo = getSongDetails(userid,itemid)
+songInfoFile = open(tmpDir + "songInfoFile", "w")
+songInfoFile.write(str(songInfo[0]))
+                  
+#Get duration with very long line of code
+duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
+
+progress = 0
+
+while True:
+  if os.path.exists(tmpDir + "jellyfinStop"):
+    device.close()
+    os.remove(tmpDir + "jellyfinStop")
+    break
+  if os.path.exists(tmpDir + "jellyfinPause"):
+    device.stop()
+    os.remove(tmpDir + "jellyfinPause")
+    open(tmpDir + "jellyfinIsPaused", "w")
+  if os.path.exists(tmpDir + "jellyfinResume"):
+    device.start(stream)
+    os.remove(tmpDir + "jellyfinResume")
+    os.remove(tmpDir + "jellyfinIsPaused")
+  if progress >= duration:
+    device.close()
+    os.remove(tmpDir + "songInfoFile")
+    break
+  time.sleep(1)
+  if not os.path.exists(tmpDir + "jellyfinIsPaused"):
+    progress += 1
+```
+#### Remember to add the URL, authtoken, and user id to the variables at the top
+
+### Now enable it all
+Run
+```
+sudo systemctl enable jellyfinSongPlay.path --now
+sudo systemctl enable jellyfinSongPlay.service
+sudo chmod +x ~/assistant/jellyfinPlaySong.py
+```
+
+### Pause, stop, and resume
+
+First, go to the Rhasspy web UI, sentences, and add this:
+```
+[JellyfinPlaybackCtrl]
+(stop | pause | unpause | continue | resume){playback} [the] (song | music)
+```
+
+Now, add this to the bottom of your intentHandler:
+```
+elif intent == "JellyfinPlaybackCtrl":
+    playback = o["slots"]["playback"]
+    if playback == "continue" or playback == "resume" or playback == "unpause":
+      jellyfinResume = open(jellyfinResumeFilePath, "w")
+      jellyfinResume.close()
+    if playback == "pause":
+      jellyfinPause = open(jellyfinPauseFilePath, "w")
+      jellyfinPause.close()
+    if playback == "stop":
+      jellyfinStop = open(jellyfinStopFilePath, "w")
+      jellyfinStop.close()
+```
+
+#### And, you can add ```open(jellyfinStopFilePath, "w")``` to your "GenericStop" intent too.
+
+Then, in your ```# Set paths``` section, add these:
+```
+jellyfinResumeFilePath = workingDir+"tmp/"+"jellyfinResume"
+jellyfinStopFilePath = workingDir+"tmp/"+"jellyfinStop"
+jellyfinPauseFilePath = workingDir+"tmp/"+"jellyfinPause"
+```
+Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
+
+### Getting currently playing song
+Although probably not the most useful while playing a single song, we'll add this feature now so we have it later.
+
+In the code previously added, we're already storing a lot of info about the currently playing song in RAM. All we need is to specify a way of accessing it. Although for future use (potentially in a UI? not sure) we've got lots of info available (release date, file format, bitrate, etc), all I want is the name and artist. I want to say "what song is this?" - or something similar - and for the assistant to respond: "This is <songname> by <artistname>"
+    
+The file with this info is called "songInfoFile".
+    
+First, we'll add this sentence to Rhasspy:
+```
+[JFGetPlayingMediaName]
+what song [is] [(this | playing | on)]
+whats the name of [this] song
+whats currently playing
+whats playing right now
+```
+Then, we can add this elif statement to the intentHandler:
+```
+elif intent == "JFGetPlayingMediaName":
+  songInfoFile = open(songInfoFilePath, "r").read()[1:-1].replace("'","").split(",")
+  songName, songArtist = songInfoFile[0], songInfoFile[1]
+  speech("This is " + songName + " by " + songArtist)
+```
+    
+And add this to our ```# Set Paths``` section
+```
+songInfoFilePath = workingDir+"tmp/"+"songInfoFile"
+```
+    
+It'll now read that file, separate out the name and artist, then say them in a sentence.
+
+
+### Playing a queue of songs.
+
+Now, we've got a fairly competent way to play, stop, pause, and resume individual songs from your library, but what about whole albums or artists?
+
 
 ## Converting units
 

@@ -22,7 +22,7 @@ opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.ope
 
 # Set paths
 workingDir = "/profiles/"
-stopTimerSoundFilePath, timerLeftPath, cancelFilePath, bluetoothFilePath = workingDir+"stopTimerSoundFile", workingDir+"timerLeft", workingDir+"cancelFile", workingDir+"bluetoothFile"
+stopTimerSoundFilePath, timerLeftPath, cancelFilePath, bluetoothFilePath, currentMediaPath = workingDir+"tmp/"+"stopTimerSoundFile", workingDir+"tmp/"+"timerLeft", workingDir+"tmp/"+"cancelFile", workingDir+"tmp/"+"bluetoothFile", workingdir+"tmp/"+"currentMedia"
 
 # Set responses
 agreeResponse, currentlyResponse = ["Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "], ["Right now it's ", "Its ", "Currently its ", "At the moment its "]
@@ -224,6 +224,21 @@ elif intent == "UnitConversion":
         finalValue = toBeConverted*35.195
 
     speech(str(number) + " " + unit1 + " is " + str(round(finalValue,3)).replace("." , " point ") + " " + unit2)
-        
+
+#NEEDS IMPROVING, CURRENTLY JUST DOWNLOADS SONG
+elif intent == "JellyfinPlaySong":
+    itemid = o["slots"]["itemid"]
+    jellyfinurl, jellyfinauth = "https://", ""
+    headers = {"X-Emby-Token": jellyfinauth,}
+
+    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+    get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
+    # If request successful, save file
+    if get.status_code == 200:
+        currentSong = open(currentMediaPath, "wb")
+        currentSong.write(get.content)  
+        currentSong.close()
+
+
 # convert dict to json and print to stdout
 print(json.dumps(o))
