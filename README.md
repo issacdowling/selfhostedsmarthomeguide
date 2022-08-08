@@ -32,6 +32,8 @@
 
 [Jellyfin Music Support](README.md#jellyfin-music-support)
 
+[Generic "Stop" function](README.md#generic-stop-function)
+
 [Converting Units](README.md#converting-units)
 
 
@@ -730,7 +732,7 @@ Now, go to your rhasspy sentences section, and make a new section that looks lik
 [StopTimerSound]
 stop [the] (alarm | timer | sound)
 ```
-Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop the timer. Once the current loop is over, it will finish. 
+Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop the timer. Once the current loop is over, it will finish. **Once we've completed the timer section, there'll be a section about adding a generic "stop" function that applies to everything. If you want to be able to stop the timer by just saying "stop", you can go there now if you'd like.**
 
 ### Some notes about the audio
 Due to it finishing the current audio loop before stopping, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/resources/sounds/timerchime.wav)
@@ -882,6 +884,24 @@ elif intent == "TimerRemaining":
     else:
         speech("You've got no timers set")
 ```
+
+## Generic stop function
+In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
+
+First, we'll add the sentence, since it's the most basic part. Go to your rhasspy web UI, sentences, and paste this:
+```
+[GenericStop]
+stop
+```
+Wonderful.
+
+Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping, we'll stop everything:
+```
+elif intent == "GenericStop":
+  open(stopTimerSoundFilePath, "w")
+```
+As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
+
 ## The weather
 What if I want it to tell me the weather?
 
@@ -1445,6 +1465,8 @@ elif intent == "JellyfinPlaybackCtrl":
       jellyfinStop.close()
 ```
 
+#### And, you can add ```open(jellyfinStopFilePath, "w")``` to your "GenericStop" intent too.
+
 Then, in your ```# Set paths``` section, add these:
 ```
 jellyfinResumeFilePath = workingDir+"tmp/"+"jellyfinResume"
@@ -1452,6 +1474,7 @@ jellyfinStopFilePath = workingDir+"tmp/"+"jellyfinStop"
 jellyfinPauseFilePath = workingDir+"tmp/"+"jellyfinPause"
 ```
 Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
+
 
 ## Converting units
 
