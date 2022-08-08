@@ -1452,7 +1452,6 @@ progress = 0
 while True:
   if os.path.exists(tmpDir + "jellyfinStop"):
     device.close()
-    os.remove(tmpDir + "jellyfinStop")
     break
   if os.path.exists(tmpDir + "jellyfinPause"):
     device.stop()
@@ -1464,11 +1463,13 @@ while True:
     os.remove(tmpDir + "jellyfinIsPaused")
   if progress >= duration:
     device.close()
-    os.remove(tmpDir + "songInfoFile")
     break
   time.sleep(1)
   if not os.path.exists(tmpDir + "jellyfinIsPaused"):
     progress += 1
+    
+os.remove(tmpDir + "jellyfinStop")
+os.remove(tmpDir + "songInfoFile")
 ```
 #### Remember to add the URL, authtoken, and user id to the variables at the top
 
@@ -1595,10 +1596,33 @@ elif intent == "JellyfinPlayQueue":
         jellyfinPlay.close()
         time.sleep(1)
         os.remove(jellyfinPlayFilePath)
-
+    while os.path.exists(currentMediaPath):
+      pass
 ```
 Remember to add the server URL, auth, and userid.
 
+Now, go to the jellyfinPlaySong file:
+```
+sudo nano ~/assistant/jellyfinPlaySong.py
+```
+and add this to the end (now it matters that we clean up after playback is finished):
+```
+if os.path.exists(tmpDir + "jellyfinStop"):
+  os.remove(tmpDir + "jellyfinStop")
+if os.path.exists(tmpDir + "jellyfinPause"):
+  os.remove(tmpDir + "jellyfinPause")
+if os.path.exists(tmpDir + "jellyfinResume"):
+  os.remove(tmpDir + "jellyfinResume")
+if os.path.exists(tmpDir + "jellyfinIsPaused"):
+  os.remove(tmpDir + "jellyfinIsPaused")
+if os.path.exists(tmpDir + "songInfoFile"):
+  os.remove(tmpDir + "songInfoFile")
+if os.path.exists(tmpDir + "currentMedia"):
+  os.remove(tmpDir + "currentMedia")
+```
+
+We can now play or shuffle a big queue of songs, however we have no ability to skip.
+    
 ## Converting units
 
 First, add a slot file called "units", and paste this in:
