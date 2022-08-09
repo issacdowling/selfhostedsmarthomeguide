@@ -1599,6 +1599,8 @@ elif intent == "JellyfinPlayQueue":
         time.sleep(1)
         os.remove("/dev/shm/tmpassistant/jellyfinPlay")
     while os.path.exists("/dev/shm/tmpassistant/currentMedia"):
+      if os.path.exists(jellyfinStopFilePath):
+        break
       pass
 ```
 Remember to add the server URL, auth, and userid.
