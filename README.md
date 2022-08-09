@@ -1402,17 +1402,18 @@ def getSongDetails(userid,itemid):
   songInfo[0].append(song["AlbumArtist"])
   return songInfo
 
-if os.path.exists(tmpDir + "songInfoFile"):
-  os.remove(tmpDir + "songInfoFile")
-
 tmpDir = "/dev/shm/tmpassistant/"
 jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
 headers = {"X-Emby-Token": jellyfinauth,}
+
+if os.path.exists(tmpDir + "songInfoFile"):
+  os.remove(tmpDir + "songInfoFile")
 
 itemid = open(tmpDir + "jellyfinPlay", "r").read()
 songInfo = getSongDetails(userid,itemid)
 songInfoFile = open(tmpDir + "songInfoFile", "w")
 songInfoFile.write(str(songInfo[0]))
+songInfoFile.close()
 
 if os.path.exists(tmpDir + "jellyfinStop"):
   os.remove(tmpDir + "jellyfinStop")
