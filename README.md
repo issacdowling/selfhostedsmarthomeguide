@@ -1580,6 +1580,7 @@ elif intent == "JellyfinPlayQueue":
   if ps == "shuffle":
     tmpShuffle = list(zip(songsList[0],songsList[1]))
     random.shuffle(tmpShuffle)
+    songsList[0], songsList[1] = zip(*tmpShuffle)
     songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
   songPos = 0
   for song in songsList[0]:
