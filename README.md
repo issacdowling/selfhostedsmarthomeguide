@@ -1645,8 +1645,9 @@ sudo nano ~/assistant/jellyfinPlaySong.py
 ```
 and add this to both the start and end:
 ```
-if os.path.exists(tmpDir + "jellyfinSkipSong"):
-  os.remove(tmpDir + "jellyfinSkipSong")
+elif intent == "JellyfinSkipSong":
+  jellyfinSkipSong = open(workingDir + "tmp/jellyfinSkipSong", "w")
+  jellyfinSkipSong.close()
 ```
 
 Then, modify your ```if os.path.exists(tmpDir + "jellyfinStop"):``` line and add (before the colon :)
