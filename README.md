@@ -1335,8 +1335,6 @@ elif intent == "JellyfinPlaySong":
         jellyfinPlay = open(jellyfinPlayFilePath, "w")
         jellyfinPlay.write(itemid)
         jellyfinPlay.close()
-        time.sleep(1)
-        os.remove(jellyfinPlayFilePath)
 ```
 
 Just as before, add your jellyfin server URL and auth token to the variables.
@@ -1394,10 +1392,28 @@ import miniaudio
 import time
 import os
 
+def getSongDetails(userid,itemid):
+  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
+  # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
+  get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
+  song = json.loads(get.text)
+  # add the values to a list
+  songInfo[0].append(song["Name"])
+  songInfo[0].append(song["AlbumArtist"])
+  return songInfo
+
 tmpDir = "/dev/shm/tmpassistant/"
 jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
 headers = {"X-Emby-Token": jellyfinauth,}
 
+if os.path.exists(tmpDir + "songInfoFile"):
+  os.remove(tmpDir + "songInfoFile")
+
+itemid = open(tmpDir + "jellyfinPlay", "r").read()
+songInfo = getSongDetails(userid,itemid)
+songInfoFile = open(tmpDir + "songInfoFile", "w")
+songInfoFile.write(str(songInfo[0]))
+songInfoFile.close()
 
 if os.path.exists(tmpDir + "jellyfinStop"):
   os.remove(tmpDir + "jellyfinStop")
@@ -1407,43 +1423,13 @@ if os.path.exists(tmpDir + "jellyfinResume"):
   os.remove(tmpDir + "jellyfinResume")
 if os.path.exists(tmpDir + "jellyfinIsPaused"):
   os.remove(tmpDir + "jellyfinIsPaused")
-if os.path.exists(tmpDir + "songInfoFile"):
-  os.remove(tmpDir + "songInfoFile")
-
-def getSongDetails(userid,itemid):
-  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
-  # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
-  get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
-  song = json.loads(get.text)
-  # add the values to a list
-  songInfo[0].append(song["Name"])
-  songInfo[0].append(song["AlbumArtist"])
-  songInfo[0].append(song["Album"])
-  songInfo[0].append(song["PremiereDate"].split("-"))
-
-  # Remove Extraneous Info From Date Field
-  songInfo[0][3][2] = songInfo[0][3][2][:2]
-
-  songInfo[0].append(song["UserData"]["IsFavorite"])
-  songInfo[0].append(song["GenreItems"][0]["Name"])
-  songInfo[0].append(song["UserData"]["PlayCount"])
-  songInfo[0].append(song["MediaStreams"][0]["Codec"])
-  songInfo[0].append(song["MediaStreams"][0]["BitRate"])
-  songInfo[0].append(song["MediaStreams"][0]["BitDepth"])
-  songInfo[0].append(song["Id"])
-  songInfo[0].append(song["AlbumPrimaryImageTag"])
-  return songInfo
-  
+if os.path.exists(tmpDir + "jellyfinPlay"):
+  os.remove(tmpDir + "jellyfinPlay")
   
 stream = miniaudio.stream_file(tmpDir + "currentMedia")
 device = miniaudio.PlaybackDevice()
 device.start(stream)
-itemid = open(tmpDir + "jellyfinPlay", "r").read()
-
-songInfo = getSongDetails(userid,itemid)
-songInfoFile = open(tmpDir + "songInfoFile", "w")
-songInfoFile.write(str(songInfo[0]))
-                  
+             
 #Get duration with very long line of code
 duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
 
@@ -1452,7 +1438,6 @@ progress = 0
 while True:
   if os.path.exists(tmpDir + "jellyfinStop"):
     device.close()
-    os.remove(tmpDir + "jellyfinStop")
     break
   if os.path.exists(tmpDir + "jellyfinPause"):
     device.stop()
@@ -1464,11 +1449,13 @@ while True:
     os.remove(tmpDir + "jellyfinIsPaused")
   if progress >= duration:
     device.close()
-    os.remove(tmpDir + "songInfoFile")
     break
   time.sleep(1)
   if not os.path.exists(tmpDir + "jellyfinIsPaused"):
     progress += 1
+    
+os.remove(tmpDir + "jellyfinStop")
+os.remove(tmpDir + "songInfoFile")
 ```
 #### Remember to add the URL, authtoken, and user id to the variables at the top
 
@@ -1548,7 +1535,114 @@ It'll now read that file, separate out the name and artist, then say them in a s
 
 Now, we've got a fairly competent way to play, stop, pause, and resume individual songs from your library, but what about whole albums or artists?
 
+First, add these sentences:
+```
+[JellyfinPlayQueue]
+albums = ($albums){itemid}
+albumartists = ($albumartists){itemid}
+favourites = (favourites){itemid}
+(play | shuffle){ps} my <favourites>
+(play | shuffle){ps} the album <albums>
+(play | shuffle){ps} the artist <albumartists>
+```
 
+Then, paste this elif statement at the end of the intenthandler:
+```
+elif intent == "JellyfinPlayQueue":
+  jellyfinurl, jellyfinauth = "", ""
+  headers = {"X-Emby-Token": jellyfinauth,}
+  songsList = [[],[]]
+  ps, itemid = o["slots"]["ps"], o["slots"]["itemid"]
+  userid = ""
+  if itemid == "favourites":
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
+  else:
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
+  receivedJson = json.loads(get.text)
+  songs = receivedJson["Items"]
+  for song in songs:
+    songsList[0].append(song["Name"])
+    songsList[1].append(song["Id"])
+  if ps == "shuffle":
+    tmpShuffle = list(zip(songsList[0],songsList[1]))
+    random.shuffle(tmpShuffle)
+    songsList[0], songsList[1] = zip(*tmpShuffle)
+    songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
+  songPos = 0
+  for song in songsList[0]:
+    if os.path.exists(jellyfinStopFilePath):
+        break
+    songPos += 1
+    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+    get = requests.get(jellyfinurl+"/Items/"+songsList[1][songPos]+"/Download", headers = headers)
+    # If request successful, save file
+    if get.status_code == 200:
+        currentSong = open(currentMediaPath, "wb")
+        currentSong.write(get.content)
+        currentSong.close()
+        jellyfinPlay = open(jellyfinPlayFilePath, "w")
+        jellyfinPlay.write(songsList[1][songPos])
+        jellyfinPlay.close()
+    while os.path.exists(currentMediaPath):
+      if os.path.exists(jellyfinStopFilePath):
+        break
+```
+Remember to add the server URL, auth, and userid.
+
+Now, go to the jellyfinPlaySong file:
+```
+sudo nano ~/assistant/jellyfinPlaySong.py
+```
+and add this to the end (now it matters that we clean up after playback is finished):
+```
+if os.path.exists(tmpDir + "jellyfinStop"):
+  os.remove(tmpDir + "jellyfinStop")
+if os.path.exists(tmpDir + "jellyfinPause"):
+  os.remove(tmpDir + "jellyfinPause")
+if os.path.exists(tmpDir + "jellyfinResume"):
+  os.remove(tmpDir + "jellyfinResume")
+if os.path.exists(tmpDir + "jellyfinIsPaused"):
+  os.remove(tmpDir + "jellyfinIsPaused")
+if os.path.exists(tmpDir + "songInfoFile"):
+  os.remove(tmpDir + "songInfoFile")
+if os.path.exists(tmpDir + "currentMedia"):
+  os.remove(tmpDir + "currentMedia")
+```
+
+We can now play or shuffle a big queue of songs, however we have no ability to skip.
+    
+#### Adding ability to skip.
+    
+Add this sentence:
+```
+[JellyfinSkipSong]
+(skip | next) [the] (song | track | music)
+```
+
+Then, we'll add this elif statement, which makes a skip file. It'll work like the stop file used to, except it ***won't*** tell our song-queue to stop too:
+```
+elif intent == "JellyfinSkipSong":
+  open(workingDir + "tmp/jellyfinSkipSong", "w") 
+```
+
+Now, we'll edit the jellyfinPlaySong file again:
+```
+sudo nano ~/assistant/jellyfinPlaySong.py
+```
+and add this to both the start and end:
+```
+elif intent == "JellyfinSkipSong":
+  jellyfinSkipSong = open(workingDir + "tmp/jellyfinSkipSong", "w")
+  jellyfinSkipSong.close()
+```
+
+Then, modify your ```if os.path.exists(tmpDir + "jellyfinStop"):``` line and add (before the colon :)
+```
+or os.path.exists(tmpDir + "jellyfinSkipSong")
+```
+    
+And now, you should be able to skip song.
+    
 ## Converting units
 
 First, add a slot file called "units", and paste this in:
