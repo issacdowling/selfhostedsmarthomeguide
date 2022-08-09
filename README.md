@@ -1335,8 +1335,6 @@ elif intent == "JellyfinPlaySong":
         jellyfinPlay = open(jellyfinPlayFilePath, "w")
         jellyfinPlay.write(itemid)
         jellyfinPlay.close()
-        time.sleep(1)
-        os.remove(jellyfinPlayFilePath)
 ```
 
 Just as before, add your jellyfin server URL and auth token to the variables.
@@ -1572,9 +1570,9 @@ elif intent == "JellyfinPlayQueue":
     songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
   songPos = 0
   for song in songsList[0]:
-    songPos += 1
     if os.path.exists(jellyfinStopFilePath):
-      break
+        break
+    songPos += 1
     # Send get request to Item Download API endpoint on the Jellyfin server with authentication
     get = requests.get(jellyfinurl+"/Items/"+songsList[1][songPos]+"/Download", headers = headers)
     # If request successful, save file
@@ -1585,12 +1583,9 @@ elif intent == "JellyfinPlayQueue":
         jellyfinPlay = open(jellyfinPlayFilePath, "w")
         jellyfinPlay.write(songsList[1][songPos])
         jellyfinPlay.close()
-        time.sleep(1)
-        os.remove("/dev/shm/tmpassistant/jellyfinPlay")
-    while os.path.exists("/dev/shm/tmpassistant/currentMedia"):
+    while os.path.exists(currentMediaPath):
       if os.path.exists(jellyfinStopFilePath):
         break
-      pass
 ```
 Remember to add the server URL, auth, and userid.
 
