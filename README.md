@@ -1398,6 +1398,10 @@ tmpDir = "/dev/shm/tmpassistant/"
 jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
 headers = {"X-Emby-Token": jellyfinauth,}
 
+itemid = open(tmpDir + "jellyfinPlay", "r").read()
+songInfo = getSongDetails(userid,itemid)
+songInfoFile = open(tmpDir + "songInfoFile", "w")
+songInfoFile.write(str(songInfo[0]))
 
 if os.path.exists(tmpDir + "jellyfinStop"):
   os.remove(tmpDir + "jellyfinStop")
@@ -1409,6 +1413,8 @@ if os.path.exists(tmpDir + "jellyfinIsPaused"):
   os.remove(tmpDir + "jellyfinIsPaused")
 if os.path.exists(tmpDir + "songInfoFile"):
   os.remove(tmpDir + "songInfoFile")
+if os.path.exists(tmpDir + "jellyfinPlay"):
+  os.remove(tmpDir + "jellyfinPlay")
 
 def getSongDetails(userid,itemid):
   songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
@@ -1423,11 +1429,8 @@ def getSongDetails(userid,itemid):
 stream = miniaudio.stream_file(tmpDir + "currentMedia")
 device = miniaudio.PlaybackDevice()
 device.start(stream)
-itemid = open(tmpDir + "jellyfinPlay", "r").read()
 
-songInfo = getSongDetails(userid,itemid)
-songInfoFile = open(tmpDir + "songInfoFile", "w")
-songInfoFile.write(str(songInfo[0]))
+
                   
 #Get duration with very long line of code
 duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
