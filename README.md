@@ -1625,6 +1625,37 @@ if os.path.exists(tmpDir + "currentMedia"):
 
 We can now play or shuffle a big queue of songs, however we have no ability to skip.
     
+#### Adding ability to skip.
+    
+Add this sentence:
+```
+[JellyfinSkipSong]
+(skip | next) [the] (song | track | music)
+```
+
+Then, we'll add this elif statement, which makes a skip file. It'll work like the stop file used to, except it ***won't*** tell our song-queue to stop too:
+```
+elif intent == "JellyfinSkipSong":
+  open(workingDir + "tmp/jellyfinSkipSong", "w") 
+```
+
+Now, we'll edit the jellyfinPlaySong file again:
+```
+sudo nano ~/assistant/jellyfinPlaySong.py
+```
+and add this to both the start and end:
+```
+if os.path.exists(tmpDir + "jellyfinSkipSong"):
+  os.remove(tmpDir + "jellyfinSkipSong")
+```
+
+Then, modify your ```if os.path.exists(tmpDir + "jellyfinStop"):``` line and add (before the colon :)
+```
+or os.path.exists(tmpDir + "jellyfinSkipSong")
+```
+    
+And now, you should be able to skip song.
+    
 ## Converting units
 
 First, add a slot file called "units", and paste this in:
