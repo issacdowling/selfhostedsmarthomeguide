@@ -1392,6 +1392,16 @@ import miniaudio
 import time
 import os
 
+def getSongDetails(userid,itemid):
+  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
+  # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
+  get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
+  song = json.loads(get.text)
+  # add the values to a list
+  songInfo[0].append(song["Name"])
+  songInfo[0].append(song["AlbumArtist"])
+  return songInfo
+
 tmpDir = "/dev/shm/tmpassistant/"
 jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
 headers = {"X-Emby-Token": jellyfinauth,}
@@ -1413,23 +1423,11 @@ if os.path.exists(tmpDir + "songInfoFile"):
   os.remove(tmpDir + "songInfoFile")
 if os.path.exists(tmpDir + "jellyfinPlay"):
   os.remove(tmpDir + "jellyfinPlay")
-
-def getSongDetails(userid,itemid):
-  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
-  # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
-  get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
-  song = json.loads(get.text)
-  # add the values to a list
-  songInfo[0].append(song["Name"])
-  songInfo[0].append(song["AlbumArtist"])
-  return songInfo
   
 stream = miniaudio.stream_file(tmpDir + "currentMedia")
 device = miniaudio.PlaybackDevice()
 device.start(stream)
-
-
-                  
+             
 #Get duration with very long line of code
 duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
 
