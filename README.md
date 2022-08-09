@@ -1021,7 +1021,7 @@ If the intent is **"Greet"**, we make a list of items, each of which is a string
 
 I soon intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
 
-## Bluetooth Audio Streaming (highly imperfect)
+## Bluetooth Audio Streaming
 You can use an Echo or Google Home as a bluetooth speaker, why not this?
 
 First, run this to install all of the (originally difficult for me to find) dependencies
