@@ -1418,22 +1418,7 @@ def getSongDetails(userid,itemid):
   # add the values to a list
   songInfo[0].append(song["Name"])
   songInfo[0].append(song["AlbumArtist"])
-  songInfo[0].append(song["Album"])
-  songInfo[0].append(song["PremiereDate"].split("-"))
-
-  # Remove Extraneous Info From Date Field
-  songInfo[0][3][2] = songInfo[0][3][2][:2]
-
-  songInfo[0].append(song["UserData"]["IsFavorite"])
-  songInfo[0].append(song["GenreItems"][0]["Name"])
-  songInfo[0].append(song["UserData"]["PlayCount"])
-  songInfo[0].append(song["MediaStreams"][0]["Codec"])
-  songInfo[0].append(song["MediaStreams"][0]["BitRate"])
-  songInfo[0].append(song["MediaStreams"][0]["BitDepth"])
-  songInfo[0].append(song["Id"])
-  songInfo[0].append(song["AlbumPrimaryImageTag"])
   return songInfo
-  
   
 stream = miniaudio.stream_file(tmpDir + "currentMedia")
 device = miniaudio.PlaybackDevice()
