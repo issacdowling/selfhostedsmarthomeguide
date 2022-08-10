@@ -1323,20 +1323,22 @@ Also, add this elif statement:
 
 ```
 elif intent == "JellyfinPlaySong":
-    itemid = o["slots"]["itemid"]
-    jellyfinurl, jellyfinauth = "https://", ""
-    headers = {"X-Emby-Token": jellyfinauth,}
+  if os.path.exists(currentMediaPath):
+    exit("Already playing")
+  itemid = o["slots"]["itemid"]
+  jellyfinurl, jellyfinauth = "https://", ""
+  headers = {"X-Emby-Token": jellyfinauth,}
 
-    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
-    get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
-    # If request successful, save file
-    if get.status_code == 200:
-        currentSong = open(currentMediaPath, "wb")
-        currentSong.write(get.content)
-        currentSong.close()
-        jellyfinPlay = open(jellyfinPlayFilePath, "w")
-        jellyfinPlay.write(itemid)
-        jellyfinPlay.close()
+  # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+  get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
+  # If request successful, save file
+  if get.status_code == 200:
+    currentSong = open(currentMediaPath, "wb")
+    currentSong.write(get.content)
+    currentSong.close()
+    jellyfinPlay = open(jellyfinPlayFilePath, "w")
+    jellyfinPlay.write(itemid)
+    jellyfinPlay.close()
 ```
 
 Just as before, add your jellyfin server URL and auth token to the variables.
@@ -1483,16 +1485,16 @@ First, go to the Rhasspy web UI, sentences, and add this:
 Now, add this to the bottom of your intentHandler:
 ```
 elif intent == "JellyfinPlaybackCtrl":
-    playback = o["slots"]["playback"]
-    if playback == "continue" or playback == "resume" or playback == "unpause":
-      jellyfinResume = open(jellyfinResumeFilePath, "w")
-      jellyfinResume.close()
-    if playback == "pause":
-      jellyfinPause = open(jellyfinPauseFilePath, "w")
-      jellyfinPause.close()
-    if playback == "stop":
-      jellyfinStop = open(jellyfinStopFilePath, "w")
-      jellyfinStop.close()
+  playback = o["slots"]["playback"]
+  if playback == "continue" or playback == "resume" or playback == "unpause":
+    jellyfinResume = open(jellyfinResumeFilePath, "w")
+    jellyfinResume.close()
+  if playback == "pause":
+    jellyfinPause = open(jellyfinPauseFilePath, "w")
+    jellyfinPause.close()
+  if playback == "stop":
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
 ```
 
 #### And, you can add ```open(jellyfinStopFilePath, "w")``` to your "GenericStop" intent too.
@@ -1554,6 +1556,8 @@ favourites = (favourites){itemid}
 Then, paste this elif statement at the end of the intenthandler:
 ```
 elif intent == "JellyfinPlayQueue":
+  if os.path.exists(currentMediaPath):
+    exit("Already playing")
   jellyfinurl, jellyfinauth = "", ""
   headers = {"X-Emby-Token": jellyfinauth,}
   songsList = [[],[]]
