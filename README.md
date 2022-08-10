@@ -829,6 +829,7 @@ This timer section was massive. My code at the end of it looks like this:
 elif intent == "DoTimer":
     timerFinishedAudio = workingDir+"timerchime.wav"
     number, unit = o["slots"]["time"], o["slots"]["unit"]
+    speech("Alright, I'll set a " + str(number) + " " + unit + " timer")
     if os.path.exists(stopTimerSoundFilePath):
         os.remove(stopTimerSoundFilePath)
     if os.path.exists(cancelFilePath):
@@ -863,7 +864,7 @@ elif intent == "DoTimer":
 Here's the StopTimerSound section:
 ```
 elif intent == "StopTimerSound":
-    stopTimerSoundFile = open(stopTimerSoundFilePath, 'w')
+    stopTimerSoundFile = open(stopTimerSoundFilePath, "w")
     stopTimerSoundFile.close()
 ```
 Here's the cancelTimer section:
@@ -1677,7 +1678,7 @@ elif intent == "ChangeVolume":
   customBounds = False
   if customBounds == True:
     percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
-  call(['amixer', 'sset', audioDevice, str(percentage) + "%"])
+  call(["amixer", "sset", audioDevice, str(percentage) + "%"])
 ```
 This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.
     
@@ -1702,7 +1703,26 @@ minBound, maxBound = 0, 100
 and change ```customBounds``` to True.
 
 So, if I have a minBound of 60 and a maxBound of 80, then ask for 50% volume, it'll give me 70% "real" volume. This won't be useful for everyone, but I needed it, and it works.
-    
+
+### Adding a confirmation sound.
+
+You might want to be given a general idea for how loud you've set your volume. This is as simple as adding one line to the end of this section:
+```
+call(["aplay", "/profiles/yourfile.wav"])
+```
+In my case, I'll be repurposing the sounds that I made which were originally intended for the "start/stop listening" sounds. If you want to use them, run this:
+```
+cd ~/assistant/profiles
+sudo curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/stoplistening.wav
+sudo mv stoplistening.wav testSound.wav
+```
+and obviously change that line to be
+```
+call(["aplay", "/profiles/testSound.wav"])
+```
+
+
+
 ## Converting units
 
 First, add a slot file called "units", and paste this in:
