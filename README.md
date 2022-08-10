@@ -1408,6 +1408,9 @@ tmpDir = "/dev/shm/tmpassistant/"
 jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
 headers = {"X-Emby-Token": jellyfinauth,}
 
+if not os.path.exists(tmpDir + "currentMedia"):
+  exit("No media to play")
+
 if os.path.exists(tmpDir + "songInfoFile"):
   os.remove(tmpDir + "songInfoFile")
 
@@ -1646,7 +1649,49 @@ or os.path.exists(tmpDir + "jellyfinSkipSong")
 And now, you should be able to skip song.
     
 ## Volume control
+For now, this is more complex than I'd like (if you're in my situation), however definitely workable. With the tools we've got, setting my speaker any below 65% is entirely inaudible, so we'll add support for setting **your own** "boundaries" for volume. In my case, I'd want "0%" to actually mean 65%. This obviously isn't necessary for everyone, and shouldn't be for me in the future either.
+    
+After doing some looking, I couldn't change the volume of audio from the host OS, since Rhasspy's docker container has separate access to audio devices. But that's fine, because our python script runs within that docker container, so we can just call ```amixer``` and politely ask for a volume change.
+    
+So, add this to your sentences:
+```
+[ChangeVolume]
+(set | change) [the] volume [to] (0..100){percentage} [percent]
+```
+and then this to your intentHandler:
+```
+elif intent == "ChangeVolume":
+  audioDevice = "Headphone"
+  percentage = o["slots"]["percentage"]
+  minBound, maxBound = 0, 100
+  customBounds = False
+  if customBounds == True:
+    percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
+  call(['amixer', 'sset', audioDevice, str(percentage) + "%"])
+```
+This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.
+    
+First, run this:
+```
+docker exec -it rhasspy bash
+```
+You're now inside Rhasspy.
+    
+From here, just run ```amixer```, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
 
+![Amixer devices](https://github.com/IssacDowling/SelfhostedSmartHomeGuide/blob/main/images/amixer-devices.png)
+
+Here, that's ```Headphone```.  If yours is different, just change it in the python script (and if you think you're stuck inside Rhasspy, you can leave it by running ```exit```.
+    
+### Setting custom boundaries
+    
+Sometimes, we want custom minimum/maximum audio levels. If you do, all we need to do is change the numbers on this line:
+```
+minBound, maxBound = 0, 100
+```
+and change ```customBounds``` to True.
+
+So, if I have a minBound of 60 and a maxBound of 80, then ask for 50% volume, it'll give me 70% "real" volume. This won't be useful for everyone, but I needed it, and it works.
     
 ## Converting units
 
