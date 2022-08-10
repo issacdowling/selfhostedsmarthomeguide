@@ -484,8 +484,8 @@ And paste this below the last elif statement:
 elif intent == "SetSpecificLightPower":
     entity = o["slots"]["entity"]
     state = o["slots"]["state"]
-    speech("Alright, I'll turn it " + state )
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+    speech("Alright, I'll turn it " + state )
 ```
 Things should look like this:
 ![add intents](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/addintents.png)
@@ -531,8 +531,8 @@ We'll paste another elif block, very similar to our last:
 elif intent == "SetSpecificLightColour":
     entity = o["slots"]["entity"]
     colour = o["slots"]["colour"]
-    speech("Alright, I'll make it " + colour )
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+    speech("Alright, I'll make it " + colour )
 ```
 Once you've saved an exited, it should work immediately. 
 
@@ -549,8 +549,8 @@ And add this elif statement, just like the colour one:
 elif intent == "SetSpecificLightBrightness":
     entity = o["slots"]["entity"]
     brightness = o["slots"]["brightness"]
-    speech("Alright, I'll make it " + str(brightness) + " percent")
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+    speech("Alright, I'll make it " + str(brightness) + " percent")
 ```
 You can probably see how things work now, based on how little has changed from the version of that code which modifies colour instead.
 
@@ -1065,11 +1065,11 @@ sudo nano ~/assistant/profiles/intentHandler
 and go to near the bottom, where you'll add another elif statement:
 ```
 elif intent == "BluetoothPairing":
-    speech("Turning on bluetooth pairing")
     bleutoothFile = open(bluetoothFilePath, "w") 
     time.sleep(0.1)
     bluetoothFile.close()
     os.remove(bluetoothFilePath)
+    speech("Turning on bluetooth pairing")
 ```
 
 Then, go to the ```# Set paths``` section at the top, and add 
