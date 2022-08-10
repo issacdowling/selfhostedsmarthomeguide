@@ -370,7 +370,7 @@ def speech(text):
   requests.post("http://YOUR-PI-IP:12101/api/text-to-speech", headers = {"content-type": "text/plain"}, data = text)
 
 # Set Homeassistant URL
-hassurl = "http://"
+hassurl = "http://YOUR-PI-IP:8123"
 hassauth = ""
 hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
@@ -387,7 +387,7 @@ elif intent == "Greet":
     replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
     speech(random.choice(replies))
 ```
-Now, add your Pi's IP (adding ```:8123``` to the end) to the hassurl section, and your auth token to the hassauth section.
+Now, add your Pi's IP to the hassurl section, (and also in the request.post statement), and add your auth token to the hassauth section.
 
 CTRL+X, Y, ENTER.
 
