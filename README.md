@@ -1681,7 +1681,7 @@ From here, just run ```amixer```, and you'll see a list of devices (or just one,
 
 ![Amixer devices](https://github.com/IssacDowling/SelfhostedSmartHomeGuide/blob/main/images/amixer-devices.png)
 
-Here, that's ```Headphone```.  If yours is different, just change it in the python script (and if you think you're stuck inside Rhasspy, you can leave it by running ```exit```.
+Here, that's ```Headphone```.  If yours is different, just change it in the python script (and if you think you're stuck inside Rhasspy, you can leave it by running ```exit```)
     
 ### Setting custom boundaries
     
