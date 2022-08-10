@@ -34,6 +34,8 @@
 
 [Jellyfin Music Support (beta)](README.md#jellyfin-music-support)
 
+[Volume Controls](README.md#volume-control)
+
 [Converting Units](README.md#converting-units)
 
 
@@ -1642,6 +1644,9 @@ or os.path.exists(tmpDir + "jellyfinSkipSong")
 ```
     
 And now, you should be able to skip song.
+    
+## Volume control
+
     
 ## Converting units
 
