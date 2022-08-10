@@ -367,8 +367,7 @@ import datetime
 import requests
 
 def speech(text):
-    global o
-    o["speech"] = {"text": text}
+  requests.post("http://YOUR-PI-IP:12101/api/text-to-speech", headers = {"content-type": "text/plain"}, data = text)
 
 # Set Homeassistant URL
 hassurl = "http://"
@@ -387,9 +386,6 @@ if intent == "GetTime":
 elif intent == "Greet":
     replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
     speech(random.choice(replies))
-
-# convert dict to json and print to stdout
-print(json.dumps(o))
 ```
 Now, add your Pi's IP (adding ```:8123``` to the end) to the hassurl section, and your auth token to the hassauth section.
 
