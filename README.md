@@ -655,6 +655,7 @@ Then, go to the intentHandler script (```sudo nano ~/assistant/profiles/intentHa
 ```
 elif intent == "DoTimer":
     number, unit = o["slots"]["time"], o["slots"]["unit"]
+    speech("Alright, i'll set a " + str(number) + " " + unit + " timer")
     if unit == "second":
         timerLength = number-1
     elif unit == "minute":
@@ -1219,6 +1220,15 @@ currentlyResponse = ["Right now it's ", "Its ", "Currently its ", "At the moment
 Then, in the ```GetTime``` and ```GetWeather``` sections, we can replace the ```"Its "``` with
 ```
 random.choice(currentlyResponse)
+```
+
+I've also added it to the timer section, so I've replaced this:
+```
+speech("Alright, I'll set a " + str(number) + " " + unit + " timer")
+```
+with this:
+```
+speech(random.choice(agreeResponse) + "I'll set a " + str(number) + " " + unit + " timer")
 ```
 
 
