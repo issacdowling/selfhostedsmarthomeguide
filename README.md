@@ -63,11 +63,11 @@ A project that aims to make a self-hosted smart speaker with a reasonable amount
 
 Choose OS, then **Raspberry Pi OS (other)**
 
-![Other](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/otherOS.png)
+![Other](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/otherOS.png)
 
 then **Raspberry Pi OS 64-bit lite**
 
-![64-bit-lite](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/lite64.png)
+![64-bit-lite](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/lite64.png)
 
 ### Now, click the settings icon in the bottom right corner.
 
@@ -77,19 +77,19 @@ then **Raspberry Pi OS 64-bit lite**
 * Configure Wifi if you're going to use it instead of ethernet. Ethernet is more stable, but Wifi allows for more freedom in positioning.
 * Scroll down, save.
 
-![Settings page](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/settings.png)
+![Settings page](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/settings.png)
 
 ### Choose your boot device (what you'll be keeping in the Pi, typically a MicroSD card)
-![Boot device list](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/selectboot.png)
+![Boot device list](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/selectboot.png)
 
 ### And finally, press write, and wait for it to finish.
 
-![Writing Media](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/writingprogress.png)
+![Writing Media](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/writingprogress.png)
 
 ## Booting and initial install
 Assuming you have a Micro-HDMI cable, you can turn on the Pi without anything inserted to ensure it boots fine. You'll likely get a screen like this.
 
-![Boot with no device](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/bootnodevice.png)
+![Boot with no device](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/bootnodevice.png)
 
 But if - like most people - you don't own a Micro HDMI cable, that's alright. We can run *headlessly* (without a display)
 
@@ -97,10 +97,10 @@ But if - like most people - you don't own a Micro HDMI cable, that's alright. We
 
 If you've got a display connected, wait until there's a line with your username in green at the bottom of the screen, like this.
 
-![Linux bootup scene](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/withdisplaybootup.png)
+![Linux bootup scene](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/withdisplaybootup.png)
 
 If you don't have a display connected, go to a computer on the same network as your Pi (so, if you didn't set up Wifi, connect an ethernet cable). Then, run **"terminal"** (same on Linux, Windows 11, or MacOS, but on Windows 10, run cmd). Now, type ```ssh yourusername@yourhostname.local```, and replace 'yourusername' with your Pi username, and 'yourhostname' with the hostname you typed in the settings page. At first, it'll likely error out, since the Pi isn't done booting yet, but you can press the up arrow and enter to run the command again. You know you've succeeded once you see this page.
-![SSH fingerprint question](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/fingerprint.png)
+![SSH fingerprint question](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/fingerprint.png)
 
 Type yes, enter, then type your password (which won't show up onscreen as a security measure, but it *is* still going through). 
 
@@ -116,7 +116,7 @@ to get up to date
 
 In your terminal, type ```ip route | grep default```. Then, note down three things: the first IP, the network device, and the second IP. The IPs will likely be 192.168.x.x, but may be different. In the image, I've highlighted these things in yellow so you know where to look.
 
-![my private IP for the Pi](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/ipdefault.png)
+![my private IP for the Pi](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/ipdefault.png)
 
 Now, run
 ```
@@ -124,7 +124,7 @@ sudo nano /etc/dhcpcd.conf
 ```
 and navigate down to the bottom line using the arrow keys, then press enter a few times to add some lines. You should get to here:
 
-![dhcpcd](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/dhcpcd.png)
+![dhcpcd](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/dhcpcd.png)
 
 Then, paste this in:
 
@@ -149,7 +149,7 @@ sudo nano /boot/config.txt
 ```
 then go down to where it says **"#uncomment to overclock the arm"**
 
-![default boot config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/defaultarmover.png)
+![default boot config](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/defaultarmover.png)
 
 Remove the **#** from the line beginning ```#arm_freq```, and change the number to 1750. Add another line below the **"#uncomment to overclock the arm"** bit, and copy this in:
 ```
@@ -161,7 +161,7 @@ gpu_freq=0
 ```
 In the end, it'll look like this:
 
-![better boot config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/betterarmover.png)
+![better boot config](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/betterarmover.png)
 
 If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however the above config should be doable by practically all Pi 4s, and remain at safe temperatures. I do **over_voltage=4**, **arm_freq=2000**, and have not had any cooling or stability issues despite running the Pi bare.
 
@@ -184,7 +184,7 @@ And, if you're not using the GPU, you can also add ```gpu_mem=16``` to the **"[a
 
 In the end, it'll look like this:
 
-![better led config](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/betterled.png)
+![better led config](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/betterled.png)
 
 You can now do CTRL+X, Y, ENTER, to save and exit, then run ```sudo reboot``` to restart your pi. Once you're back, continue with the next section.
 
@@ -231,7 +231,7 @@ Then, press CTRL+X, Y, Enter, to save and exit. After which, you can just run
 sudo docker-compose up -d
 ```
 to begin installing. This, again, may take a while. You'll know it's done once you see this:
-![Install complete](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/donedocker.png)
+![Install complete](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/donedocker.png)
 
 # Initally setting up rhasspy
 In a browser on the same network as your Pi, go to this site, changing 'yourhostname' to your hostname.
@@ -239,14 +239,14 @@ In a browser on the same network as your Pi, go to this site, changing 'yourhost
 http://yourhostname.local:12101
 ```
 Your browser *should* complain that this site is not secure. If it was a site on the internet, you wouldn't want to access it, however it's just local, so we can tell the browser that we want to continue.
-![https issue](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/httpsonly.png)
+![https issue](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/httpsonly.png)
 
 ### And now you'll be here!
-![Rhasspy main page](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/rhasspyhome.png)
+![Rhasspy main page](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/rhasspyhome.png)
 
 Then, go to the settings page using the left-side menu. Go through each service, and - for now - just select the default from the dropdown menu. Then, press the save settings button below the list, and restart. Once restarted, go to the top of the page, and press download. After that's done, things should look like this.
 
-![Settings page with defaults selected](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/settingdefault.png)
+![Settings page with defaults selected](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/settingdefault.png)
 
 ## Testing things
 
@@ -255,7 +255,7 @@ Then, go to the settings page using the left-side menu. Go through each service,
 
 To test audio output, go back to the home page, and type something into the 'speak' box, and see if it comes out of your speakers. 
 
-![AudioTest](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/audiotest.png)
+![AudioTest](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/audiotest.png)
 
 It will likely sound quite bad, but should work.
 
@@ -264,7 +264,7 @@ It will likely sound quite bad, but should work.
 
 To test audio input, press 'Wake Up' on the home page, and say "What time is it?". If it hears you, you'll get a response, and the UI will update to show this:
 
-![AudioInputWorks](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/audioinputworks.png)
+![AudioInputWorks](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/audioinputworks.png)
 
 If there's no response, try relaunching rhasspy, by going back to your terminal, and typing
 ```
@@ -278,7 +278,7 @@ I reccommend going back to the settings page, switching your **Text To Speech** 
 
 ### Remember to save your settings and restart afterwards.
 
-![TTSsettings](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Texttospeech.png)
+![TTSsettings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Texttospeech.png)
 
 ### Wake word
 To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.85** so it can pick me up when I'm quieter. Save and restart, and it should work.
@@ -320,33 +320,33 @@ http://yourhostname.local:8123
 ```
 Replacing 'yourhostname' with your hostname. It should look like this: (after the same security prompt as before)
 
-![hass onboarding](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassonboarding.png)
+![hass onboarding](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassonboarding.png)
 
 Just type a name, username, and make a password, and press 'Create Account'
 
-![hass make account](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassmakeaccoun.png)
+![hass make account](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassmakeaccoun.png)
 
 Now, give your home a name and location, (plus elevation, if you'd like)
 
-![hass name home](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassnamehome.png)
+![hass name home](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassnamehome.png)
 
 And choose which data to *opt-in* for. These are all disabled by default, however I'd ask that you consider turning on anything you're comfortable with, since it can help the devs.
 
-![hass opt in](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassoptin.png)
+![hass opt in](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassoptin.png)
 
 Finally for the onboarding, just press finish! This page shows any services that homeassistant automatically found, but we'll set things up later.
 
-![hass auto find](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/hassautofind.png)
+![hass auto find](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassautofind.png)
 
 Now, you should be on the main homeassistant page. Click your name in the bottom left, then scroll down to long-lived tokens.
 
-![llat](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/llat.png)
+![llat](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/llat.png)
 
 Create one, name it whatever you'd like, and save it for a minute.
 
 Go back to your rhasspy tab, then settings, scroll down to intent handler, and select local command.
 
-![local intent handler](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/localcommandintents.png)
+![local intent handler](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/localcommandintents.png)
 
 Then, press the green dropdown, and set the program to ```/profiles/intentHandler```
 
@@ -435,21 +435,21 @@ So you know, there are more ways to accomplish things. I'll be describing the me
 
 This isn't a homeassistant tutorial, but if you've got any WLED devices, they should automatically appear in the devices section to be configured like this:
 
-![Autoadd1](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Autoadd1.png)
-![Autoadd2](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Autoadd2.png)
-![Autoadd3](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/Autoadd3.png)
+![Autoadd1](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd1.png)
+![Autoadd2](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd2.png)
+![Autoadd3](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd3.png)
 
 To check the device name, go to settings, then entities in Homeassistant. Then, click on the device you're intending to control. Note down the name at the bottom.
 
-![Wled device in entities](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/wledentities.png)
+![Wled device in entities](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/wledentities.png)
 
 Back in Rhasspy, click the circular "slots" tab,
 
-![slot tab](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/slottab.png)
+![slot tab](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/slottab.png)
 
 then make a new slot called lights. Within regular brackets, put the name you'd like to speak. If there are multiple, such as "Bed LEDS" and "Bedside LEDs", separate them with a pipe symbol (|). Then, immediately after the brackets, add a colon (:), and **without adding a space**, add the entity id from homeassistant. Here's what mine looks like with two lights.
 
-![Light slot](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/lightslot.png)
+![Light slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/lightslot.png)
 
 Then, head back to your sentences section, and remove what you've already got. If you want to use my setup, paste this in:
 ```
@@ -492,7 +492,7 @@ elif intent == "SetSpecificLightPower":
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
 ```
 Things should look like this:
-![add intents](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/addintents.png)
+![add intents](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/addintents.png)
 
 Anything within ```speech()``` will be spoken. 
 
@@ -504,11 +504,11 @@ Go back to your slots, add a new one called ```colours``` (the British spelling)
 ```
 It actually supports all colours in [this list](https://www.w3.org/TR/css-color-3/#svg-color), so if I omitted your favourite colour, you can add it as long as it's in the page on that link.
 
-![Colour slot](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/colourslotcorrected.png)
+![Colour slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/colourslotcorrected.png)
 
 Then, go to your sentences, and duplicate your power control section. Change Power to Colour (or apply your own naming convention), change ```light_state``` to ```light_colour```, change ```on | off``` to ```$colours```, and change ```{entity}``` to ```{colour}```. Remember to also change light_state in the actual sentence too, along with correcting the layout of the sentence so it makes sense when you say it. In the end, I've got this:
 
-![Colour sentence](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/coloursentencecorrection.png)
+![Colour sentence](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/coloursentencecorrection.png)
 
 Finally, go back to your terminal with automations.yaml open, and paste this below your power config:
 ```
@@ -594,7 +594,7 @@ What if we want to ask the assistant to perform calculations? I'll explain the b
 
 First, go back to the slots section in the left menu.
 
-![slot tab](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/images/slottab.png)
+![slot tab](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/slottab.png)
 
 Then, we'll define our operations. Make a new slot called **"operations"**, then paste this in:
 ```
@@ -736,7 +736,7 @@ stop [the] (alarm)
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop the alarm. Once the current loop is over, it will finish. **Once we've completed the timer section, there'll be a section about adding a generic "stop" function that applies to everything. If you want to be able to stop the timer by just saying "stop", you can go there now if you'd like.**
 
 ### Some notes about the audio
-Due to it finishing the current audio loop before stopping, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://github.com/IssacDowling/SelfhostedVoiceAssistantGuide/blob/main/resources/sounds/timerchime.wav)
+Due to it finishing the current audio loop before stopping, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/blob/main/resources/sounds/timerchime.wav)
 
 ### Check Timer Progress While Running
 Ideally, you could ask the assistant how far along the timer is. Let's make that.
@@ -1258,7 +1258,7 @@ The way we're doing this is really simple and flexible, but makes the responses 
 ## Jellyfin Music Support
 We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
 
-Progress made on this integration happens [here](https://github.com/IssacDowling/jellypy).
+Progress made on this integration happens [here](https://gitlab.com/issacdowling/jellypy).
 
 #### Here is a reminder to myself to make this into a slots protgram eventually so that it's even more hands-off.
 
@@ -1277,7 +1277,7 @@ cd ~/assistant/profiles/en/slots/
 sudo nano create-jf-slots.py
 ```
 
-Now, go to [this link](https://raw.githubusercontent.com/IssacDowling/jellypy/main/main.py), CTRL+A to select everything, and paste it into that text editor we opened.
+Now, go to [this link](https://gitlab.com/issacdowling/jellypy/-/raw/main/main.py), CTRL+A to select everything, and paste it into that text editor we opened.
 
 Next, change the contents of ```jellyfinurl``` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the ```:portnumber``` at the end.
 
@@ -1285,7 +1285,7 @@ Then, go to your Jellyfin server's web client, then click the profile icon in th
 
 Next, press F12 to open your browser's dev tools, click the network tab, and enter ```userid``` into the search bar, then refresh the page. Hopefully you'll see something like this:
 
-![Firefox dev tools showing URL with userid](https://github.com/IssacDowling/SelfhostedSmartHomeGuide/blob/main/images/devtoolsuserid.png)
+![Firefox dev tools showing URL with userid](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/devtoolsuserid.png)
 
 Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for ```userid``` (remembering not to include the ```&``` symbol which will be at the end, and paste it into the ```userid``` section in the python script.
 
@@ -1679,7 +1679,7 @@ You're now inside Rhasspy.
     
 From here, just run ```amixer```, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
 
-![Amixer devices](https://github.com/IssacDowling/SelfhostedSmartHomeGuide/blob/main/images/amixer-devices.png)
+![Amixer devices](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/amixer-devices.png)
 
 Here, that's ```Headphone```.  If yours is different, just change it in the python script (and if you think you're stuck inside Rhasspy, you can leave it by running ```exit```)
     
