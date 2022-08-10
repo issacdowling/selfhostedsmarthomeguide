@@ -1514,6 +1514,21 @@ jellyfinPauseFilePath = workingDir+"tmp/"+"jellyfinPause"
 ```
 Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
 
+I also suggest changing the if statement at the start of the ```jellyfinPlaySong``` section. Instead of exiting if we've already got something playing, we'll just *stop* what's already playing so we can continue.
+
+So, replace this:
+```
+if os.path.exists(currentMediaPath):
+  exit("Already playing")
+```
+with this:
+```
+if os.path.exists(currentMediaPath):
+  jellyfinStop = open(jellyfinStopFilePath, "w")
+  jellyfinStop.close()
+  time.sleep(1)
+```
+
 ### Getting currently playing song
 Although probably not the most useful while playing a single song, we'll add this feature now so we have it later.
 
@@ -1564,7 +1579,9 @@ Then, paste this elif statement at the end of the intenthandler:
 ```
 elif intent == "JellyfinPlayQueue":
   if os.path.exists(currentMediaPath):
-    exit("Already playing")
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
+    time.sleep(1)
   jellyfinurl, jellyfinauth = "", ""
   headers = {"X-Emby-Token": jellyfinauth,}
   songsList = [[],[]]
