@@ -631,8 +631,8 @@ elif intent == "DoMaths":
     elif operator == "/":
         operator = " over "
         calcResult = str(num1/num2)
-    if num1 == 9 and num2 == 10 and operator == "+":
-        speech("That's 21")
+    if num1 == 9 and num2 == 10 and operator == " add ":
+        speech("9 plus 10 is 21")
     else:
         speech(str(num1) + operator + str(num2) + " is " + calcResult.replace("." , " point "))
 ```
