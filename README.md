@@ -1570,9 +1570,11 @@ First, add these sentences:
 albums = ($albums){itemid}
 albumartists = ($albumartists){itemid}
 favourites = (favourites){itemid}
+playlists = ($playlists){itemid}
 (play | shuffle){ps} my <favourites>
 (play | shuffle){ps} the album <albums>
 (play | shuffle){ps} the artist <albumartists>
+(play | shuffle){ps} the playlist <playlists>
 ```
 
 Then, paste this elif statement at the end of the intenthandler:
@@ -1605,7 +1607,6 @@ elif intent == "JellyfinPlayQueue":
   for song in songsList[0]:
     if os.path.exists(jellyfinStopFilePath):
         break
-    songPos += 1
     # Send get request to Item Download API endpoint on the Jellyfin server with authentication
     get = requests.get(jellyfinurl+"/Items/"+songsList[1][songPos]+"/Download", headers = headers)
     # If request successful, save file
@@ -1619,6 +1620,7 @@ elif intent == "JellyfinPlayQueue":
     while os.path.exists(currentMediaPath):
       if os.path.exists(jellyfinStopFilePath):
         break
+    songPos += 1
 ```
 Remember to add the server URL, auth, and userid.
 
