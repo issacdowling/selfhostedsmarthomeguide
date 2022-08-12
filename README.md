@@ -1477,7 +1477,6 @@ os.remove(tmpDir + "songInfoFile")
 Run
 ```
 sudo systemctl enable jellyfinSongPlay.path --now
-sudo systemctl enable jellyfinSongPlay.service
 sudo chmod +x ~/assistant/jellyfinPlaySong.py
 ```
 
