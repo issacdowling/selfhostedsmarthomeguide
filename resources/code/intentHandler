@@ -4,28 +4,29 @@ import sys
 import json
 import random
 import datetime
+from datetime import datetime
 import requests
 import os
 import time
+import math
 from subprocess import call
 
 def speech(text):
-    global o
-    o["speech"] = {"text": text}
+  requests.post("http://10.0.0.200:12101/api/text-to-speech", headers = {"content-type": "text/plain"}, data = text)
 
 # Set Homeassistant URL
-hassurl, hassauth = "http://10.0.0.200:8123", "yourauthkey"
+hassurl, hassauth = "", ""
 hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
 
 # Set OpenWeatherMap data
-opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "https://api.openweathermap.org/data/2.5/weather?", "yourauthkey", "yourlat" , "yourlong", "metric"
+opnwthrurl, opnwthrauth, opnwthrlat, opnwthrlon, opnwthrunits = "", "", "" , "", ""
 
 # Set paths
 workingDir = "/profiles/"
-stopTimerSoundFilePath, timerLeftPath, cancelFilePath, bluetoothFilePath, currentMediaPath = workingDir+"tmp/"+"stopTimerSoundFile", workingDir+"tmp/"+"timerLeft", workingDir+"tmp/"+"cancelFile", workingDir+"tmp/"+"bluetoothFile", workingdir+"tmp/"+"currentMedia"
+stopTimerSoundFilePath, timerLeftPath, cancelFilePath, bluetoothFilePath, currentMediaPath, jellyfinPlayFilePath, jellyfinResumeFilePath, jellyfinStopFilePath, jellyfinPauseFilePath, songInfoFilePath = workingDir+"tmp/"+"stopTimerSoundFile", workingDir+"tmp/"+"timerLeft", workingDir+"tmp/"+"cancelFile", workingDir+"tmp/"+"bluetoothFile", workingDir+"tmp/"+"currentMedia", workingDir+"tmp/"+"jellyfinPlay", workingDir+"tmp/"+"jellyfinResume", workingDir+"tmp/"+"jellyfinStop", workingDir+"tmp/"+"jellyfinPause", workingDir+"tmp/"+"songInfoFile"
 
 # Set responses
-agreeResponse, currentlyResponse = ["Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "], ["Right now it's ", "Its ", "Currently its ", "At the moment its "]
+agreeResponse, currentlyResponse, morningResponse, eveningResponse = ["Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "], ["Right now it's ", "Its ", "Currently its ", "At the moment its "], [" in the morning", " ey em"], [" in the afternoon", " in the evening", " peey em"]
 
 # get json from stdin and load into python dict
 o = json.loads(sys.stdin.read())
@@ -33,53 +34,58 @@ o = json.loads(sys.stdin.read())
 intent = o["intent"]["name"]
 
 if intent == "GetTime":
-    now = datetime.datetime.now()
+    now = datetime.now()
     if now.strftime('%p') == "PM":
-        apm = "peey em"
+        apm = random.choice(eveningResponse)
     else:
-        apm = "ey em"
+        apm = random.choice(morningResponse)
     if now.strftime('%M') == 00:
         speech(random.choice(currentlyResponse) + now.strftime('%I') + " " + apm)
     else:
         speech(random.choice(currentlyResponse) + now.strftime('%I') + " " + now.strftime('%M') + " " + apm) 
 
 elif intent == "Greet":
-    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
-    speech(random.choice(replies))
+  replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
+  speech(random.choice(replies))
 
 elif intent == "SetSpecificLightPower":
-    entity, state = o["slots"]["entity"], o["slots"]["state"]
-    speech(random.choice(agreeResponse) + "I'll turn it " + state )
-    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+  entity, state = o["slots"]["entity"], o["slots"]["state"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+  speech(random.choice(agreeResponse) + "I'll turn it " + state )
 
 elif intent == "SetSpecificLightColour":
-    entity, colour = o["slots"]["entity"], o["slots"]["colour"]
-    speech(random.choice(agreeResponse) + "I'll make it " + colour )
-    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+  entity, colour = o["slots"]["entity"], o["slots"]["colour"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+  speech(random.choice(agreeResponse) + "I'll make it " + colour )
 
 elif intent == "SetSpecificLightBrightness":
-    entity, brightness = o["slots"]["entity"], o["slots"]["brightness"]
-    speech(random.choice(agreeResponse) + "I'll make it " + str(brightness) + " percent")
-    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+  entity, brightness = o["slots"]["entity"], o["slots"]["brightness"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+  speech(random.choice(agreeResponse) + "I'll make it " + str(brightness) + " percent")
 
 elif intent == "DoMaths":
     operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
     if operator == "*":
+        operator = " times "
         calcResult = str(num1*num2)
     elif operator == "+":
+        operator = " add "
         calcResult = str(num1+num2)
     elif operator == "-":
+        operator = " minus "
         calcResult = str(num1-num2)
     elif operator == "/":
+        operator = " over "
         calcResult = str(num1/num2)
-    if num1 == 9 and num2 == 10 and operator == "+":
-        speech("That's 21")
+    if num1 == 9 and num2 == 10 and operator == " add ":
+        speech("9 plus 10 is 21")
     else:
-        speech("That's " + calcResult.replace("." , " point "))
+        speech(str(num1) + operator + str(num2) + " is " + calcResult.replace("." , " point "))
 
 elif intent == "DoTimer":
     timerFinishedAudio = workingDir+"timerchime.wav"
     number, unit = o["slots"]["time"], o["slots"]["unit"]
+    speech(random.choice(agreeResponse) + "I'll set a " + str(number) + " " + unit + " timer")
     if os.path.exists(stopTimerSoundFilePath):
         os.remove(stopTimerSoundFilePath)
     if os.path.exists(cancelFilePath):
@@ -95,6 +101,8 @@ elif intent == "DoTimer":
         timerLeft.write(str(timerLength))
         if os.path.exists(cancelFilePath):
             break
+    if os.path.exists(stopTimerSoundFilePath):
+      os.remove(stopTimerSoundFilePath)
     while not os.path.exists(stopTimerSoundFilePath):
         if os.path.exists(cancelFilePath):
             speech("Timer cancelled")
@@ -108,9 +116,9 @@ elif intent == "DoTimer":
         os.remove(timerLeftPath)
     if os.path.exists(cancelFilePath):
         os.remove(cancelFilePath)
-        
+
 elif intent == "StopTimerSound":
-    stopTimerSoundFile = open(stopTimerSoundFilePath, 'w')
+    stopTimerSoundFile = open(stopTimerSoundFilePath, "w")
     stopTimerSoundFile.close()
 
 elif intent == "TimerRemaining":
@@ -122,22 +130,30 @@ elif intent == "TimerRemaining":
             speech("There are " + str(timerRemainingNumber) + " seconds left")
     else:
         speech("You've got no timers set")
-        
+
 elif intent == "CancelTimer":
-    cancelFile = open(cancelFilePath, "w") 
+    cancelFile = open(cancelFilePath, "w")
     cancelFile.close()
 
 elif intent == "GetWeather":
     weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
-    currentTemp, currentDesc = weather["main"]["temp"], weather["weather"][0]["main"]
+    currentTemp, currentDesc = weather["main"]["temp"], weather["weather"][0]["description"]
     speech(random.choice(currentlyResponse) + str(round(currentTemp)) + " degrees and " + currentDesc)
 
 elif intent == "BluetoothPairing":
     speech("Turning on bluetooth pairing")
-    bleutoothFile = open(bluetoothFilePath, "w") 
+    bleutoothFile = open(bluetoothFilePath, "w")
     time.sleep(0.1)
     bluetoothFile.close()
     os.remove(bluetoothFilePath)
+
+elif intent == "GetDate":
+    months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
+    weekdays = [" Monday ", " Tuesday ", " Wednesday ", " Thursday ", " Friday ", " Saturday ", " Sunday "]
+    dayNum = datetime.now().day
+    month = months[(datetime.now().month)-1]
+    weekday = weekdays[datetime.today().weekday()]
+    speech(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
 
 elif intent == "UnitConversion":
     number, unit1, unit2 = float(o["slots"]["number"]), o["slots"]["unit1"], o["slots"]["unit2"]
@@ -225,20 +241,102 @@ elif intent == "UnitConversion":
 
     speech(str(number) + " " + unit1 + " is " + str(round(finalValue,3)).replace("." , " point ") + " " + unit2)
 
-#NEEDS IMPROVING, CURRENTLY JUST DOWNLOADS SONG
 elif intent == "JellyfinPlaySong":
-    itemid = o["slots"]["itemid"]
-    jellyfinurl, jellyfinauth = "https://", ""
-    headers = {"X-Emby-Token": jellyfinauth,}
+  if os.path.exists(currentMediaPath):
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
+    time.sleep(2)
+  itemid = o["slots"]["itemid"]
+  jellyfinurl, jellyfinauth = "", ""
+  headers = {"X-Emby-Token": jellyfinauth,}
 
+  # Send get request to Item Download API endpoint on the Jellyfin server with authentication
+  get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
+  # If request successful, save file
+  if get.status_code == 200:
+    currentSong = open(currentMediaPath, "wb")
+    currentSong.write(get.content)
+    currentSong.close()
+    jellyfinPlay = open(jellyfinPlayFilePath, "w")
+    jellyfinPlay.write(itemid)
+    jellyfinPlay.close()
+
+elif intent == "JellyfinPlaybackCtrl":
+  playback = o["slots"]["playback"]
+  if playback == "continue" or playback == "resume" or playback == "unpause":
+    jellyfinResume = open(jellyfinResumeFilePath, "w")
+    jellyfinResume.close()
+  if playback == "pause":
+    jellyfinPause = open(jellyfinPauseFilePath, "w")
+    jellyfinPause.close()
+  if playback == "stop":
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
+
+elif intent == "JFGetPlayingMediaName":
+  songInfoFile = open(songInfoFilePath, "r").read()[1:-1].replace("'","").split(",")
+  songName, songArtist = songInfoFile[0], songInfoFile[1]
+  speech("This is " + songName + " by " + songArtist)
+
+elif intent == "GenericStop":
+  open(jellyfinStopFilePath, "w")
+  open(stopTimerSoundFilePath, "w")
+
+elif intent == "JellyfinPlayQueue":
+  if os.path.exists(currentMediaPath):
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
+    time.sleep(2)
+  jellyfinurl, jellyfinauth = "", ""
+  headers = {"X-Emby-Token": jellyfinauth,}
+  songsList = [[],[]]
+#  ps, itemid = "shuffle", "favourites"
+  ps, itemid = o["slots"]["ps"], o["slots"]["itemid"]
+  userid = ""
+  if itemid == "favourites":
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
+  else:
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
+  receivedJson = json.loads(get.text)
+  songs = receivedJson["Items"]
+  for song in songs:
+    songsList[0].append(song["Name"])
+    songsList[1].append(song["Id"])
+  if ps == "shuffle":
+    tmpShuffle = list(zip(songsList[0],songsList[1]))
+    random.shuffle(tmpShuffle)
+    songsList[0], songsList[1] = zip(*tmpShuffle)
+    songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
+  songPos = 0
+  for song in songsList[0]:
+    if os.path.exists(jellyfinStopFilePath):
+        break
     # Send get request to Item Download API endpoint on the Jellyfin server with authentication
-    get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
+    get = requests.get(jellyfinurl+"/Items/"+songsList[1][songPos]+"/Download", headers = headers)
     # If request successful, save file
     if get.status_code == 200:
         currentSong = open(currentMediaPath, "wb")
-        currentSong.write(get.content)  
+        currentSong.write(get.content)
         currentSong.close()
+        jellyfinPlay = open(jellyfinPlayFilePath, "w")
+        jellyfinPlay.write(songsList[1][songPos])
+        jellyfinPlay.close()
+    while os.path.exists(currentMediaPath):
+      if os.path.exists(jellyfinStopFilePath):
+        break
+    songPos += 1
 
+elif intent == "JellyfinSkipSong":
+  jellyfinSkipSong = open(workingDir + "tmp/jellyfinSkipSong", "w")
+  jellyfinSkipSong.close()
 
-# convert dict to json and print to stdout
-print(json.dumps(o))
+elif intent == "ChangeVolume":
+  audioDevice = "Headphone"
+  percentage = o["slots"]["percentage"]
+  minBound = 65
+  maxBound = 95
+  customBounds = True
+  if customBounds == True:
+    percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
+  call(["amixer", "sset", audioDevice, str(percentage) + "%"])
+  call(["aplay", "/profiles/testSound.wav"])
