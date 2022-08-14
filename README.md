@@ -1694,10 +1694,9 @@ elif intent == "ChangeVolume":
   audioDevice = "Headphone"
   percentage = o["slots"]["percentage"]
   minBound, maxBound = 0, 100
-  customBounds = False
-  if customBounds == True:
-    percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
+  percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
   call(["amixer", "sset", audioDevice, str(percentage) + "%"])
+  call(["aplay", "/profiles/testSound.wav"])
 ```
 This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.
     
@@ -1719,7 +1718,6 @@ Sometimes, we want custom minimum/maximum audio levels. If you do, all we need t
 ```
 minBound, maxBound = 0, 100
 ```
-and change ```customBounds``` to True.
 
 So, if I have a minBound of 60 and a maxBound of 80, then ask for 50% volume, it'll give me 70% "real" volume. This won't be useful for everyone, but I needed it, and it works.
 
