@@ -1373,6 +1373,9 @@ Description=Checks for jellyfin play file, and activates the service which runs 
 [Path]
 PathExists=/dev/shm/tmpassistant/jellyfinPlay
 
+[Service]
+Restart=on-failure
+
 [Install]
 WantedBy=multi-user.target
 ```
@@ -1388,7 +1391,6 @@ Description=Activates script which handles playback for jellyfin song
 [Service]
 Type=oneshot
 ExecStart=/home/assistant-main-node/assistant/jellyfinPlaySong.py
-Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
