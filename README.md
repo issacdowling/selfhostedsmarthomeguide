@@ -1492,6 +1492,8 @@ First, go to the Rhasspy web UI, sentences, and add this:
 Now, add this to the bottom of your intentHandler:
 ```
 elif intent == "JellyfinPlaybackCtrl":
+  if not os.path.exists(currentMediaPath):
+    speech("No songs are playing")
   playback = o["slots"]["playback"]
   if playback == "continue" or playback == "resume" or playback == "unpause":
     jellyfinResume = open(jellyfinResumeFilePath, "w")
@@ -1547,6 +1549,8 @@ whats playing right now
 Then, we can add this elif statement to the intentHandler:
 ```
 elif intent == "JFGetPlayingMediaName":
+  if not os.path.exists(currentMediaPath):
+    speech("No songs are playing")
   songInfoFile = open(songInfoFilePath, "r").read()[1:-1].replace("'","").split(",")
   songName, songArtist = songInfoFile[0], songInfoFile[1]
   speech("This is " + songName + " by " + songArtist)
@@ -1667,6 +1671,8 @@ sudo nano ~/assistant/jellyfinPlaySong.py
 and add this to both the start and end:
 ```
 elif intent == "JellyfinSkipSong":
+  if not os.path.exists(currentMediaPath):
+    speech("No songs are playing")
   jellyfinSkipSong = open(workingDir + "tmp/jellyfinSkipSong", "w")
   jellyfinSkipSong.close()
 ```
