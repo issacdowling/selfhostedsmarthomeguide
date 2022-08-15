@@ -38,7 +38,6 @@
 
 [Converting Units](README.md#converting-units)
 
-
 # Prerequisites
 
 ## *What's this?*
@@ -99,7 +98,7 @@ If you've got a display connected, wait until there's a line with your username 
 
 ![Linux bootup scene](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/withdisplaybootup.png)
 
-If you don't have a display connected, go to a computer on the same network as your Pi (so, if you didn't set up Wifi, connect an ethernet cable). Then, run **"terminal"** (same on Linux, Windows 11, or MacOS, but on Windows 10, run cmd). Now, type ```ssh yourusername@yourhostname.local```, and replace 'yourusername' with your Pi username, and 'yourhostname' with the hostname you typed in the settings page. At first, it'll likely error out, since the Pi isn't done booting yet, but you can press the up arrow and enter to run the command again. You know you've succeeded once you see this page.
+If you don't have a display connected, go to a computer on the same network as your Pi (so, if you didn't set up Wifi, connect an ethernet cable). Then, run **"terminal"** (same on Linux, Windows 11, or MacOS, but on Windows 10, run cmd). Now, type `ssh yourusername@yourhostname.local`, and replace 'yourusername' with your Pi username, and 'yourhostname' with the hostname you typed in the settings page. At first, it'll likely error out, since the Pi isn't done booting yet, but you can press the up arrow and enter to run the command again. You know you've succeeded once you see this page.
 ![SSH fingerprint question](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/fingerprint.png)
 
 Type yes, enter, then type your password (which won't show up onscreen as a security measure, but it *is* still going through). 
@@ -114,7 +113,7 @@ to get up to date
 
 ### Now, set a static local IP
 
-In your terminal, type ```ip route | grep default```. Then, note down three things: the first IP, the network device, and the second IP. The IPs will likely be 192.168.x.x, but may be different. In the image, I've highlighted these things in yellow so you know where to look.
+In your terminal, type `ip route | grep default`. Then, note down three things: the first IP, the network device, and the second IP. The IPs will likely be 192.168.x.x, but may be different. In the image, I've highlighted these things in yellow so you know where to look.
 
 ![my private IP for the Pi](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/ipdefault.png)
 
@@ -135,7 +134,7 @@ static routers=
 static domain_name_servers=1.1.1.1
 ```
 
-Next to interface, add a space, then the network device (either **eth0** or **wlan0**). Now, for static ip_address, type the second IP before the */24*. Finally, add the first IP from earlier directly after **static routers=**. Then, press CTRL+X, then Y, then Enter, to save and exit. Finally, run ```sudo reboot``` to restart. Your SSH will disconnect, and you can just keep trying to reconnect until it works to check if you're booted.
+Next to interface, add a space, then the network device (either **eth0** or **wlan0**). Now, for static ip_address, type the second IP before the */24*. Finally, add the first IP from earlier directly after **static routers=**. Then, press CTRL+X, then Y, then Enter, to save and exit. Finally, run `sudo reboot` to restart. Your SSH will disconnect, and you can just keep trying to reconnect until it works to check if you're booted.
 
 ## Optimisations
 
@@ -151,11 +150,11 @@ then go down to where it says **"#uncomment to overclock the arm"**
 
 ![default boot config](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/defaultarmover.png)
 
-Remove the **#** from the line beginning ```#arm_freq```, and change the number to 1750. Add another line below the **"#uncomment to overclock the arm"** bit, and copy this in:
+Remove the **#** from the line beginning `#arm_freq`, and change the number to 1750. Add another line below the **"#uncomment to overclock the arm"** bit, and copy this in:
 ```
 over_voltage=2
 ```
-Then, if you're not going to be using the HDMI ports, below the ```#arm_freq``` line, paste this:
+Then, if you're not going to be using the HDMI ports, below the `#arm_freq` line, paste this:
 ```
 gpu_freq=0
 ```
@@ -167,7 +166,7 @@ If you want to put in the effort **and extra cooling**, you can tune this for be
 
 #### Using less energy
 
-Now, to disable all LEDs on the board, go down to the section starting with **```[pi4]```** and paste what's below:
+Now, to disable all LEDs on the board, go down to the section starting with `**[pi4]**` and paste what's below:
 ```
 # Disable the power LED
 dtparam=pwr_led_trigger=none
@@ -180,13 +179,13 @@ dtparam=eth_led0=4
 dtparam=eth_led1=4
 ```
 
-And, if you're not using the GPU, you can also add ```gpu_mem=16``` to the **"[all]"** section above. It likely won't affect anything though. Something that will help power consumption is the line **```dtoverlay=disable-bt```**. If you're not using wifi either, you can duplicate that line and change **bt** to **wifi**. However, if you intend on using this like a regular smart-speaker (including the ability to play music as a bluetooth speaker, and not needing to run an ethernet cable to it), I suggest leaving both Wifi and bluetooth enbaled.
+And, if you're not using the GPU, you can also add `gpu_mem=16` to the **"[all]"** section above. It likely won't affect anything though. Something that will help power consumption is the line `**dtoverlay=disable-bt**`. If you're not using wifi either, you can duplicate that line and change **bt** to **wifi**. However, if you intend on using this like a regular smart-speaker (including the ability to play music as a bluetooth speaker, and not needing to run an ethernet cable to it), I suggest leaving both Wifi and bluetooth enbaled.
 
 In the end, it'll look like this:
 
 ![better led config](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/betterled.png)
 
-You can now do CTRL+X, Y, ENTER, to save and exit, then run ```sudo reboot``` to restart your pi. Once you're back, continue with the next section.
+You can now do CTRL+X, Y, ENTER, to save and exit, then run `sudo reboot` to restart your pi. Once you're back, continue with the next section.
 
 ## Installing things
 Run
@@ -274,7 +273,7 @@ This may get your mic detected if it wasn't before.
 
 ## Some improvements
 ### TTS
-I reccommend going back to the settings page, switching your **Text To Speech** to ```Larynx```, pressing refresh, and choosing a voice you think sounds good. **Southern-english-female** is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response, and I believe it to be the most natural sounding. **Low Quality Vocoder** is perfectly fine, as you'll see when you test it, and is necesary for fast responses on a Pi. Though, **Larynx takes around 15 seconds to initialise each time you reboot, and doesn't do this automatically,** meaning the first question you ask will be highly delayed. 
+I reccommend going back to the settings page, switching your **Text To Speech** to `Larynx`, pressing refresh, and choosing a voice you think sounds good. **Southern-english-female** is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response, and I believe it to be the most natural sounding. **Low Quality Vocoder** is perfectly fine, as you'll see when you test it, and is necesary for fast responses on a Pi. Though, **Larynx takes around 15 seconds to initialise each time you reboot, and doesn't do this automatically,** meaning the first question you ask will be highly delayed. 
 
 ### Remember to save your settings and restart afterwards.
 
@@ -284,7 +283,7 @@ I reccommend going back to the settings page, switching your **Text To Speech** 
 To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.85** so it can pick me up when I'm quieter. Save and restart, and it should work.
 
 ### STT
-In your speech to text settings, I highly reccomend going to the bottom, and changing ```silence after``` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
+In your speech to text settings, I highly reccomend going to the bottom, and changing `silence after` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
 
 # Making it smart
 ## Setting up Homeassistant
@@ -348,7 +347,7 @@ Go back to your rhasspy tab, then settings, scroll down to intent handler, and s
 
 ![local intent handler](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/localcommandintents.png)
 
-Then, press the green dropdown, and set the program to ```/profiles/intentHandler```
+Then, press the green dropdown, and set the program to `/profiles/intentHandler`
 
 Now, you can press save and restart.
 
@@ -404,7 +403,7 @@ Go to your terminal (still SSH'd into the Pi), and type
 sudo nano ~/hass/config/configuration.yaml
 ```
 
-Go right to the top of the file, and look for the line ```default_config:```. Go one line below it, and add exactly:
+Go right to the top of the file, and look for the line `default_config:`. Go one line below it, and add exactly:
 ```
 api:
 ```
@@ -419,7 +418,7 @@ recorder:
 ```
 Then, CTRL+X, Y, ENTER.
 
-You can also run ```sudo docker restart homeassistant``` now too.
+You can also run `sudo docker restart homeassistant` now too.
 
 # Features
 
@@ -473,7 +472,7 @@ Then, paste this in some empty space (remove square brackets if there):
        data:
          entity_id: "{{trigger.event.data.entity}}"
 ```
-If you changed what's within the square brackets in the sentence section, change what's after ```assistant_``` to match. Otherwise, things should just work. Now, go to homeassistant's dev tools, YAML, and reload automations. 
+If you changed what's within the square brackets in the sentence section, change what's after `assistant_` to match. Otherwise, things should just work. Now, go to homeassistant's dev tools, YAML, and reload automations. 
 
 Now, run:
 ```
@@ -490,7 +489,7 @@ elif intent == "SetSpecificLightPower":
 Things should look like this:
 ![add intents](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/addintents.png)
 
-Anything within ```speech()``` will be spoken. 
+Anything within `speech()` will be spoken. 
 
 ### Now, we'll learn how to add colour.
 
@@ -502,7 +501,7 @@ It actually supports all colours in [this list](https://www.w3.org/TR/css-color-
 
 ![Colour slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/colourslotcorrected.png)
 
-Then, go to your sentences, and duplicate your power control section. Change Power to Colour (or apply your own naming convention), change ```light_state``` to ```light_colour```, change ```on | off``` to ```$colours```, and change ```{entity}``` to ```{colour}```. Remember to also change light_state in the actual sentence too, along with correcting the layout of the sentence so it makes sense when you say it. In the end, I've got this:
+Then, go to your sentences, and duplicate your power control section. Change Power to Colour (or apply your own naming convention), change `light_state` to `light_colour`, change `on | off` to `$colours`, and change `{entity}` to `{colour}`. Remember to also change light_state in the actual sentence too, along with correcting the layout of the sentence so it makes sense when you say it. In the end, I've got this:
 
 ![Colour sentence](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/coloursentencecorrection.png)
 
@@ -574,7 +573,7 @@ and at the bottom, paste this:
 
 All that's left is to reload your automations.yaml (if you don't remember, that's **developer tools --> yaml --> reload automations**) and add your Rhasspy sentences.
 
-Go to rhasspy's web ui at ```yourip:12101```, then click sentences on the left, and add this:
+Go to rhasspy's web ui at `yourip:12101`, then click sentences on the left, and add this:
 
 ```
 [SetSpecificLightBrightness]
@@ -638,7 +637,7 @@ elif intent == "DoMaths":
 ```
 
 
-Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven. This is why it was important to change your STT settings earlier, increasing ```silence after``` time.
+Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven. This is why it was important to change your STT settings earlier, increasing `silence after` time.
 
 ## Setting timers
 What if you want to set a timer? It's not a super complex one, you can only pick minutes **or** seconds, meaning you couldn't ask for a 2 minute and 17 second timer, but it works well enough.
@@ -650,7 +649,7 @@ Go to your sentences section, and add this:
 ```
 Remember to save and train.
 
-Then, go to the intentHandler script (```sudo nano ~/assistant/profiles/intentHandler```) and paste this below the last elif statement:
+Then, go to the intentHandler script (`sudo nano ~/assistant/profiles/intentHandler`) and paste this below the last elif statement:
 
 ```
 elif intent == "DoTimer":
@@ -682,7 +681,7 @@ sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/profiles
 
 Replace pathtoyourfile with the path to your wav file. Replace piusername with the username you picked for your Pi. Replace hostname with the hostname you picked for your Pi. If you're using the same file structure and docker compose files as me, you can keep the rest of the command the same. When you press enter, it'll ask for your Pi's password. This copies your file to the Pi over ssh. If you choose another method to get the file to the Pi, that's fine, just make sure it's in a directory accessible from the docker container, which is why I chose the profiles folder. I made my own sounds (which can be found in the resources folder of this guide), however I don't use them, and might repurpose them - they were just two notes played on a digital keyboard.
 
-Now, go to the top of your intentHandler script, and add ```from subprocess import call```.
+Now, go to the top of your intentHandler script, and add `from subprocess import call`.
 
 And on another line, add 
 ```
@@ -698,7 +697,7 @@ if os.path.exists(stopTimerSoundFilePath):
 ```
 If you understand what this is doing, you can probably tell where we're going from here. We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
 
-Now, you can replace the ```speech("Timer complete")``` line with this:
+Now, you can replace the `speech("Timer complete")` line with this:
 ```
 if os.path.exists(stopTimerSoundFilePath):
   os.remove(stopTimerSoundFilePath)
@@ -733,18 +732,18 @@ stop [the] (alarm)
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop the alarm. Once the current loop is over, it will finish. **Once we've completed the timer section, there'll be a section about adding a generic "stop" function that applies to everything. If you want to be able to stop the timer by just saying "stop", you can go there now if you'd like.**
 
 ### Some notes about the audio
-Due to it finishing the current audio loop before stopping, I suggest having a simple <5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/blob/main/resources/sounds/timerchime.wav)
+Due to it finishing the current audio loop before stopping, I suggest having a simple sub-5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/blob/main/resources/sounds/timerchime.wav)
 
 ### Check Timer Progress While Running
 Ideally, you could ask the assistant how far along the timer is. Let's make that.
 
-First, add a variable to the top of your intentHandler in the ```# Set paths``` section called timerLeftPath, and set it to ```workingDir+"tmp/"+"timerLeft"```. Then, within your ```while timerLength``` loop, add this to the bottom (ensure indentation stays correct):
+First, add a variable to the top of your intentHandler in the `# Set paths` section called timerLeftPath, and set it to `workingDir+"tmp/"+"timerLeft"`. Then, within your `while timerLength` loop, add this to the bottom (ensure indentation stays correct):
 ```
 timerLeft = open(timerLeftPath, "w")
 timerLeft.write(str(timerLength))
 ```
 
-Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change ```stopFilePath``` to ```timerLeftPath```. It should look like this:
+Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change `stopFilePath` to `timerLeftPath`. It should look like this:
 ```
 if os.path.exists(timerLeftPath):
     os.remove(timerLeftPath)
@@ -788,23 +787,23 @@ if os.path.exists(cancelFilePath):
     os.remove(cancelFilePath)
 ```
 
-Within the ```while timerLength``` section, at the end, add this, which will stop the timer if it detects the cancel file:
+Within the `while timerLength` section, at the end, add this, which will stop the timer if it detects the cancel file:
 
 ```
 if os.path.exists(cancelFilePath):
     break
 ```
 
-We'll now be working within the ```while not os.path.exists(stopFilePath)``` section.
+We'll now be working within the `while not os.path.exists(stopFilePath)` section.
 
-At the same level of indentation as the ```call aplay``` line, right at the top, add:
+At the same level of indentation as the `call aplay` line, right at the top, add:
 ```
 if os.path.exists(cancelFilePath):
     speech("Timer cancelled")
     break
 else:
-````
-Then, correct your ```call aplay``` line to be at the right level of indentation.
+```
+Then, correct your `call aplay` line to be at the right level of indentation.
 
 Now, add a new elif statement for making the cancelFile:
 
@@ -1038,11 +1037,11 @@ Then, run
 ```
 sudo nano /etc/bluetooth/main.conf
 ```
-and go to the ```#DiscoverableTimeout``` line. Remove the #, and set it to ```DiscoverableTimeout = 30```
+and go to the `#DiscoverableTimeout` line. Remove the #, and set it to `DiscoverableTimeout = 30`
 
-Then ```CTRL+X, Y, ENTER``` to save and exit.
+Then `CTRL+X, Y, ENTER` to save and exit.
 
-Now, run ```sudo reboot now``` to reboot and apply these changes.
+Now, run `sudo reboot now` to reboot and apply these changes.
 
 Once you're back in, run 
 ```
@@ -1069,7 +1068,7 @@ elif intent == "BluetoothPairing":
     speech("Turning on bluetooth pairing")
 ```
 
-Then, go to the ```# Set paths``` section at the top, and add 
+Then, go to the `# Set paths` section at the top, and add 
 ```
 bluetoothFilePath = workingDir+"tmp/"+"bluetoothFile"
 ```
@@ -1168,14 +1167,14 @@ Then, go to your rhasspy sentences section, and paste this at the bottom:
 turn on bluetooth [pairing]
 ```
 
-```sudo reboot now``` to reboot.
+Then `sudo reboot now` to reboot.
 
 
 **It's a mess, but it works.**
 
 Except for if you repair your phone. It likely won't let you re-pair.
 
-To fix that, there's no elegant solution right now. Open the terminal, run ```bluetoothctl```, then type ```remove ```, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
+To fix that, there's no elegant solution right now. Open the terminal, run `bluetoothctl`, then type `remove `, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
 
 ### Optimal.
 
@@ -1191,15 +1190,15 @@ So, get into your intentHandler:
 ```
 sudo nano ~/assistant/profiles/intentHandler
 ```
-and go to just below your ```# Set paths``` section.
+and go to just below your `# Set paths` section.
 
-Add a new section called ```# Set responses```. Then, add your responses below - here's how you would add the example from before:
+Add a new section called `# Set responses`. Then, add your responses below - here's how you would add the example from before:
 ```
 agreeResponse = ["Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "] 
 ```
 In this case, I want a small pause after the phrase, so I've added a comma and a space within the quotes for all of them, and used a comma after the parenthesis to separate each one. 
 
-Now, I can go down to the ```SetSpecificLight``` sections, and change this:
+Now, I can go down to the `SetSpecificLight` sections, and change this:
 ```
 speech("Alright, I'll make it " + colour)
 ```
@@ -1211,11 +1210,11 @@ All we've actually done is make it pick a random string from the list we made in
 
 ### But we can add it to other situations, like the time and weather
 
-Back in the ```# Set responses``` section, I've added this line:
+Back in the `# Set responses` section, I've added this line:
 ```
 currentlyResponse = ["Right now it's ", "Its ", "Currently its ", "At the moment its "]
 ```
-Then, in the ```GetTime``` and ```GetWeather``` sections, we can replace the ```"Its "``` with
+Then, in the `GetTime` and `GetWeather` sections, we can replace the `"Its "` with
 ```
 random.choice(currentlyResponse)
 ```
@@ -1243,11 +1242,11 @@ speech(random.choice(timerCancelResponse))
 
 ### Or different ways of saying AM / PM
 
-We can add ```morningResponse = [" in the morning", " ey em"]``` and then ```eveningResponse = [" in the afternoon", " in the evening", " peey em"]```
+We can add `morningResponse = [" in the morning", " ey em"]` and then `eveningResponse = [" in the afternoon", " in the evening", " peey em"]`
 
 **(remember from the timer bit, AM and PM are spelt weirdly so that they're spoken correctly with my TTS choice. They might need changing for whatever voice you choose personally)**
 
-Now, we go down to the ```if intent == "GetTime":``` section, and make the a/pm variable sections with:
+Now, we go down to the `if intent == "GetTime":` section, and make the a/pm variable sections with:
 ```
 apm = random.choice(eveningResponse)
 ```
@@ -1283,21 +1282,21 @@ sudo nano create-jf-slots.py
 
 Now, go to [this link](https://gitlab.com/issacdowling/jellypy/-/raw/main/main.py), CTRL+A to select everything, and paste it into that text editor we opened.
 
-Next, change the contents of ```jellyfinurl``` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the ```:portnumber``` at the end.
+Next, change the contents of `jellyfinurl` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the `:portnumber` at the end.
 
-Then, go to your Jellyfin server's web client, then click the profile icon in the top right, dashboard, then API keys on the left bar. Add one, pick whatever name you want, and copy that key to your ```jellyfinauth``` variable. 
+Then, go to your Jellyfin server's web client, then click the profile icon in the top right, dashboard, then API keys on the left bar. Add one, pick whatever name you want, and copy that key to your `jellyfinauth` variable. 
 
-Next, press F12 to open your browser's dev tools, click the network tab, and enter ```userid``` into the search bar, then refresh the page. Hopefully you'll see something like this:
+Next, press F12 to open your browser's dev tools, click the network tab, and enter `userid` into the search bar, then refresh the page. Hopefully you'll see something like this:
 
 ![Firefox dev tools showing URL with userid](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/devtoolsuserid.png)
 
-Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for ```userid``` (remembering not to include the ```&``` symbol which will be at the end, and paste it into the ```userid``` section in the python script.
+Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for `userid` (remembering not to include the `&` symbol which will be at the end, and paste it into the `userid` section in the python script.
 
-Finally, go right to the bottom of the script, add some empty lines, and type ```genMusicSlots()```. 
+Finally, go right to the bottom of the script, add some empty lines, and type `genMusicSlots()`. 
 
 Then, save and exit by doing CTRL+X, Y, ENTER.
 
-Now, you can just run ```sudo python create-jf-slots.py```. We need ```sudo``` because otherwise it won't have permissions to create its files.
+Now, you can just run `sudo python create-jf-slots.py`. We need `sudo` because otherwise it won't have permissions to create its files.
 
 ### Playing individual songs
 
@@ -1318,7 +1317,7 @@ But now, while on the main page, ask it to play any song, artist, or album in yo
 
 ### Downloading the media
 
-Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your ```# Set paths``` section, and add this:
+Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your `# Set paths` section, and add this:
 ```
 currentMediaPath = workingDir+"tmp/"+"currentMedia"
 jellyfinPlayFilePath = workingDir+"tmp/"+"jellyfinPlay"
@@ -1505,9 +1504,9 @@ elif intent == "JellyfinPlaybackCtrl":
     jellyfinStop.close()
 ```
 
-#### And, you can add ```open(jellyfinStopFilePath, "w")``` to your "GenericStop" intent too.
+#### And, you can add `open(jellyfinStopFilePath, "w")` to your "GenericStop" intent too.
 
-Then, in your ```# Set paths``` section, add these:
+Then, in your `# Set paths` section, add these:
 ```
 jellyfinResumeFilePath = workingDir+"tmp/"+"jellyfinResume"
 jellyfinStopFilePath = workingDir+"tmp/"+"jellyfinStop"
@@ -1515,7 +1514,7 @@ jellyfinPauseFilePath = workingDir+"tmp/"+"jellyfinPause"
 ```
 Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
 
-I also suggest changing the if statement at the start of the ```jellyfinPlaySong``` section. Instead of exiting if we've already got something playing, we'll just *stop* what's already playing so we can continue.
+I also suggest changing the if statement at the start of the `jellyfinPlaySong` section. Instead of exiting if we've already got something playing, we'll just *stop* what's already playing so we can continue.
 
 So, replace this:
 ```
@@ -1686,7 +1685,7 @@ And now, you should be able to skip song.
 ## Volume control
 For now, this is more complex than I'd like (if you're in my situation), however definitely workable. With the tools we've got, setting my speaker any below 65% is entirely inaudible, so we'll add support for setting **your own** "boundaries" for volume. In my case, I'd want "0%" to actually mean 65%. This obviously isn't necessary for everyone, and shouldn't be for me in the future either.
     
-After doing some looking, I couldn't change the volume of audio from the host OS, since Rhasspy's docker container has separate access to audio devices. But that's fine, because our python script runs within that docker container, so we can just call ```amixer``` and politely ask for a volume change.
+After doing some looking, I couldn't change the volume of audio from the host OS, since Rhasspy's docker container has separate access to audio devices. But that's fine, because our python script runs within that docker container, so we can just call `amixer` and politely ask for a volume change.
     
 So, add this to your sentences:
 ```
@@ -1711,11 +1710,11 @@ docker exec -it rhasspy bash
 ```
 You're now inside Rhasspy.
     
-From here, just run ```amixer```, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
+From here, just run `amixer`, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
 
 ![Amixer devices](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/amixer-devices.png)
 
-Here, that's ```Headphone```.  If yours is different, just change it in the python script (and if you think you're stuck inside Rhasspy, you can leave it by running ```exit```)
+Here, that's `Headphone`.  If yours is different, just change it in the python script (and if you think you're stuck inside Rhasspy, you can leave it by running `exit`)
     
 ### Setting custom boundaries
     
