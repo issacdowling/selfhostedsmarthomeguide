@@ -917,17 +917,14 @@ If you want to customise the way you speak to it, you can do it from here. Remem
 Then, go to your intent handler, and below the last elif statement, paste this:
 ```
 elif intent == "GetWeather":
-    weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
-    currentTemp = weather["main"]["temp"]
-    currentDesc = weather["weather"][0]["description"]
-    speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
-```
-However, we're not done. You'll also want to go back to the top (near where your homeassistant details are), and add a line below them, called ```#Set OpenWeatherMap data```. Below it, paste this:
-```
-opnwthrurl = "https://api.openweathermap.org/data/2.5/weather?"
-opnwthrauth = "YOURAUTHKEY"
-opnwthrlat, opnwthrlon = "LAT" , "LONG"
-opnwthrunits = "metric"
+  opnwthrurl = "https://api.openweathermap.org/data/2.5/weather?"
+  opnwthrauth = "YOURAUTHKEY"
+  opnwthrlat, opnwthrlon = "LAT" , "LONG"
+  opnwthrunits = "metric"
+  weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
+  currentTemp = weather["main"]["temp"]
+  currentDesc = weather["weather"][0]["description"]
+  speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
 ```
 Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG** to your current latitude and longitude. They don't have to be exactly on your location, but you can use a tool [like this](https://www.latlong.net/) to get the numbers for your general area.
 
