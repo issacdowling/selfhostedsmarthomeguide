@@ -1078,7 +1078,7 @@ Then, paste this into your terminal
 sudo hostnamectl --pretty set-hostname ""
 ```
 and put what you want the speaker to appear as within the quotes. So, if you put "Issac Bedroom Speaker", it would appear to your phone like this:
-![Issac Bedroom Speaker in Bluetooth settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/issacbluetoothspeaker.png)
+![Issac Bedroom Speaker in Bluetooth settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/issacbedroomspeaker.png)
 
 Then, run 
 ```
