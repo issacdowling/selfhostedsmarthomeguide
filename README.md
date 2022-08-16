@@ -274,6 +274,8 @@ I reccommend going back to the settings page, switching your **Text To Speech** 
 ### Wake word
 To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.85** so it can pick me up when I'm quieter. Save and restart, and it should work.
 
+![Wakeword settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Wakewordsetting.png)
+
 ### STT
 In your speech to text settings, I highly reccomend going to the bottom, and changing `silence after` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
 
@@ -412,6 +414,8 @@ Then, CTRL+X, Y, ENTER.
 
 You can also run `sudo docker restart homeassistant` now too.
 
+#### For all sections where there's lots of iteration and changing of code (e.g - Controlling smart lights, setting timers), you can choose to skip to the end of them for a finished code block that you can paste right into your intentHandler if you'd like. However, if you would like to understand how each bit works, you can pay attention to the whole section
+
 # Features
 
 ## Controlling devices
@@ -478,8 +482,6 @@ elif intent == "SetSpecificLightPower":
     requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
     speech("Alright, I'll turn it " + state )
 ```
-Things should look like this:
-![add intents](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/addintents.png)
 
 Anything within `speech()` will be spoken. 
 
@@ -493,9 +495,13 @@ It actually supports all colours in [this list](https://www.w3.org/TR/css-color-
 
 ![Colour slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/colourslotcorrected.png)
 
-Then, go to your sentences, and duplicate your power control section. Change Power to Colour (or apply your own naming convention), change `light_state` to `light_colour`, change `on | off` to `$colours`, and change `{entity}` to `{colour}`. Remember to also change light_state in the actual sentence too, along with correcting the layout of the sentence so it makes sense when you say it. In the end, I've got this:
-
-![Colour sentence](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/coloursentencecorrection.png)
+Then, in your sentences section, add this:
+```
+[SetSpecificLightColour]
+light_name = ($lights){entity}
+light_colour = ($colours){colour}
+(set | turn | make) [the] <light_name> <light_colour>
+```
 
 Finally, go back to your terminal with automations.yaml open, and paste this below your power config:
 ```
@@ -575,6 +581,55 @@ light_name = ($lights){entity}
 
 Save and retrain rhasspy, and things should work.
 
+### Finished code blocks (remember to still change any needed variables if applicable)
+
+#### Changing light power
+Code
+```
+elif intent == "SetSpecificLightPower":
+  entity, state = o["slots"]["entity"], o["slots"]["state"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+  speech("Alright, I'll turn it " + state )
+```
+Sentence
+```
+[SetSpecificLightPower]
+light_name = ($lights){entity}
+light_state = (on | off){state}
+(set | turn) <light_state> [the] <light_name>
+(set | turn) [the] <light_name> <light_state>
+```
+
+#### Changing light colour
+Code
+```
+elif intent == "SetSpecificLightColour":
+  entity, colour = o["slots"]["entity"], o["slots"]["colour"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+  speech("Alright, I'll make it " + colour )
+```
+Sentence
+```
+[SetSpecificLightColour]
+light_name = ($lights){entity}
+light_colour = ($colours){colour}
+(set | turn | make) [the] <light_name> <light_colour>
+```
+#### Changing light brightness
+Code
+```
+elif intent == "SetSpecificLightBrightness":
+  entity, brightness = o["slots"]["entity"], o["slots"]["brightness"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+  speech("Alright, I'll make it " + str(brightness) + " percent")
+```
+Sentence
+```
+[SetSpecificLightBrightness]
+light_name = ($lights){entity}
+(set | turn | make) [the] <light_name> [to] (1..100){brightness} percent [brightness]
+```
+
 ## Doing basic maths
 
 What if we want to ask the assistant to perform calculations? I'll explain the basic multiplication, subtraction, and addition stuff, and if you want to make it better, you should be able to figure it out from what you learn here.
@@ -594,11 +649,9 @@ If you'd like to be able to call a certain operation with another word, just add
 
 Now, go to the sentences tab, and add a [DoMaths] section. Paste in what's below:
 ```
-
 [DoMaths]
 operator = ($operators){operator}
 what is (-1000..1000){num1} <operator> (-1000..1000){num2}
-
 ```
 This lets us perform those three operations on two numbers between -1000 and 1000. You can increase the range by changing the numbers at either end of the two dots (**".."**), but I was concerned that the assistant may find it harder to tell exactly what number you're saying as the range of numbers increases, so 1000 seemed an alright compromise.
 
@@ -671,7 +724,7 @@ Then, on the pi, you can do
 sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/profiles
 ```
 
-Replace pathtoyourfile with the path to your wav file. Replace piusername with the username you picked for your Pi. Replace hostname with the hostname you picked for your Pi. If you're using the same file structure and docker compose files as me, you can keep the rest of the command the same. When you press enter, it'll ask for your Pi's password. This copies your file to the Pi over ssh. If you choose another method to get the file to the Pi, that's fine, just make sure it's in a directory accessible from the docker container, which is why I chose the profiles folder. I made my own sounds (which can be found in the resources folder of this guide), however I don't use them, and might repurpose them - they were just two notes played on a digital keyboard.
+Replace pathtoyourfile with the path to your wav file. Replace piusername with the username you picked for your Pi. Replace hostname with the hostname you picked for your Pi. If you're using the same file structure and docker compose files as me, you can keep the rest of the command the same. When you press enter, it'll ask for your Pi's password. This copies your file to the Pi over ssh. If you choose another method to get the file to the Pi, that's fine, just make sure it's in a directory accessible from the docker container, which is why I chose the profiles folder. I made my own sounds (which can be found in the resources folder of this guide), however I don't use them, and might repurpose them - they were just two notes played on a digital keyboard. The sound I actually ended up using was [a royalty free one which reminded me of an aeroplane announcement system.](https://soundbible.com/1598-Electronic-Chime.html) I trimmed the empty bits off of that sound, [and reuploaded it if you'd like to use it too.](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/blob/main/resources/sounds/timerchime.wav)
 
 Now, go to the top of your intentHandler script, and add `from subprocess import call`.
 
@@ -887,7 +940,7 @@ stop
 ```
 Wonderful.
 
-Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping, we'll stop everything:
+Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping - we'll stop everything:
 ```
 elif intent == "GenericStop":
   open(stopTimerSoundFilePath, "w")
@@ -919,7 +972,7 @@ elif intent == "GetWeather":
 ```
 Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG** to your current latitude and longitude. They don't have to be exactly on your location, but you can use a tool [like this](https://www.latlong.net/) to get the numbers for your general area.
 
-Then, save and exit, and ask your assistant **"What's the weather"**, and it should tell you the current temperature, along with a word to describe it, like **Sun** or **Clouds**.
+Then, save and exit, and ask your assistant **"What's the weather"**, and it should tell you the current temperature, along with two words to describe it, like **Clear Sky** or **Scattered Clouds**.
 
 ## Getting the time (but better)
 
@@ -939,6 +992,7 @@ if intent == "GetTime":
     else:
         speech("Its " + now.strftime('%I') + " " + now.strftime('%M') + " " + apm)
 ```
+Basically, we check whether it's AM or PM, and get the 12-hour time, and then just format it in a nice way for speech. It's really simple.
 
 I know that **"Its"** should have an apostrophe to represent a contraction, and it annoys me too, a lot, however I'm trying to avoid extra symbols when necessary.
 
@@ -948,7 +1002,7 @@ Then, at the top of your python file, paste this:
 from datetime import datetime
 ```
 
-Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern british female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
+Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern english female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
 Also, I earlier asked you to remove all of the predone sentences in rhasspy, which would include the GetTime ones. Here's what to add to your sentences:
 ```
@@ -972,7 +1026,7 @@ elif intent == "GetDate":
     speech(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
 ```
 
-We get a number for the day, day of week, and month, then convert these to words using lists. Then, we speak a sentence which puts it all together.
+We get a number for the day of the month, day of week, and month (so, Jan is 1, Dec is 12), then convert these to words using lists. Then, we speak a sentence which puts it all together.
 
 Go to your Rhasspy sentences section, and add this:
 ```
@@ -1007,7 +1061,7 @@ elif intent == "Greet":
 
 If the intent is **"Greet"**, we make a list of items, each of which is a string. In this case, they're just different ways of greeting the user. Then, we randomly pick one of the items and say t. If you want to add extra things to say, just add a string to the list. 
 
-I soon intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
+I at some point intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
 
 ## Bluetooth Audio Streaming
 You can use an Echo or Google Home as a bluetooth speaker, why not this?
@@ -1019,11 +1073,12 @@ sudo apt-get install libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-
 sudo pip install dbus-python
 ```
 
-Then, put this into your terminal
+Then, paste this into your terminal
 ```
 sudo hostnamectl --pretty set-hostname ""
 ```
-and put what you want the speaker to appear as within the quotes, then run it
+and put what you want the speaker to appear as within the quotes. So, if you put "Issac Bedroom Speaker", it would appear to your phone like this:
+![Issac Bedroom Speaker in Bluetooth settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/issacbluetoothspeaker.png)
 
 Then, run 
 ```
@@ -1035,21 +1090,18 @@ Then `CTRL+X, Y, ENTER` to save and exit.
 
 Now, run `sudo reboot now` to reboot and apply these changes.
 
-Once you're back in, run 
+Once you're back in, run this to download the script that makes your Pi visible as a bluetooth speaker
 ```
 cd ~/assistant/
 sudo curl -O https://raw.githubusercontent.com/elwint/bt-audio/master/bt-audio.py
 ```
 
-Now, run this:
+Now, run this to install some dependencies and begin editing your intentHandler:
 ```
 sudo apt install pulseaudio-module-bluetooth
-```
-
-Then, run 
-```
 sudo nano ~/assistant/profiles/intentHandler
 ```
+
 and go to near the bottom, where you'll add another elif statement:
 ```
 elif intent == "BluetoothPairing":
@@ -1066,7 +1118,7 @@ bluetoothFilePath = workingDir+"tmp/"+"bluetoothFile"
 ```
 Save and exit.
 
-Now, run
+Then run this to create a new system service (which will handle the bt-audio script)
 ```
 sudo nano /etc/systemd/system/speakerbluetoothpair.service
 ```
@@ -1096,9 +1148,9 @@ Description=Stops bluetooth pairing script after 30s
 Type=oneshot
 ExecStart=/home/assistant-main-node/assistant/stop-bluetooth-pairing.sh
 ```
-(replace assistant-main-node with your username if different).
+(replace assistant-main-node with your username if different). This 2nd service just kills that previous service once it's not needed anymore.
 
-Then, run
+Then, we'll make two more services, which handle *enabling* the previous two. 
 ```
 sudo nano /etc/systemd/system/speakerbluetoothpair.path
 ```
@@ -1114,7 +1166,7 @@ PathExists=/dev/shm/tmpassistant/bluetoothFile
 WantedBy=multi-user.target
 ```
 
-And again run
+And again, for the second, run
 ```
 sudo nano /etc/systemd/system/speakerbluetoothpairstop.path
 ```
@@ -1133,7 +1185,7 @@ WantedBy=multi-user.target
 
 CTRL+X+Y to save and exit.
 
-Run
+Now, let's make the script which is used to stop the first service:
 ```
 sudo nano ~/assistant/stop-bluetooth-pairing.sh
 ```
@@ -1145,12 +1197,12 @@ systemctl stop speakerbluetoothpair.service
 systemctl reset-failed speakerbluetoothpair.service
 ```
 
-Now, run 
+And finally run this to add permissions and enable services: 
 ```
 sudo chmod +x ~/assistant/stop-bluetooth-pairing.sh
 sudo chmod +x ~/assistant/bt-audio.py
-sudo systemctl enable speakerbluetoothpair.path
-sudo systemctl enable speakerbluetoothpairstop.path
+sudo systemctl enable speakerbluetoothpair.path --now
+sudo systemctl enable speakerbluetoothpairstop.path --now
 ```
 
 Then, go to your rhasspy sentences section, and paste this at the bottom:
@@ -1164,7 +1216,7 @@ Then `sudo reboot now` to reboot.
 
 **It's a mess, but it works.**
 
-Except for if you repair your phone. It likely won't let you re-pair.
+Except for if you re-pair your phone. It likely won't let you re-pair.
 
 To fix that, there's no elegant solution right now. Open the terminal, run `bluetoothctl`, then type `remove `, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
 
@@ -1255,7 +1307,7 @@ We can talk to the Jellyfin API to get music from a server, and integrate it wit
 
 Progress made on this integration happens [here](https://gitlab.com/issacdowling/jellypy).
 
-#### Here is a reminder to myself to make this into a slots protgram eventually so that it's even more hands-off.
+#### Here is a reminder to myself to make this into a slots program eventually so that it's even more hands-off.
 
 #### Also, authenticating in a way that makes sense will come one day.
 
@@ -1337,6 +1389,8 @@ elif intent == "JellyfinPlaySong":
 ```
 
 Just as before, add your jellyfin server URL and auth token to the variables.
+
+This script uses the ID of the song (located within the slots file) to download it from the Jellyfin server, and then (assuming the download was successful), write it to a file, and then make another file which willl be detected by a playback script to tell it to begin.
 
 ### To add playback support
 
@@ -1464,6 +1518,8 @@ os.remove(tmpDir + "songInfoFile")
 ```
 #### Remember to add the URL, authtoken, and user id to the variables at the top
 
+This script handles playback (including pausing, stopping, and resuming), as well as getting info for the currently playing song incase we want it for later.
+
 ### Now enable it all
 Run
 ```
@@ -1496,6 +1552,8 @@ elif intent == "JellyfinPlaybackCtrl":
     jellyfinStop.close()
 ```
 
+This bit of code makes a file to represent you wanting to *play*, *pause*, or *resume* the music, which is then detected and handled by the playback script.
+
 #### And, you can add `open(jellyfinStopFilePath, "w")` to your "GenericStop" intent too.
 
 Then, in your `# Set paths` section, add these:
@@ -1518,7 +1576,7 @@ with this:
 if os.path.exists(currentMediaPath):
   jellyfinStop = open(jellyfinStopFilePath, "w")
   jellyfinStop.close()
-  time.sleep(1)
+  time.sleep(2)
 ```
 
 ### Getting currently playing song
@@ -1551,7 +1609,7 @@ And add this to our ```# Set Paths``` section
 songInfoFilePath = workingDir+"tmp/"+"songInfoFile"
 ```
     
-It'll now read that file, separate out the name and artist, then say them in a sentence.
+It'll now read that file (which was created by the playback script, grabbing the info from your Jellyfin server using the ID of the song), separate out the name and artist, then say them in a sentence.
 
 
 ### Playing a queue of songs.
@@ -1618,6 +1676,8 @@ elif intent == "JellyfinPlayQueue":
 ```
 Remember to add the server URL, auth, and userid.
 
+This script gets each audio file that's *under* a certain item (say, a playlist), and saves their IDs and Names to a list (and, if requested, it then shuffles them). Then, we handle things similarly to with individual songs, except in a `for loop`, which sends a new request to the playback script for each song.
+
 Now, go to the jellyfinPlaySong file:
 ```
 sudo nano ~/assistant/jellyfinPlaySong.py
@@ -1673,6 +1733,8 @@ or os.path.exists(tmpDir + "jellyfinSkipSong")
 ```
     
 And now, you should be able to skip song.
+
+This works because we're basically simulating the song having finished, but not also stopping the queue program.
     
 ## Volume control
 For now, this is more complex than I'd like (if you're in my situation), however definitely workable. With the tools we've got, setting my speaker any below 65% is entirely inaudible, so we'll add support for setting **your own** "boundaries" for volume. In my case, I'd want "0%" to actually mean 65%. This obviously isn't necessary for everyone, and shouldn't be for me in the future either.
