@@ -258,11 +258,10 @@ To test audio input, press 'Wake Up' on the home page, and say "What time is it?
 
 ![AudioInputWorks](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/audioinputworks.png)
 
-If there's no response, try relaunching rhasspy, by going back to your terminal, and typing
+If there's no response, try relaunching rhasspy. This may get your mic detected if it wasn't before, and can be done by running:
 ```
-sudo docker-compose up -d
+sudo docker restart rhasspy
 ```
-This may get your mic detected if it wasn't before.
 
 ## Some improvements
 ### TTS
