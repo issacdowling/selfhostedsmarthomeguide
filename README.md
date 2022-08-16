@@ -158,9 +158,6 @@ Then, if you're not going to be using the HDMI ports, below the `#arm_freq` line
 ```
 gpu_freq=0
 ```
-In the end, it'll look like this:
-
-![better boot config](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/betterarmover.png)
 
 If you want to put in the effort **and extra cooling**, you can tune this for better performance at the cost of more heat, however the above config should be doable by practically all Pi 4s, and remain at safe temperatures. I do **over_voltage=4**, **arm_freq=2000**, and have not had any cooling or stability issues despite running the Pi bare.
 
@@ -179,11 +176,7 @@ dtparam=eth_led0=4
 dtparam=eth_led1=4
 ```
 
-And, if you're not using the GPU, you can also add `gpu_mem=16` to the **"[all]"** section above. It likely won't affect anything though. Something that will help power consumption is the line `**dtoverlay=disable-bt**`. If you're not using wifi either, you can duplicate that line and change **bt** to **wifi**. However, if you intend on using this like a regular smart-speaker (including the ability to play music as a bluetooth speaker, and not needing to run an ethernet cable to it), I suggest leaving both Wifi and bluetooth enbaled.
-
-In the end, it'll look like this:
-
-![better led config](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/betterled.png)
+And, if you're not using the GPU, you can also add `gpu_mem=16` to the **"[all]"** section above. It likely won't affect anything though. Something that will help power consumption is the line `**dtoverlay=disable-bt**`. If you're not using wifi either, you can duplicate that line and change **bt** to **wifi**. However, if you intend on using this like a regular smart-speaker (including the ability to play music as a bluetooth speaker, and not needing to run an ethernet cable to it), I suggest leaving both Wifi and bluetooth enabled.
 
 You can now do CTRL+X, Y, ENTER, to save and exit, then run `sudo reboot` to restart your pi. Once you're back, continue with the next section.
 
