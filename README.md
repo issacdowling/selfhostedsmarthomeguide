@@ -662,23 +662,23 @@ sudo nano ~/assistant/profiles/intentHandler
 And paste this below the last elif section:
 ```
 elif intent == "DoMaths":
-    operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
-    if operator == "*":
-        operator = " times "
-        calcResult = str(num1*num2)
-    elif operator == "+":
-        operator = " add "
-        calcResult = str(num1+num2)
-    elif operator == "-":
-        operator = " minus "
-        calcResult = str(num1-num2)
-    elif operator == "/":
-        operator = " over "
-        calcResult = str(num1/num2)
-    if num1 == 9 and num2 == 10 and operator == " add ":
-        speech("9 plus 10 is 21")
-    else:
-        speech(str(num1) + operator + str(num2) + " is " + calcResult.replace("." , " point "))
+  operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
+  if operator == "*":
+    operator = " times "
+    calcResult = str(num1*num2)
+  elif operator == "+":
+    operator = " add "
+    calcResult = str(num1+num2)
+  elif operator == "-":
+    operator = " minus "
+    calcResult = str(num1-num2)
+  elif operator == "/":
+    operator = " over "
+    calcResult = str(num1/num2)
+  if num1 == 9 and num2 == 10 and operator == " add ":
+    speech("9 plus 10 is 21")
+  else:
+    speech(str(num1) + operator + str(num2) + " is " + calcResult.replace("." , " point "))
 ```
 
 
@@ -698,16 +698,16 @@ Then, go to the intentHandler script (`sudo nano ~/assistant/profiles/intentHand
 
 ```
 elif intent == "DoTimer":
-    number, unit = o["slots"]["time"], o["slots"]["unit"]
-    speech("Alright, i'll set a " + str(number) + " " + unit + " timer")
-    if unit == "second":
-        timerLength = number-1
-    elif unit == "minute":
-        timerLength = (number*60)-1
-    while timerLength:
-        time.sleep(1)
-        timerLength -=1
-    speech("Timer complete")
+  number, unit = o["slots"]["time"], o["slots"]["unit"]
+  speech("Alright, i'll set a " + str(number) + " " + unit + " timer")
+  if unit == "second":
+    timerLength = number-1
+  elif unit == "minute":
+    timerLength = (number*60)-1
+  while timerLength:
+    time.sleep(1)
+    timerLength -=1
+  speech("Timer complete")
 ```
 It receives a number between 1-60, and the unit (whether you said "Seconds" or "Minutes"). It then sets a variable to the correct number of seconds, either by taking 1 away from the number you said, or multiplying it by 60, then still removing one. Afterwards, it just runs a timer, and will speak once it's complete. You can still run other voice commands while the timer is running.
 
@@ -737,34 +737,31 @@ import time
 Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
 ```
 timerFinishedAudio = workingDir+"yourfile.wav"
-if os.path.exists(stopTimerSoundFilePath):
-    os.remove(stopTimerSoundFilePath)
+if os.path.exists(stopTimerFilePath):
+    os.remove(stopTimerFilePath)
 ```
-If you understand what this is doing, you can probably tell where we're going from here. We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
+We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
 
 Now, you can replace the `speech("Timer complete")` line with this:
 ```
-if os.path.exists(stopTimerSoundFilePath):
-  os.remove(stopTimerSoundFilePath)
-while not os.path.exists(stopTimerSoundFilePath):
+while not os.path.exists(stopTimerFilePath):
   call(["aplay", timerFinishedAudio])
-if os.path.exists(stopTimerSoundFilePath):
-  os.remove(stopTimerSoundFilePath)
+if os.path.exists(stopTimerFilePath):
+  os.remove(stopTimerFilePath)
 ```
-As you can see, we delete the stopfile if it was made ***before*** the timer was complete, since that purpose will be served by the ***cancel*** file instead.
 
 If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
 ```
-elif intent == "StopTimerSound":
-    stopTimerSoundFile = open(stopTimerSoundFilePath, 'w')
-    stopTimerSoundFile.close()
+elif intent == "StopTimer":
+  stopTimerFile = open(stopTimerFilePath, 'w')
+  stopTimerFile.close()
 ```
 
 Now, go to the top of the file, and paste this:
 ```
 # Set paths
 workingDir = "/profiles/"
-stopTimerSoundFilePath = workingDir+"tmp/"+"stopTimerSoundFile"
+stopTimerFilePath = workingDir+"tmp/"+"stopTimerFile"
 ```
 
 If you're using a different file structure, you can change the data inside the workingDir variable. In this case, we're actually saving things to memory to cut down on drive access. Remember to save and exit (CTRL+X, Y, ENTER)
@@ -791,21 +788,21 @@ timerLeft.write(str(timerLength))
 Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change `stopFilePath` to `timerLeftPath`. It should look like this:
 ```
 if os.path.exists(timerLeftPath):
-    os.remove(timerLeftPath)
+  os.remove(timerLeftPath)
 ```
 Now we've got a file that contains the number of seconds remaining, and it'll delete itself once the timer is done.
 
 Go to the bottom of your intentHandler, and paste this:
 ```
 elif intent == "TimerRemaining":
-    if os.path.exists(timerLeftPath):
-        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
-        if timerRemainingNumber >= 60:
-            speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
-        else:
-            speech("There are " + str(timerRemainingNumber) + " seconds left")
+  if os.path.exists(timerLeftPath):
+    timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
+    if timerRemainingNumber >= 60:
+      speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
     else:
-        speech("You've got no timers set")
+      speech("There are " + str(timerRemainingNumber) + " seconds left")
+  else:
+    speech("You've got no timers set")
 ```
 This checks if the file exists, and if it does, checks whether the time remaining should be measured in minutes (number is > 60) or seconds (number is < 60). Then, if minutes are needed, we divide the number of seconds by 60, then truncate (remove **but not round** the decimals) it, as well as telling us the number of seconds by finding the remainder when dividing by 60. If just seconds are needed, we only need to speak the number we've gotten from the file. Also, since I expect the words to be spoken 3-ish seconds after reading the value, I remove 3 from the number we get at the start.
 
@@ -823,111 +820,96 @@ The broken English is intentional, since our speech-to-text system will turn wha
 
 But what if you decide that you don't want your timer anymore? (or, more likely, STT picks up the wrong number)
 
-First, add a variable to your ```# Set Paths``` section called cancelFilePath, with the value ```workingDir+"tmp/"+"cancelFile"```.
+We'll use the stop file for this too. If you ask it to stop before the timer's done, it'll cancel. 
 
-Now, to account for any errors or remaining files, add this line to the other sections where we delete files. One at the start of the timer **elif** statement, one at the end.
-
-```
-if os.path.exists(cancelFilePath):
-    os.remove(cancelFilePath)
-```
-
-Within the `while timerLength` section, at the end, add this, which will stop the timer if it detects the cancel file:
+Within the `while timerLength` section, at the end of it, add this, which will stop the timer if it detects the cancel file:
 
 ```
-if os.path.exists(cancelFilePath):
-    break
+if os.path.exists(stopTimerFilePath):
+  speech("Timer cancelled")
+  break
 ```
 
-We'll now be working within the `while not os.path.exists(stopFilePath)` section.
+We'll now be working within the `while not os.path.exists(stopTimerFilePath)` section.
 
 At the same level of indentation as the `call aplay` line, right at the top, add:
 ```
-if os.path.exists(cancelFilePath):
-    speech("Timer cancelled")
-    break
+if os.path.exists(stopTimerFilePath):
+  break
 else:
 ```
 Then, correct your `call aplay` line to be at the right level of indentation.
 
 Now, add a new elif statement for making the cancelFile:
 
-```
-elif intent == "CancelTimer":
-    cancelFile = open(cancelFilePath, "w") 
-    cancelFile.close()
-```
-
-All that's left to do is go to your Rhasspy sentences, and add this new one:
-
-```
-[CancelTimer]
-(stop | cancel) [the] timer
-```
-
 And remember, if you don't like *anything at all* about how I handle things, **you can change it**. All of the code is free for you to make exactly how you like it, even for things as basic as how you phrase sentences. You don't need to follow everything verbatim, but you can, it's up to you.
+
+### Adding validation to the `stopTimer` section
+
+Now that we can know whether a timer's running (because of the timerLeft file), let's also use it to help the stopTimer bit.
+```
+elif intent == "StopTimerSound":
+  if os.path.exists(timerLeftPath):
+    stopTimerSoundFile = open(stopTimerSoundFilePath, "w")
+    stopTimerSoundFile.close()
+  else:
+    speech("You've got no timers set")
+```
+
+Change it to the above code, and if you try to stop a timer that's not running, it'll tell you.
 
 ### The end result
 This timer section was massive. My code at the end of it looks like this:
 ```
 elif intent == "DoTimer":
-    timerFinishedAudio = workingDir+"timerchime.wav"
-    number, unit = o["slots"]["time"], o["slots"]["unit"]
-    speech("Alright, I'll set a " + str(number) + " " + unit + " timer")
-    if os.path.exists(stopTimerSoundFilePath):
-        os.remove(stopTimerSoundFilePath)
-    if os.path.exists(cancelFilePath):
-        os.remove(cancelFilePath)
-    if unit == "second":
-        timerLength = number-1
-    elif unit == "minute":
-        timerLength = (number*60)-1
-    while timerLength:
-        time.sleep(1)
-        timerLength -=1
-        timerLeft = open(timerLeftPath, "w")
-        timerLeft.write(str(timerLength))
-        if os.path.exists(cancelFilePath):
-            break
-    if os.path.exists(stopTimerSoundFilePath):
-      os.remove(stopTimerSoundFilePath)
-    while not os.path.exists(stopTimerSoundFilePath):
-        if os.path.exists(cancelFilePath):
-            speech("Timer cancelled")
-            break
-        else:
-            call(["aplay", timerFinishedAudio])
-    if os.path.exists(stopTimerSoundFilePath):
-        os.remove(stopTimerSoundFilePath)
-    if os.path.exists(timerLeftPath):
-        timerLeft.close()
-        os.remove(timerLeftPath)
-    if os.path.exists(cancelFilePath):
-        os.remove(cancelFilePath)
+  number, unit = o["slots"]["time"], o["slots"]["unit"]
+  speech("Alright, i'll set a " + str(number) + " " + unit + " timer")
+  timerFinishedAudio = workingDir+"timerchime.wav"
+  if os.path.exists(stopTimerFilePath):
+    os.remove(stopTimerFilePath)
+  if unit == "second":
+    timerLength = number-1
+  elif unit == "minute":
+    timerLength = (number*60)-1
+  while timerLength:
+    time.sleep(1)
+    timerLength -=1
+    timerLeft = open(timerLeftPath, "w")
+    timerLeft.write(str(timerLength))
+    if os.path.exists(stopTimerFilePath):
+      speech("Timer cancelled")
+      break
+  while not os.path.exists(stopTimerFilePath):
+    if os.path.exists(stopTimerFilePath):
+      break
+    else:
+      call(["aplay", timerFinishedAudio])
+  if os.path.exists(stopTimerFilePath):
+    os.remove(stopTimerFilePath)
+  if os.path.exists(timerLeftPath):
+    os.remove(timerLeftPath)
 ```
 Here's the StopTimerSound section:
 ```
-elif intent == "StopTimerSound":
-    stopTimerSoundFile = open(stopTimerSoundFilePath, "w")
-    stopTimerSoundFile.close()
+elif intent == "StopTimer":
+  if os.path.exists(timerLeftPath):
+    stopTimerFile = open(stopTimerFilePath, "w")
+    stopTimerFile.close()
+  else:
+    speech("You've got no timers set")
 ```
-Here's the cancelTimer section:
-```
-elif intent == "CancelTimer":
-    cancelFile = open(cancelFilePath, "w")
-    cancelFile.close()
-```
+
 And here's the TimerRemaining section:
 ```
 elif intent == "TimerRemaining":
-    if os.path.exists(timerLeftPath):
-        timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
-        if timerRemainingNumber >= 60:
-            speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
-        else:
-            speech("There are " + str(timerRemainingNumber) + " seconds left")
+  if os.path.exists(timerLeftPath):
+    timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
+    if timerRemainingNumber >= 60:
+      speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
     else:
-        speech("You've got no timers set")
+      speech("There are " + str(timerRemainingNumber) + " seconds left")
+  else:
+    speech("You've got no timers set")
 ```
 
 ## Generic stop function
@@ -943,7 +925,7 @@ Wonderful.
 Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping - we'll stop everything:
 ```
 elif intent == "GenericStop":
-  open(stopTimerSoundFilePath, "w")
+  open(stopTimerFilePath, "w")
 ```
 As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
 
