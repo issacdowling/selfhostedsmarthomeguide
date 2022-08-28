@@ -6,7 +6,7 @@ import requests
 import json
 
 def getSongDetails(userid,itemid):
-  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
+  songInfo = [[],["Name", "Album Artist"]]
   # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
   get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
   song = json.loads(get.text)
