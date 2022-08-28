@@ -1421,86 +1421,13 @@ WantedBy=multi-user.target
 ```
 Now make that script by running:
 ```
+cd ~/assistant/
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/jellyfinPlaySong.py
+sudo chmod +x jellyfinPlaySong.py
 sudo nano ~/assistant/jellyfinPlaySong.py
 ```
-and we paste:
-```
-#!/usr/bin/python3
-import miniaudio
-import time
-import os
 
-def getSongDetails(userid,itemid):
-  songInfo = [[],["Name", "Album Artist", "Album", "Release Date (in silly YYYY-MM-DD format)", "Favourite?", "Genre", "Play Count", "FileType", "Bitrate", "Bit depth", "Item ID", "Album Art ID"]]
-  # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
-  get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
-  song = json.loads(get.text)
-  # add the values to a list
-  songInfo[0].append(song["Name"])
-  songInfo[0].append(song["AlbumArtist"])
-  return songInfo
-
-tmpDir = "/dev/shm/tmpassistant/"
-jellyfinurl, jellyfinauth, userid = "url", "auth", "uid"
-headers = {"X-Emby-Token": jellyfinauth,}
-
-if not os.path.exists(tmpDir + "currentMedia"):
-  exit("No media to play")
-
-if os.path.exists(tmpDir + "songInfoFile"):
-  os.remove(tmpDir + "songInfoFile")
-
-itemid = open(tmpDir + "jellyfinPlay", "r").read()
-songInfo = getSongDetails(userid,itemid)
-songInfoFile = open(tmpDir + "songInfoFile", "w")
-songInfoFile.write(str(songInfo[0]))
-songInfoFile.close()
-
-if os.path.exists(tmpDir + "jellyfinStop"):
-  os.remove(tmpDir + "jellyfinStop")
-if os.path.exists(tmpDir + "jellyfinPause"):
-  os.remove(tmpDir + "jellyfinPause")
-if os.path.exists(tmpDir + "jellyfinResume"):
-  os.remove(tmpDir + "jellyfinResume")
-if os.path.exists(tmpDir + "jellyfinIsPaused"):
-  os.remove(tmpDir + "jellyfinIsPaused")
-if os.path.exists(tmpDir + "jellyfinPlay"):
-  os.remove(tmpDir + "jellyfinPlay")
-  
-try:
-  stream = miniaudio.stream_file(tmpDir + "currentMedia")
-  device = miniaudio.PlaybackDevice()
-  device.start(stream)
-  # Get duration with very long line of code
-  duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
-  progress = 0
-except:
-  print("Error parsing currentMedia")
-  progress = 999999
-
-while True:
-  if os.path.exists(tmpDir + "jellyfinStop"):
-    device.close()
-    break
-  if os.path.exists(tmpDir + "jellyfinPause"):
-    device.stop()
-    os.remove(tmpDir + "jellyfinPause")
-    open(tmpDir + "jellyfinIsPaused", "w")
-  if os.path.exists(tmpDir + "jellyfinResume"):
-    device.start(stream)
-    os.remove(tmpDir + "jellyfinResume")
-    os.remove(tmpDir + "jellyfinIsPaused")
-  if progress >= duration:
-    device.close()
-    break
-  time.sleep(1)
-  if not os.path.exists(tmpDir + "jellyfinIsPaused"):
-    progress += 1
-    
-os.remove(tmpDir + "jellyfinStop")
-os.remove(tmpDir + "songInfoFile")
-```
-#### Remember to add the URL, authtoken, and user id to the variables at the top
+And remember to add the URL, authtoken, and user id to the variables at the top, then CTRL+X, Y, Enter to save.
 
 This script handles playback (including pausing, stopping, and resuming), as well as getting info for the currently playing song incase we want it for later.
 
