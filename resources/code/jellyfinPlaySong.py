@@ -16,7 +16,7 @@ def getSongDetails(userid,itemid):
   return songInfo
 
 tmpDir = "/dev/shm/tmpassistant/"
-jellyfinurl, jellyfinauth, userid = "https://", "", ""
+jellyfinurl, jellyfinauth, userid = "https://", "auth", "userid"
 headers = {"X-Emby-Token": jellyfinauth,}
 
 if not os.path.exists(tmpDir + "currentMedia"):
@@ -45,15 +45,16 @@ if os.path.exists(tmpDir + "jellyfinSkipSong"):
 if os.path.exists(tmpDir + "jellyfinPlay"):
   os.remove(tmpDir + "jellyfinPlay")
 
-stream = miniaudio.stream_file(tmpDir + "currentMedia")
-device = miniaudio.PlaybackDevice()
-device.start(stream)
-
-
-#Get duration with very long line of code
-duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
-
-progress = 0
+try:
+  stream = miniaudio.stream_file(tmpDir + "currentMedia")
+  device = miniaudio.PlaybackDevice()
+  device.start(stream)
+  # Get duration with very long line of code
+  duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
+  progress = 0
+except:
+  print("Error parsing currentMedia")
+  progress = 999999
 
 while True:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):
