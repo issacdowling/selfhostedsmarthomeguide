@@ -273,7 +273,7 @@ I reccommend going back to the settings page, switching your **Text To Speech** 
 ![TTSsettings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Texttospeech.png)
 
 ### Wake word
-To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.85** so it can pick me up when I'm quieter. Save and restart, and it should work.
+To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.75** so it can pick me up when I'm quieter. I suggest you do your own experimentation with this to find the best balance between false positives and false negatives. Save and restart, and it should work.
 
 ![Wakeword settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Wakewordsetting.png)
 
