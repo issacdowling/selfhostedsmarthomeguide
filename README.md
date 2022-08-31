@@ -964,7 +964,7 @@ but we can do it better. It normally responds in 24-hour (at least, it does for 
 
 ```
 if intent == "GetTime":
-    now = datetime.datetime.now()
+    now = datetime.now()
     if now.strftime('%p') == "PM":
         apm = "peey em"
     else:
@@ -978,7 +978,7 @@ Basically, we check whether it's AM or PM, and get the 12-hour time, and then ju
 
 I know that **"Its"** should have an apostrophe to represent a contraction, and it annoys me too, a lot, however I'm trying to avoid extra symbols when necessary.
 
-Then, at the top of your python file, add this:
+Then, at the top of your python file, replace `import datetime` with this:
 
 ```
 from datetime import datetime
@@ -1005,7 +1005,7 @@ elif intent == "GetDate":
   dayNum = datetime.now().day
   month = months[(datetime.now().month)-1]
   weekday = weekdays[datetime.today().weekday()]
-  speech(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
+  speech("Today, it's" + weekday + "the " + str(dayNum) + " of" + month)
 ```
 
 We get a number for the day of the month, day of week, and month (so, Jan is 1, Dec is 12), then convert these to words using lists. Then, we speak a sentence which puts it all together.
