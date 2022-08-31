@@ -639,7 +639,7 @@ First, go back to the slots section in the left menu.
 
 ![slot tab](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/slottab.png)
 
-Then, we'll define our operations. Make a new slot called **"operations"**, then paste this in:
+Then, we'll define our operations. Make a new slot called **"operators"**, then paste this in:
 ```
 (add | plus):+
 (times | multiplied by):*
