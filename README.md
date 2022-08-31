@@ -443,7 +443,7 @@ then make a new slot called lights. Within regular brackets, put the name you'd 
 
 ![Light slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/lightslot.png)
 
-Then, head back to your sentences section, and remove what you've already got. If you want to use my setup, paste this in:
+Then, MAKE SURE YOU PRESS SAVE, and head back to your sentences section, remove what you've already got. If you want to use my setup, paste this in:
 ```
 [SetSpecificLightPower]
 light_name = ($lights){entity}
