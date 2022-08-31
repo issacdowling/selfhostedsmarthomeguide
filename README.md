@@ -1589,26 +1589,6 @@ Remember to add the server URL, auth, and userid.
 
 This script gets each audio file that's *under* a certain item (say, a playlist), and saves their IDs and Names to a list (and, if requested, it then shuffles them). Then, we handle things similarly to with individual songs, except in a `for loop`, which sends a new request to the playback script for each song.
 
-Now, go to the jellyfinPlaySong file:
-```
-sudo nano ~/assistant/jellyfinPlaySong.py
-```
-and add this to the end (now it matters that we clean up after playback is finished):
-```
-if os.path.exists(tmpDir + "jellyfinStop"):
-  os.remove(tmpDir + "jellyfinStop")
-if os.path.exists(tmpDir + "jellyfinPause"):
-  os.remove(tmpDir + "jellyfinPause")
-if os.path.exists(tmpDir + "jellyfinResume"):
-  os.remove(tmpDir + "jellyfinResume")
-if os.path.exists(tmpDir + "jellyfinIsPaused"):
-  os.remove(tmpDir + "jellyfinIsPaused")
-if os.path.exists(tmpDir + "songInfoFile"):
-  os.remove(tmpDir + "songInfoFile")
-if os.path.exists(tmpDir + "currentMedia"):
-  os.remove(tmpDir + "currentMedia")
-```
-
 We can now play or shuffle a big queue of songs, however we have no ability to skip.
     
 #### Adding ability to skip.
