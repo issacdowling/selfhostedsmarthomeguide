@@ -1000,12 +1000,12 @@ Add this elif statement:
 
 ```
 elif intent == "GetDate":
-    months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
-    weekdays = [" Monday ", " Tuesday ", " Wednesday ", " Thursday ", " Friday ", " Saturday ", " Sunday "]
-    dayNum = datetime.now().day
-    month = months[(datetime.now().month)-1]
-    weekday = weekdays[datetime.today().weekday()]
-    speech(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
+  months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
+  weekdays = [" Monday ", " Tuesday ", " Wednesday ", " Thursday ", " Friday ", " Saturday ", " Sunday "]
+  dayNum = datetime.now().day
+  month = months[(datetime.now().month)-1]
+  weekday = weekdays[datetime.today().weekday()]
+  speech(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
 ```
 
 We get a number for the day of the month, day of week, and month (so, Jan is 1, Dec is 12), then convert these to words using lists. Then, we speak a sentence which puts it all together.
