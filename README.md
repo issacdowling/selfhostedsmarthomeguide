@@ -842,8 +842,6 @@ else:
 ```
 Then, correct your `call aplay` line to be at the right level of indentation.
 
-Now, add a new elif statement for making the cancelFile:
-
 And remember, if you don't like *anything at all* about how I handle things, **you can change it**. All of the code is free for you to make exactly how you like it, even for things as basic as how you phrase sentences. You don't need to follow everything verbatim, but you can, it's up to you.
 
 ### Adding validation to the `stopTimer` section
