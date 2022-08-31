@@ -978,7 +978,7 @@ Basically, we check whether it's AM or PM, and get the 12-hour time, and then ju
 
 I know that **"Its"** should have an apostrophe to represent a contraction, and it annoys me too, a lot, however I'm trying to avoid extra symbols when necessary.
 
-Then, at the top of your python file, replace "import datetime" with this:
+Then, at the top of your python file, add this:
 
 ```
 from datetime import datetime
