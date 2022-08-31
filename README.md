@@ -770,7 +770,7 @@ If you're using a different file structure, you can change the data inside the w
 
 Now, go to your rhasspy sentences section, and make a new section that looks like this:
 ```
-[StopTimerSound]
+[StopTimer]
 stop [the] (alarm)
 ```
 Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop the alarm. Once the current loop is over, it will finish. **Once we've completed the timer section, there'll be a section about adding a generic "stop" function that applies to everything. If you want to be able to stop the timer by just saying "stop", you can go there now if you'd like.**
@@ -850,10 +850,10 @@ And remember, if you don't like *anything at all* about how I handle things, **y
 
 Now that we can know whether a timer's running (because of the timerLeft file), let's also use it to help the stopTimer bit.
 ```
-elif intent == "StopTimerSound":
+elif intent == "StopTimer":
   if os.path.exists(timerLeftPath):
-    stopTimerSoundFile = open(stopTimerSoundFilePath, "w")
-    stopTimerSoundFile.close()
+    stopTimerFile = open(stopTimerFilePath, "w")
+    stopTimerFile.close()
   else:
     speech("You've got no timers set")
 ```
@@ -891,7 +891,7 @@ elif intent == "DoTimer":
   if os.path.exists(timerLeftPath):
     os.remove(timerLeftPath)
 ```
-Here's the StopTimerSound section:
+Here's the StopTimer section:
 ```
 elif intent == "StopTimer":
   if os.path.exists(timerLeftPath):
