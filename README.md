@@ -1602,27 +1602,12 @@ Add this sentence:
 Then, we'll add this elif statement, which makes a skip file. It'll work like the stop file used to, except it ***won't*** tell our song-queue to stop too:
 ```
 elif intent == "JellyfinSkipSong":
-  open(workingDir + "tmp/jellyfinSkipSong", "w") 
-```
-
-Now, we'll edit the jellyfinPlaySong file again:
-```
-sudo nano ~/assistant/jellyfinPlaySong.py
-```
-and add this to both the start and end:
-```
-elif intent == "JellyfinSkipSong":
   if not os.path.exists(currentMediaPath):
     speech("No songs are playing")
   jellyfinSkipSong = open(workingDir + "tmp/jellyfinSkipSong", "w")
   jellyfinSkipSong.close()
 ```
 
-Then, modify your ```if os.path.exists(tmpDir + "jellyfinStop"):``` line and add (before the colon :)
-```
-or os.path.exists(tmpDir + "jellyfinSkipSong")
-```
-    
 And now, you should be able to skip song.
 
 This works because we're basically simulating the song having finished, but not also stopping the queue program.
