@@ -781,7 +781,7 @@ Due to it finishing the current audio loop before stopping, I suggest having a s
 ### Check Timer Progress While Running
 Ideally, you could ask the assistant how far along the timer is. Let's make that.
 
-First, add a variable to the top of your intentHandler in the `# Set paths` section called timerLeftPath, and set it to `workingDir+"tmp/"+"timerLeft"`. Then, within your `while timerLength` loop, add this to the bottom (ensure indentation stays correct):
+First, add a variable to the top of your intentHandler in the `# Set paths` section called timerLeftPath, and set it to `tmpDir+"timerLeft"`. Then, within your `while timerLength` loop, add this to the bottom (ensure indentation stays correct):
 ```
 timerLeft = open(timerLeftPath, "w")
 timerLeft.write(str(timerLength))
@@ -1098,7 +1098,7 @@ elif intent == "BluetoothPairing":
 
 Then, go to the `# Set paths` section at the top, and add 
 ```
-bluetoothFilePath = workingDir+"tmp/"+"bluetoothFile"
+bluetoothFilePath = tmpDir+"bluetoothFile"
 ```
 Save and exit.
 
@@ -1347,8 +1347,8 @@ But now, while on the main page, ask it to play any song, artist, or album in yo
 
 Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your `# Set paths` section, and add this:
 ```
-currentMediaPath = workingDir+"tmp/"+"currentMedia"
-jellyfinPlayFilePath = workingDir+"tmp/"+"jellyfinPlay"
+currentMediaPath = tmpDir+"currentMedia"
+jellyfinPlayFilePath = tmpDir+"jellyfinPlay"
 ```
 Also, add this elif statement:
 
@@ -1471,9 +1471,9 @@ This bit of code makes a file to represent you wanting to *play*, *pause*, or *r
 
 Then, in your `# Set paths` section, add these:
 ```
-jellyfinResumeFilePath = workingDir+"tmp/"+"jellyfinResume"
-jellyfinStopFilePath = workingDir+"tmp/"+"jellyfinStop"
-jellyfinPauseFilePath = workingDir+"tmp/"+"jellyfinPause"
+jellyfinResumeFilePath = tmpDir+"jellyfinResume"
+jellyfinStopFilePath = tmpDir+"jellyfinStop"
+jellyfinPauseFilePath = tmpDir+"jellyfinPause"
 ```
 Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
 
@@ -1519,7 +1519,7 @@ elif intent == "JFGetPlayingMediaName":
     
 And add this to our ```# Set Paths``` section
 ```
-songInfoFilePath = workingDir+"tmp/"+"songInfoFile"
+songInfoFilePath = tmpDir+"songInfoFile"
 ```
     
 It'll now read that file (which was created by the playback script, grabbing the info from your Jellyfin server using the ID of the song), separate out the name and artist, then say them in a sentence.
