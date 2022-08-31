@@ -695,7 +695,13 @@ Go to your sentences section, and add this:
 ```
 Remember to save and train.
 
-Then, go to the intentHandler script (`sudo nano ~/assistant/profiles/intentHandler`) and paste this below the last elif statement:
+Now, at the stop of the intentHandler script (`sudo nano ~/assistant/profiles/intentHandler`), add 
+```
+import os
+import time
+```
+
+Then, paste this below the last elif statement:
 
 ```
 elif intent == "DoTimer":
@@ -714,8 +720,7 @@ It receives a number between 1-60, and the unit (whether you said "Seconds" or "
 
 ### But that's not a great way of announcing the completion of a timer
 
-We want a sound. Let's get one. If you've got something on your computer (a .wav file), you can copy it over to the Pi by running the first section ON YOUR PC, NOT THE PI's SSH SESSION(and if you've not got one yet, you can find one at the bottom of this section)
-:
+We want a sound. Let's get one. If you've got something on your computer (a .wav file), you can copy it over to the Pi by running the first section ON YOUR PC, NOT THE PI's SSH SESSION(and if you've not got one yet, you can find one at the bottom of this section):
 
 ```
 scp pathtoyourfile piusername@pihostname:/home/assistant-main-node/
@@ -728,12 +733,6 @@ sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/profiles
 Replace pathtoyourfile with the path to your wav file. Replace piusername with the username you picked for your Pi. Replace hostname with the hostname you picked for your Pi. If you're using the same file structure and docker compose files as me, you can keep the rest of the command the same. When you press enter, it'll ask for your Pi's password. This copies your file to the Pi over ssh. If you choose another method to get the file to the Pi, that's fine, just make sure it's in a directory accessible from the docker container, which is why I chose the profiles folder. I made my own sounds (which can be found in the resources folder of this guide), however I don't use them, and might repurpose them - they were just two notes played on a digital keyboard. The sound I actually ended up using was [a royalty free one which reminded me of an aeroplane announcement system.](https://soundbible.com/1598-Electronic-Chime.html) I trimmed the empty bits off of that sound, [and reuploaded it if you'd like to use it too.](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/blob/main/resources/sounds/timerchime.wav)
 
 Now, go to the top of your intentHandler script, and add `from subprocess import call`.
-
-And on another line, add 
-```
-import os
-import time
-```
 
 Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
 ```
