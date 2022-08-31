@@ -231,6 +231,7 @@ In a browser on the same network as your Pi, go to this site, changing 'your-ip'
 http://your-ip.local:12101
 ```
 Your browser *should* complain that this site is not secure. If it was a site on the internet, you wouldn't want to access it, however it's just local, so we can tell the browser that we want to continue.
+
 ![https issue](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/httpsonly.png)
 
 ### And now you'll be here!
