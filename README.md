@@ -226,9 +226,9 @@ to begin installing. This, again, may take a while. You'll know it's done once y
 ![Install complete](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/donedocker.png)
 
 # Initally setting up rhasspy
-In a browser on the same network as your Pi, go to this site, changing 'yourhostname' to your hostname.
+In a browser on the same network as your Pi, go to this site, changing 'your-ip' to your pi's IP we set before (hostname can work too, but sometimes it causes issues).
 ```
-http://yourhostname.local:12101
+http://your-ip.local:12101
 ```
 Your browser *should* complain that this site is not secure. If it was a site on the internet, you wouldn't want to access it, however it's just local, so we can tell the browser that we want to continue.
 ![https issue](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/httpsonly.png)
