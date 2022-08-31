@@ -278,7 +278,7 @@ To wake things without using the web UI, you *could* set a custom word using **R
 ![Wakeword settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Wakewordsetting.png)
 
 ### STT
-In your speech to text settings, I highly reccomend going to the bottom, and changing `silence after` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
+In your speech to text settings, I highly recommend going to the bottom, and changing `silence after` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
 
 # Making it smart
 ## Setting up Homeassistant
@@ -403,7 +403,7 @@ Go right to the top of the file, and look for the line `default_config:`. Go one
 api:
 ```
 
-Also, I highly reccomend going some lines below, and pasting this, which will prevent homeassistant from taking up lots of space on your (presumably quite limited) Pi storage, and reduce disk usage, prolonging life:
+Also, I highly recommend going some lines below, and pasting this, which will prevent homeassistant from taking up lots of space on your (presumably quite limited) Pi storage, and reduce disk usage, prolonging life:
 ```
 # Remove history to save space
 recorder:
