@@ -1048,7 +1048,7 @@ I at some point intend to make it aware of the time so it can correct you if you
 ## Bluetooth Audio Streaming
 You can use an Echo or Google Home as a bluetooth speaker, why not this?
 
-First, run this to install all of the (originally difficult for me to find) dependencies
+First, run this (and press yes / y when asked) to install all of the (originally difficult for me to find) dependencies
 
 ```
 sudo apt-get install libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-1.0
