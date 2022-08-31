@@ -761,14 +761,12 @@ elif intent == "StopTimer":
   stopTimerFile.close()
 ```
 
-Now, go to the top of the file, and paste this:
+Now, go to the top of the file, into the ***# Set Paths*** section, and paste this:
 ```
-# Set paths
-workingDir = "/profiles/"
-stopTimerFilePath = workingDir+"tmp/"+"stopTimerFile"
+stopTimerFilePath = tmpDir+"stopTimerFile"
 ```
 
-If you're using a different file structure, you can change the data inside the workingDir variable. In this case, we're actually saving things to memory to cut down on drive access. Remember to save and exit (CTRL+X, Y, ENTER)
+If you're using a different file structure, you can change the data inside the workingDir and tmpDir variables. In this case, we're actually saving things to memory to cut down on drive access. Remember to save and exit (CTRL+X, Y, ENTER)
 
 Now, go to your rhasspy sentences section, and make a new section that looks like this:
 ```
