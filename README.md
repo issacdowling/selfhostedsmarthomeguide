@@ -1630,7 +1630,6 @@ elif intent == "ChangeVolume":
   minBound, maxBound = 0, 100
   percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
   call(["amixer", "sset", audioDevice, str(percentage) + "%"])
-  call(["aplay", "/profiles/testSound.wav"])
 ```
 This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.
     
