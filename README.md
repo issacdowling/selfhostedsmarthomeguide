@@ -363,6 +363,10 @@ import requests
 def speech(text):
   requests.post("http://YOUR-PI-IP:12101/api/text-to-speech", headers = {"content-type": "text/plain"}, data = text)
 
+# Set paths
+workingDir = "/profiles/"
+tmpDir = workingDir + "tmp/"
+
 # Set Homeassistant URL
 hassurl = "http://YOUR-PI-IP:8123"
 hassauth = ""
