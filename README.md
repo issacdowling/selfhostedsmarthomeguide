@@ -1541,11 +1541,10 @@ elif intent == "JellyfinPlayQueue":
     jellyfinStop = open(jellyfinStopFilePath, "w")
     jellyfinStop.close()
     time.sleep(1)
-  jellyfinurl, jellyfinauth = "", ""
+  jellyfinurl, jellyfinauth, userid = "", "", ""
   headers = {"X-Emby-Token": jellyfinauth,}
   songsList = [[],[]]
   ps, itemid = o["slots"]["ps"], o["slots"]["itemid"]
-  userid = ""
   if itemid == "favourites":
     get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
   else:
