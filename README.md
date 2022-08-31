@@ -1257,7 +1257,7 @@ speech(random.choice(agreeResponse) + "I'll set a " + str(number) + " " + unit +
 
 ### We could also implement different options for individual responses. 
 
-For example, when cancelling a timer, I could add:
+For example, when cancelling a timer, I could add this to the top of the doTimer intent:
 ```
 timerCancelResponse = ["Timer cancelled", "Cancelling timer", "I'll cancel the timer"]
 ```
