@@ -357,7 +357,7 @@ Then, paste this in [(we're building from the Rhasspy example)](https://github.c
 import sys
 import json
 import random
-import datetime
+from datetime import datetime
 import requests
 
 def speech(text):
@@ -977,12 +977,6 @@ if intent == "GetTime":
 Basically, we check whether it's AM or PM, and get the 12-hour time, and then just format it in a nice way for speech. It's really simple.
 
 I know that **"Its"** should have an apostrophe to represent a contraction, and it annoys me too, a lot, however I'm trying to avoid extra symbols when necessary.
-
-Then, at the top of your python file, replace `import datetime` with this:
-
-```
-from datetime import datetime
-```
 
 Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern english female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
 
