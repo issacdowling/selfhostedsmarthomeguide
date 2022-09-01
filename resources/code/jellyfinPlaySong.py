@@ -57,8 +57,9 @@ try:
   device.start(stream)
 except:
   print("Erorr starting playback with miniaudio")
-  progress = 1
-  duration = 0
+  duration = -1
+
+progress = 0
 
 while True:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):
