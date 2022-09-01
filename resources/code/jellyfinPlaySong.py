@@ -47,14 +47,18 @@ if os.path.exists(tmpDir + "jellyfinPlay"):
 
 try:
   stream = miniaudio.stream_file(tmpDir + "currentMedia")
-  device = miniaudio.PlaybackDevice()
-  device.start(stream)
   # Get duration with very long line of code
   duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
-  progress = 0
 except:
   print("Error parsing currentMedia")
-  progress = 999999
+
+try:
+  device = miniaudio.PlaybackDevice()
+  device.start(stream)
+except:
+  print("Erorr starting playback with miniaudio")
+  progress = 1
+  duration = 0
 
 while True:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):
