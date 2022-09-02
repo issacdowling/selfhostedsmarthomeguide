@@ -1329,11 +1329,11 @@ albums = ($albums){itemid}
 albumartists = ($albumartists){itemid}
 playlists = ($playlists){itemid}
 songs = ($songs){itemid}
-(play | shuffle){ps} my (favourites){itemid}
-(play | shuffle){ps} the album <albums>
-(play | shuffle){ps} the artist <albumartists>
-(play | shuffle){ps} the playlist <playlists>
-play{ps} [the] song <songs>
+(play | shuffle){ps} my{q} (favourites){itemid}
+(play | shuffle){ps} the album{q} <albums>
+(play | shuffle){ps} the artist{q} <albumartists>
+(play | shuffle){ps} the playlist{q} <playlists>
+play{ps} [the] song{q} <songs>
 ```
 
 Then, paste this elif statement at the end of the intenthandler:
