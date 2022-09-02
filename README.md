@@ -1318,58 +1318,84 @@ Then, save and exit by doing CTRL+X, Y, ENTER.
 
 Now, you can just run `sudo python create-jf-slots.py`. We need `sudo` because otherwise it won't have permissions to create its files.
 
-### Playing individual songs
+### Getting the songs to play
 
-For now, we'll be adding functionality to play any specific song. Shuffling artists or albums will come later on.
+In this section, we'll add to the intentHandler, allowing it to grab the IDs of the songs you want to play, and shuffle them if necessary.
 
-### Test your sentences
-Assuming you haven't modified any names in the python script, you should just be able to go to your sentences section, and paste this at the bottom:
-
+First, add these sentences:
 ```
-[JellyfinPlaySong]
+[JellyfinPlay]
+albums = ($albums){itemid}
+albumartists = ($albumartists){itemid}
+playlists = ($playlists){itemid}
 songs = ($songs){itemid}
-play [the] song <songs>
+(play | shuffle){ps} my (favourites){itemid}
+(play | shuffle){ps} the album <albums>
+(play | shuffle){ps} the artist <albumartists>
+(play | shuffle){ps} the playlist <playlists>
+play{ps} [the] song <songs>
 ```
 
-Remember to save and train. Speaking of, with my example slots files with approximately 10,000 songs, 1000 albums, and 100 artists, my time-to-train on a Pi 4 went from 16 seconds to 51, so don't worry if it takes longer than you're used to to train.
-
-But now, while on the main page, ask it to play any song, artist, or album in your library. To simplify things for the voice recognition - for once we add artists and albums - I've set it so you need to say "the *song* songname", or "the *artist* artistname*. You might have some conflicts with pronunciations of certain things with interesting names (like having to say "twenty-four K magic" for the album *24K Magic* because it doesn't understand that K means karat) , but you can correct these in Rhasspy's UI if they bother you.
-
-### Downloading the media
-
-Firstly, we want to be able to download the media that's requested, since I don't understand how to stream it normally. Due to this, go to your `# Set paths` section, and add this:
+Then, paste this elif statement at the end of the intenthandler:
 ```
-currentMediaPath = tmpDir+"currentMedia"
-jellyfinPlayFilePath = tmpDir+"jellyfinPlay"
-```
-Also, add this elif statement:
-
-```
-elif intent == "JellyfinPlaySong":
-  if os.path.exists(currentMediaPath):
-    exit("Already playing")
-  itemid = o["slots"]["itemid"]
-  jellyfinurl, jellyfinauth = "https://", ""
+elif intent == "JellyfinPlay":
+  # Set Variables
+  jellyfinurl, jellyfinauth, userid = "URL", "auth", "userid"
   headers = {"X-Emby-Token": jellyfinauth,}
-
-  # Send get request to Item Download API endpoint on the Jellyfin server with authentication
-  get = requests.get(jellyfinurl+"/Items/"+itemid+"/Download", headers = headers)
-  # If request successful, save file
-  if get.status_code == 200:
-    currentSong = open(currentMediaPath, "wb")
-    currentSong.write(get.content)
-    currentSong.close()
-    jellyfinPlay = open(jellyfinPlayFilePath, "w")
-    jellyfinPlay.write(itemid)
-    jellyfinPlay.close()
+  songsList = [[],[]]
+  ps, itemid, q = o["slots"]["ps"], o["slots"]["itemid"], o["slots"]["q"]
+  # Check if song currently playing. Stop it if True
+  if os.path.exists(currentMediaPath):
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
+    time.sleep(1)
+  # If not just an individual song, get the list of songs and their info. 
+  if not q == "song":
+    if itemid == "favourites":
+      get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
+    else:
+      get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
+    receivedJson = json.loads(get.text)
+    songs = receivedJson["Items"]
+  # If individual song, just get one song's info
+  else:
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
+    songs = [json.loads(get.text)]
+  for song in songs:
+    songsList[0].append(song["Name"])
+    songsList[1].append(song["Id"])
+  # If user asked for shuffle (ps stands for play/shuffle), shuffle names and IDs in the same order.
+  if ps == "shuffle":
+    tmpShuffle = list(zip(songsList[0],songsList[1]))
+    random.shuffle(tmpShuffle)
+    songsList[0], songsList[1] = zip(*tmpShuffle)
+    songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
+  #Initialise song to zero, and begin loop for every song in the list
+  songPos = 0
+  for song in songsList[0]:
+    if os.path.exists(jellyfinStopFilePath):
+      break
+    # Download song using ID at the current index from the songList
+    get = requests.get(jellyfinurl+"/Items/"+songsList[1][songPos]+"/Download", headers = headers)
+    # If request successful, save file, and write the ID to a file which asks the playback script to begin.
+    if get.status_code == 200:
+      currentSong = open(currentMediaPath, "wb")
+      currentSong.write(get.content)
+      currentSong.close()
+      jellyfinPlay = open(jellyfinPlayFilePath, "w")
+      jellyfinPlay.write(songsList[1][songPos])
+      jellyfinPlay.close()
+    # Loop which only stops once currentMedia deleted (which signifies the end of the song). After this, increment song and loop back.
+    while os.path.exists(currentMediaPath):
+      if os.path.exists(jellyfinStopFilePath):
+        break
+    songPos += 1
 ```
+Remember to add the server URL, auth, and userid.
 
-Just as before, add your jellyfin server URL and auth token to the variables.
-
-This script uses the ID of the song (located within the slots file) to download it from the Jellyfin server, and then (assuming the download was successful), write it to a file, and then make another file which willl be detected by a playback script to tell it to begin.
+This script first checks if a song is currently playing, and stops if so. Then, if you're not asking for an individual song, it checks if you asked for favourites. If you did, it loads your favourites into a list. If you didn't, it will try to load all songs within the requested album/playlist/artist into the list instead. If you just asked for one song, we load that into the list instead. Then, we shuffle if necessary, and initialise a loop, where the song is downloaded, the playback script (which we will soon create) is requested to start, and this loop only restarts once the previous song is done.
 
 ### To add playback support
-
 
 Now, we'll make another script. Just like with bluetooth support, we can't run everything in the docker container, so we'll be making a system service that is *activated* by the intentHandler.
 
@@ -1425,8 +1451,8 @@ And remember to add the URL, authtoken, and user id to the variables at the top,
 
 This script handles playback (including pausing, stopping, and resuming), as well as getting info for the currently playing song incase we want it for later.
 
-### Now enable it all
-Run
+#### Now enable it all
+by running
 ```
 sudo systemctl enable jellyfinSongPlay.path --now
 sudo chmod +x ~/assistant/jellyfinPlaySong.py
@@ -1516,74 +1542,6 @@ songInfoFilePath = tmpDir+"songInfoFile"
     
 It'll now read that file (which was created by the playback script, grabbing the info from your Jellyfin server using the ID of the song), separate out the name and artist, then say them in a sentence.
 
-
-### Playing a queue of songs.
-
-Now, we've got a fairly competent way to play, stop, pause, and resume individual songs from your library, but what about whole albums or artists?
-
-First, add these sentences:
-```
-[JellyfinPlayQueue]
-albums = ($albums){itemid}
-albumartists = ($albumartists){itemid}
-favourites = (favourites){itemid}
-playlists = ($playlists){itemid}
-(play | shuffle){ps} my <favourites>
-(play | shuffle){ps} the album <albums>
-(play | shuffle){ps} the artist <albumartists>
-(play | shuffle){ps} the playlist <playlists>
-```
-
-Then, paste this elif statement at the end of the intenthandler:
-```
-elif intent == "JellyfinPlayQueue":
-  if os.path.exists(currentMediaPath):
-    jellyfinStop = open(jellyfinStopFilePath, "w")
-    jellyfinStop.close()
-    time.sleep(1)
-  jellyfinurl, jellyfinauth, userid = "", "", ""
-  headers = {"X-Emby-Token": jellyfinauth,}
-  songsList = [[],[]]
-  ps, itemid = o["slots"]["ps"], o["slots"]["itemid"]
-  if itemid == "favourites":
-    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
-  else:
-    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
-  receivedJson = json.loads(get.text)
-  songs = receivedJson["Items"]
-  for song in songs:
-    songsList[0].append(song["Name"])
-    songsList[1].append(song["Id"])
-  if ps == "shuffle":
-    tmpShuffle = list(zip(songsList[0],songsList[1]))
-    random.shuffle(tmpShuffle)
-    songsList[0], songsList[1] = zip(*tmpShuffle)
-    songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
-  songPos = 0
-  for song in songsList[0]:
-    if os.path.exists(jellyfinStopFilePath):
-        break
-    # Send get request to Item Download API endpoint on the Jellyfin server with authentication
-    get = requests.get(jellyfinurl+"/Items/"+songsList[1][songPos]+"/Download", headers = headers)
-    # If request successful, save file
-    if get.status_code == 200:
-        currentSong = open(currentMediaPath, "wb")
-        currentSong.write(get.content)
-        currentSong.close()
-        jellyfinPlay = open(jellyfinPlayFilePath, "w")
-        jellyfinPlay.write(songsList[1][songPos])
-        jellyfinPlay.close()
-    while os.path.exists(currentMediaPath):
-      if os.path.exists(jellyfinStopFilePath):
-        break
-    songPos += 1
-```
-Remember to add the server URL, auth, and userid.
-
-This script gets each audio file that's *under* a certain item (say, a playlist), and saves their IDs and Names to a list (and, if requested, it then shuffles them). Then, we handle things similarly to with individual songs, except in a `for loop`, which sends a new request to the playback script for each song.
-
-We can now play or shuffle a big queue of songs, however we have no ability to skip.
-    
 #### Adding ability to skip.
     
 Add this sentence:
