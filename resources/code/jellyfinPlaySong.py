@@ -47,8 +47,20 @@ if os.path.exists(tmpDir + "jellyfinPlay"):
 
 try:
   stream = miniaudio.stream_file(tmpDir + "currentMedia")
-  # Get duration with very long line of code
-  duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
+  # Attempt to get duration for all 4 supported file types. If ALL fail, log it.
+  try:
+    duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
+  except:
+    try:
+      duration = int(miniaudio.mp3_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
+    except:
+      try:
+        duration = int(miniaudio.wav_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
+      except:
+        try:
+          duration = int(miniaudio.vorbis_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
+        except:
+          print("Unable to get duration info")
 except:
   print("Error parsing currentMedia")
 
