@@ -22,10 +22,8 @@ headers = {"X-Emby-Token": jellyfinauth,}
 if not os.path.exists(tmpDir + "currentMedia"):
   exit("No media to play")
 
-
 if os.path.exists(tmpDir + "songInfoFile"):
   os.remove(tmpDir + "songInfoFile")
-
 itemid = open(tmpDir + "jellyfinPlay", "r").read()
 songInfo = getSongDetails(userid,itemid)
 songInfoFile = open(tmpDir + "songInfoFile", "w")
