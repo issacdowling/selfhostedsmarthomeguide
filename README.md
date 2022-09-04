@@ -1372,6 +1372,8 @@ elif intent == "JellyfinPlay":
     songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
   #Initialise song to zero, and begin loop for every song in the list
   songPos = 0
+  if os.path.exists(jellyfinStopFilePath):
+    os.remove(jellyfinStopFilePath)
   for song in songsList[0]:
     if os.path.exists(jellyfinStopFilePath):
       break
