@@ -844,7 +844,7 @@ Then, correct your `call aplay` line to be at the right level of indentation.
 
 And remember, if you don't like *anything at all* about how I handle things, **you can change it**. All of the code is free for you to make exactly how you like it, even for things as basic as how you phrase sentences. You don't need to follow everything verbatim, but you can, it's up to you.
 
-### Adding validation to the `stopTimer` section
+### Adding validation
 
 Now that we can know whether a timer's running (because of the timerLeft file), let's also use it to help the stopTimer bit.
 ```
@@ -857,6 +857,13 @@ elif intent == "StopTimer":
 ```
 
 Change it to the above code, and if you try to stop a timer that's not running, it'll tell you.
+
+Also, we don't currently support multiple timers at once... but you can still ask for it, which breaks everything massively, and you might end up with an unstoppable timer-finished sound, necessitating a reboot. To fit this, just below the `if os.path.exists(stopTimerFilePath)` section, we can add these 3 lines, which will prevent multiple timers from being started, by checking for the timerLeft file:
+```
+if os.path.exists(timerLeftPath):
+  speech("There's already a timer running")
+  exit()
+```
 
 ### The end result
 This timer section was massive. My code at the end of it looks like this:
