@@ -23,7 +23,7 @@ workingDir = "/profiles/"
 stopTimerFilePath, timerLeftPath, bluetoothFilePath, currentMediaPath, jellyfinPlayFilePath, jellyfinResumeFilePath, jellyfinStopFilePath, jellyfinPauseFilePath, songInfoFilePath = workingDir+"tmp/"+"stopTimerFile", workingDir+"tmp/"+"timerLeft", workingDir+"tmp/"+"bluetoothFile", workingDir+"tmp/"+"currentMedia", workingDir+"tmp/"+"jellyfinPlay", workingDir+"tmp/"+"jellyfinResume", workingDir+"tmp/"+"jellyfinStop", workingDir+"tmp/"+"jellyfinPause", workingDir+"tmp/"+"songInfoFile"
 
 # Set responses
-agreeResponse, currentlyResponse, morningResponse, eveningResponse = ["Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "], ["Right now it's ", "Its ", "Currently its ", "At the moment its "], [" in the morning", " ey em"], [" in the afternoon", " in the evening", " peey em"]
+agreeResponse, currentlyResponse, morningResponse, eveningResponse = ("Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "), ("Right now it's ", "Its ", "Currently its ", "At the moment its "), (" in the morning", " ey em"), (" in the afternoon", " in the evening", " peey em")
 
 # get json from stdin and load into python dict
 o = json.loads(sys.stdin.read())
@@ -42,7 +42,7 @@ if intent == "GetTime":
         speech(random.choice(currentlyResponse) + now.strftime('%I') + " " + now.strftime('%M') + " " + apm) 
 
 elif intent == "Greet":
-  replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
+  replies = ('Hi!', 'Hello!', 'Hey there!', 'Greetings.')
   speech(random.choice(replies))
 
 elif intent == "SetSpecificLightPower":
