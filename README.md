@@ -729,7 +729,7 @@ elif intent == "start_timer":
     length = number-1
 
   #POST timer details to timer server
-  start_timer_json = {"length" : number, "source" : "Blueberry"}
+  start_timer_json = {"length" : length, "source" : "Blueberry"}
   send_start_timer_json = requests.post(webserver_url + "/timer_start", json=start_timer_json)
   
   # Tell user that timer is set.
