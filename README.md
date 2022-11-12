@@ -692,7 +692,12 @@ Basically, we make variables for the operator and both numbers from the incoming
 ## Setting timers
 Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
 
-First, we'll add things to our intenthandler. This is the code for starting a timer:
+First, we'll add things to our intenthandler. 
+
+Go to the top, add a section called `# Set Paths`, and below it, add: `webserver_url = "http://localhost:4761"`
+
+
+Then, add a new elif statement. This is the code for starting a timer:
 ```
 elif intent == "start_timer":
   #Get timer details from server, or exit and inform user that it failed
@@ -890,6 +895,11 @@ while True:
     #If timer going off, alert user
     elif timer["dismissed"] == False:
         while timer["dismissed"] == False:
+            try:
+                timer = requests.get(webserver_url + "/timer").json()
+            except:
+                print("I couldn't access the timer server")
+                timer = {"running" : False, "dismissed" : True}
             call(["aplay", timer_finished_audio])
 ```
 In timer_finished_audio, change the username if it's not the same as mine!
