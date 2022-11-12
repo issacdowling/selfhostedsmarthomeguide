@@ -921,15 +921,15 @@ In the future, we might have other things that we'd like to stop, such as music 
 
 First, we'll add the sentence, since it's the most basic part. Go to your rhasspy web UI, sentences, and paste this:
 ```
-[GenericStop]
+[generic_stop]
 stop
 ```
 Wonderful.
 
 Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping - we'll stop everything:
 ```
-elif intent == "GenericStop":
-  open(stopTimerFilePath, "w")
+elif intent == "generic_stop":
+  stop = requests.post(webserver_url + "/timer_stop").text
 ```
 As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
 
