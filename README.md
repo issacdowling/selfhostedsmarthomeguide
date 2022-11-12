@@ -904,7 +904,7 @@ while True:
 ```
 In timer_finished_audio, change the username if it's not the same as mine!
 
-Now we'll make it all executable:
+Now we'll make it all executable and enable it:
 ```
 sudo chmod +x ~/sync-conveniences/timer.py
 sudo chmod +x ~/sync-conveniences/timer-sounder.py
@@ -914,7 +914,7 @@ sudo systemctl enable start-sync-timer.service --now
 sudo systemctl enable start-sync-timersounder.service --now
 ```
 
-
+And now you should be done. You can ask for a timer, ask how long's left, or stop it, as well as accessing it from other devices [if you set that up.](https://gitlab.com/issacdowling/selfhosted-synced-stuff)
 
 ## Generic stop function
 In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
