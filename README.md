@@ -710,7 +710,7 @@ elif intent == "start_timer":
   #If timer already running, tell user, and give details about how long, then exit.
   if timer["running"] == True:
     if timer["length"]-3 >= 60:
-      speech("You've already got a " + str(math.trunc(timer["length"]-3/60)) + " minutes and " + str(timer["length"] % 60) + " timer")
+      speech("You've already got a " + str(math.trunc((timer["length"]-3)/60)) + " minutes and " + str(timer["length"] % 60) + " timer")
     else:
       speech("You've already got a " + str(timer["length"]-3) + " second timer")
     exit()
@@ -768,7 +768,7 @@ elif intent == "timer_remaining":
   #If timer already running, tell user the details
   if timer["running"] == True:
     if timer["length"]-3 >= 60:
-      speech("Your timer has " + str(math.trunc(timer["length"]-3/60)) + " minutes and " + str(timer["length"] % 60) + " seconds left")
+      speech("Your timer has " + str(math.trunc((timer["length"]-3)/60)) + " minutes and " + str(timer["length"] % 60) + " seconds left")
     else:
       speech("Your timer has " + str(timer["length"]-3) + " seconds left")
     exit()
