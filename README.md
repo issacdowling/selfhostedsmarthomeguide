@@ -690,234 +690,221 @@ elif intent == "DoMaths":
 Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven. This is why it was important to change your STT settings earlier, increasing `silence after` time.
 
 ## Setting timers
-What if you want to set a timer? It's not a super complex one, you can only pick minutes **or** seconds, meaning you couldn't ask for a 2 minute and 17 second timer, but it works well enough.
+Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
 
-Go to your sentences section, and add this:
+First, we'll add things to our intenthandler. This is the code for starting a timer:
 ```
-[DoTimer]
+elif intent == "start_timer":
+  #Get timer details from server, or exit and inform user that it failed
+  try:
+    timer = requests.get(webserver_url + "/timer").json()
+  except:
+    speech("I couldn't access the timer server")
+    exit()
+  
+  #If timer already running, tell user, and give details about how long, then exit.
+  if timer["running"] == True:
+    if timer["length"]-3 >= 60:
+      speech("You've already got a " + str(math.trunc(timer["length"]-3/60)) + " minutes and " + str(timer["length"] % 60) + " timer")
+    else:
+      speech("You've already got a " + str(timer["length"]-3) + " second timer")
+    exit()
+  elif timer["dismissed"] == False:
+    speech("You've got a timer going off already. I'll dismiss it")
+    stop = requests.post(webserver_url + "/timer_stop").text
+    exit()
+
+  number = int(o["slots"]["time"])
+  unit = o["slots"]["unit"]
+
+  #Convert spoken time into seconds minus 1
+  if unit == "minute":
+    length = (number*60)-1
+  else:
+    length = number-1
+
+  #POST timer details to timer server
+  start_timer_json = {"length" : number, "source" : "Blueberry"}
+  send_start_timer_json = requests.post(webserver_url + "/timer_start", json=start_timer_json)
+  
+  # Tell user that timer is set.
+  speech(random.choice(agreeResponse) + "i'll set a " + str(number) + " " + unit + " timer")
+```
+It sends a request to a locally-running timer server, which other devices can access if they want to sync with Blueberry.
+
+Next, as another elif statement, the stop timer code:
+```
+elif intent == "stop_timer":
+  #Get timer details from server, or exit and inform user that it failed
+  try:
+    timer = requests.get(webserver_url + "/timer").json()
+  except:
+    speech("I couldn't access the timer server")
+    exit()
+  
+  #If the timer's not dismissed, dismiss / stop it. Otherwise, tell user that no timer's running.
+  if timer["dismissed"] == False:
+    stop = requests.post(webserver_url + "/timer_stop").text
+    speech("Stopping the timer")                 
+  else:
+    speech("You've got no timers set")
+```
+
+And finally for the intenthandler, here's how we'll get the remaining length:
+```
+elif intent == "timer_remaining":
+  #Get timer details from server, or exit and inform user that it failed
+  try:
+    timer = requests.get(webserver_url + "/timer").json()
+  except:
+    speech("I couldn't access the timer server")
+    exit()
+  
+  #If timer already running, tell user the details
+  if timer["running"] == True:
+    if timer["length"]-3 >= 60:
+      speech("Your timer has " + str(math.trunc(timer["length"]-3/60)) + " minutes and " + str(timer["length"] % 60) + " seconds left")
+    else:
+      speech("Your timer has " + str(timer["length"]-3) + " seconds left")
+    exit()
+  #If timer going off, tell user, fix it.
+  elif timer["dismissed"] == False:
+    speech("You've got a timer going off. I'll dismiss it.")
+    stop = requests.post(webserver_url + "/timer_stop").text
+  else:
+    speech("You've got no timers running")
+```
+
+In your Rhasspy sentences, you'll want to add these (remember to save and train):
+```
+[start_timer]
 (set | make | start) a (1..60){time} (second | minute){unit} timer
-```
-Remember to save and train.
 
-Now, at the stop of the intentHandler script (`sudo nano ~/assistant/profiles/intentHandler`), add 
-```
-import os
-import time
-```
+[stop_timer]
+stop [the] (timer | alarm)
 
-Then, paste this below the last elif statement:
-
-```
-elif intent == "DoTimer":
-  number, unit = o["slots"]["time"], o["slots"]["unit"]
-  speech("Alright, i'll set a " + str(number) + " " + unit + " timer")
-  if unit == "second":
-    timerLength = number-1
-  elif unit == "minute":
-    timerLength = (number*60)-1
-  while timerLength:
-    time.sleep(1)
-    timerLength -=1
-  speech("Timer complete")
-```
-It receives a number between 1-60, and the unit (whether you said "Seconds" or "Minutes"). It then sets a variable to the correct number of seconds, either by taking 1 away from the number you said, or multiplying it by 60, then still removing one. Afterwards, it just runs a timer, and will speak once it's complete. You can still run other voice commands while the timer is running.
-
-### But that's not a great way of announcing the completion of a timer
-
-We want a sound. Let's get one. If you've got something on your computer (a .wav file), you can copy it over to the Pi by running the first section ON YOUR PC, NOT THE PI's SSH SESSION(and if you've not got one yet, you can find one at the bottom of this section):
-
-```
-scp pathtoyourfile piusername@pihostname:/home/assistant-main-node/
-```
-Then, on the pi, you can do
-```
-sudo cp /home/assistant-main-node/yourfile.wav ~/assistant/profiles
-```
-
-Replace pathtoyourfile with the path to your wav file. Replace piusername with the username you picked for your Pi. Replace hostname with the hostname you picked for your Pi. If you're using the same file structure and docker compose files as me, you can keep the rest of the command the same. When you press enter, it'll ask for your Pi's password. This copies your file to the Pi over ssh. If you choose another method to get the file to the Pi, that's fine, just make sure it's in a directory accessible from the docker container, which is why I chose the profiles folder. I made my own sounds (which can be found in the resources folder of this guide), however I don't use them, and might repurpose them - they were just two notes played on a digital keyboard. The sound I actually ended up using was [a royalty free one which reminded me of an aeroplane announcement system.](https://soundbible.com/1598-Electronic-Chime.html) I trimmed the empty bits off of that sound, [and reuploaded it if you'd like to use it too.](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/blob/main/resources/sounds/timerchime.wav)
-
-Now, go to the top of your intentHandler script, and add `from subprocess import call`.
-
-Then, go back down to your DoTimer section, and add these lines right to the top of the elif statement (ensure indentation matches the rest of the code):
-```
-timerFinishedAudio = workingDir+"yourfile.wav"
-if os.path.exists(stopTimerFilePath):
-    os.remove(stopTimerFilePath)
-```
-We'll be looping a small piece of audio until we detect a file that tells us to stop, which will be made when we say the voice command **"stop"**. This bit of code was necessary to make sure the file isn't already there incase the user was detected to be saying **"stop"** while a sound wasn't going off. Remember again to replace **"yourfile.wav"** with the name of your file.
-
-Now, you can replace the `speech("Timer complete")` line with this:
-```
-while not os.path.exists(stopTimerFilePath):
-  call(["aplay", timerFinishedAudio])
-if os.path.exists(stopTimerFilePath):
-  os.remove(stopTimerFilePath)
-```
-
-If you were now to ask for a timer, it would finish by infinitely repeating whatever your sound is. We can fix this by making a new elif statement below:
-```
-elif intent == "StopTimer":
-  stopTimerFile = open(stopTimerFilePath, 'w')
-  stopTimerFile.close()
-```
-
-Now, go to the top of the file, into the ***# Set Paths*** section, and paste this:
-```
-stopTimerFilePath = tmpDir+"stopTimerFile"
-```
-
-If you're using a different file structure, you can change the data inside the workingDir and tmpDir variables. In this case, we're actually saving things to memory to cut down on drive access. Remember to save and exit (CTRL+X, Y, ENTER)
-
-Now, go to your rhasspy sentences section, and make a new section that looks like this:
-```
-[StopTimer]
-(cancel |stop) [the] (timer | alarm)
-```
-Remember to save and retrain Rhasspy once done. Now, you should be able to ask for a quick one second timer, then while the audio is looping, ask it to stop the alarm. Once the current loop is over, it will finish. **Once we've completed the timer section, there'll be a section about adding a generic "stop" function that applies to everything. If you want to be able to stop the timer by just saying "stop", you can go there now if you'd like.**
-
-### Some notes about the audio
-Due to it finishing the current audio loop before stopping, I suggest having a simple sub-5 second sound. Anything long will take a very long time to stop after you ask it to. It's not ideal, but it works, and even this solution took me hours to figure out. I just used an [electronic chime licensed under the Public Domain.](https://soundbible.com/1598-Electronic-Chime.html) Though, there was quite a bit of empty space at the end of that audio file, so I've trimmed it, [and uploaded it here.](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/blob/main/resources/sounds/timerchime.wav)
-
-### Check Timer Progress While Running
-Ideally, you could ask the assistant how far along the timer is. Let's make that.
-
-First, add a variable to the top of your intentHandler in the `# Set paths` section called timerLeftPath, and set it to `tmpDir+"timerLeft"`. Then, within your `while timerLength` loop, add this to the bottom (ensure indentation stays correct):
-```
-timerLeft = open(timerLeftPath, "w")
-timerLeft.write(str(timerLength))
-```
-
-Then, at the bottom of your **DoTimer** intent, duplicate your already existing section which deletes your stopfile, and change `stopFilePath` to `timerLeftPath`. It should look like this:
-```
-if os.path.exists(timerLeftPath):
-  os.remove(timerLeftPath)
-```
-Now we've got a file that contains the number of seconds remaining, and it'll delete itself once the timer is done.
-
-Go to the bottom of your intentHandler, and paste this:
-```
-elif intent == "TimerRemaining":
-  if os.path.exists(timerLeftPath):
-    timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
-    if timerRemainingNumber >= 60:
-      speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
-    else:
-      speech("There are " + str(timerRemainingNumber) + " seconds left")
-  else:
-    speech("You've got no timers set")
-```
-This checks if the file exists, and if it does, checks whether the time remaining should be measured in minutes (number is > 60) or seconds (number is < 60). Then, if minutes are needed, we divide the number of seconds by 60, then truncate (remove **but not round** the decimals) it, as well as telling us the number of seconds by finding the remainder when dividing by 60. If just seconds are needed, we only need to speak the number we've gotten from the file. Also, since I expect the words to be spoken 3-ish seconds after reading the value, I remove 3 from the number we get at the start.
-
-In here, we use the **math** library, so you'll want to go to the top of your file, and add ```import math``` too.
-
-Now, in rhasspy's sentences tab, you just need to add this:
-```
-[TimerRemaining]
+[timer_remaining]
 how long left on timer
-what is [the] timer [at]
-```
-The broken English is intentional, since our speech-to-text system will turn whatever you say into the *closest* sentence possible, so having a shorter sentence that misses words is alright, and I believe *(with no tested evidence)* that it could speed things up.
-
-### Cancelling a timer
-
-But what if you decide that you don't want your timer anymore? (or, more likely, STT picks up the wrong number)
-
-We'll use the stop file for this too. If you ask it to stop before the timer's done, it'll cancel. 
-
-Within the `while timerLength` section, at the end of it, add this, which will stop the timer if it detects the cancel file:
-
-```
-if os.path.exists(stopTimerFilePath):
-  speech("Timer cancelled")
-  break
+what is [the] timer [at | on]
 ```
 
-We'll now be working within the `while not os.path.exists(stopTimerFilePath)` section.
+#### Now that those are added, we'll get the server and notifier set up.
 
-At the same level of indentation as the `call aplay` line, right at the top, add:
+Run this to download the necessary files and put them in the right place:
 ```
-if os.path.exists(stopTimerFilePath):
-  break
-else:
+sudo pip install flask
+mkdir ~/sync-conveniences
+cd ~/sync-conveniences
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.py
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/timer.py
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/timerchime.wav
+sudo systemctl --force --full edit start-sync-webserver.service
 ```
-Then, correct your `call aplay` line to be at the right level of indentation.
+and pasting:
+```                                        
+[Unit]
+Description=Start sync conveniences webserver       
+After=multi-user.target
 
-And remember, if you don't like *anything at all* about how I handle things, **you can change it**. All of the code is free for you to make exactly how you like it, even for things as basic as how you phrase sentences. You don't need to follow everything verbatim, but you can, it's up to you.
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/webserver.py
 
-### Adding validation
+[Install]
+WantedBy=multi-user.target
 
-Now that we can know whether a timer's running (because of the timerLeft file), let's also use it to help the stopTimer bit.
 ```
-elif intent == "StopTimer":
-  if os.path.exists(timerLeftPath):
-    stopTimerFile = open(stopTimerFilePath, "w")
-    stopTimerFile.close()
-  else:
-    speech("You've got no timers set")
+Change `assistant-main-node` to your username if it's different.
+
+Then do:
+```
+sudo systemctl --force --full edit start-sync-timer.service
+```
+and paste:
+```
+[Unit]
+Description=Start sync conveniences timer       
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer.py
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-Change it to the above code, and if you try to stop a timer that's not running, it'll tell you.
+Then do:
+```
+sudo systemctl --force --full edit start-sync-timersounder.service
+```
+and paste:
+```
+[Unit]
+Description=Start sync conveniences timer-sounder      
+After=multi-user.target
 
-Also, we don't currently support multiple timers at once... but you can still ask for it, which breaks everything massively, and you might end up with an unstoppable timer-finished sound, necessitating a reboot. To fit this, just below the `if os.path.exists(stopTimerFilePath)` section, we can add these 3 lines, which will prevent multiple timers from being started, by checking for the timerLeft file:
-```
-if os.path.exists(timerLeftPath):
-  speech("There's already a timer running")
-  exit()
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer-sounder.py
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-### The end result
-This timer section was massive. My code at the end of it looks like this:
+Now, go into timer.py:
 ```
-elif intent == "DoTimer":
-  number, unit = o["slots"]["time"], o["slots"]["unit"]
-  speech("Alright, i'll set a " + str(number) + " " + unit + " timer")
-  timerFinishedAudio = workingDir+"timerchime.wav"
-  if os.path.exists(stopTimerFilePath):
-    os.remove(stopTimerFilePath)
-  if unit == "second":
-    timerLength = number-1
-  elif unit == "minute":
-    timerLength = (number*60)-1
-  while timerLength:
+sudo nano ~/sync-conveniences/timer.py
+```
+and change `working_dir` to `"/dev/shm/tmpassistant"`
+
+Go into webserver and do the same:
+```
+sudo nano ~/sync-conveniences/webserver.py
+```
+
+Open timer-sounder
+```
+sudo nano ~/sync-conveniences/timer-sounder.py
+```
+and paste:
+```
+import json
+import time
+import requests
+from subprocess import call
+
+webserver_url = "http://localhost:4761"
+working_dir = "/dev/shm/tmpassistant"
+timer_finished_audio = "/home/assistant-main-node/sync-conveniences/timerchime.wav"
+
+while True:
     time.sleep(1)
-    timerLength -=1
-    timerLeft = open(timerLeftPath, "w")
-    timerLeft.write(str(timerLength))
-    if os.path.exists(stopTimerFilePath):
-      speech("Timer cancelled")
-      break
-  while not os.path.exists(stopTimerFilePath):
-    if os.path.exists(stopTimerFilePath):
-      break
-    else:
-      call(["aplay", timerFinishedAudio])
-  if os.path.exists(stopTimerFilePath):
-    os.remove(stopTimerFilePath)
-  if os.path.exists(timerLeftPath):
-    os.remove(timerLeftPath)
+    #Get timer details from server, or exit and inform user that it failed
+    try:
+        timer = requests.get(webserver_url + "/timer").json()
+    except:
+        print("I couldn't access the timer server")
+        timer = {"running" : False, "dismissed" : True}
+
+    #If running, do nothing.
+    if timer["running"] == True:
+        pass
+    #If timer going off, alert user
+    elif timer["dismissed"] == False:
+        while timer["dismissed"] == False:
+            call(["aplay", timer_finished_audio])
 ```
-Here's the StopTimer section:
+In timer_finished_audio, change the username if it's not the same as mine!
+
+Now we'll make it all executable:
 ```
-elif intent == "StopTimer":
-  if os.path.exists(timerLeftPath):
-    stopTimerFile = open(stopTimerFilePath, "w")
-    stopTimerFile.close()
-  else:
-    speech("You've got no timers set")
+sudo chmod +x ~/sync-conveniences/timer.py
+sudo chmod +x ~/sync-conveniences/timer-sounder.py
+sudo chmod +x ~/sync-conveniences/webserver.py
+sudo systemctl enable start-sync-webserver.service --now
+sudo systemctl enable start-sync-timer.service --now
+sudo systemctl enable start-sync-timersounder.service --now
 ```
 
-And here's the TimerRemaining section:
-```
-elif intent == "TimerRemaining":
-  if os.path.exists(timerLeftPath):
-    timerRemainingNumber = int(open(timerLeftPath, "r").read()) - 3
-    if timerRemainingNumber >= 60:
-      speech("There are " + str(math.trunc(timerRemainingNumber/60)) + " minutes and " + str(timerRemainingNumber % 60) + " seconds left")
-    else:
-      speech("There are " + str(timerRemainingNumber) + " seconds left")
-  else:
-    speech("You've got no timers set")
-```
+
 
 ## Generic stop function
 In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
