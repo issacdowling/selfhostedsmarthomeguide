@@ -1346,13 +1346,14 @@ elif intent == "JellyfinPlay":
   # Set Variables
   jellyfinurl, jellyfinauth, userid = "URL", "auth", "userid"
   headers = {"X-Emby-Token": jellyfinauth,}
-  songsList = [[],[]]
+  songsList = []
   ps, itemid, q = o["slots"]["ps"], o["slots"]["itemid"], o["slots"]["q"]
   # Check if song currently playing. Stop it if True
   if os.path.exists(currentMediaPath):
     jellyfinStop = open(jellyfinStopFilePath, "w")
     jellyfinStop.close()
     time.sleep(1)
+
   # If not just an individual song, get the list of songs and their info. 
   if not q == "song":
     if itemid == "favourites":
@@ -1365,31 +1366,31 @@ elif intent == "JellyfinPlay":
   else:
     get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
     songs = [json.loads(get.text)]
+
   for song in songs:
-    songsList[0].append(song["Name"])
-    songsList[1].append(song["Id"])
-  # If user asked for shuffle (ps stands for play/shuffle), shuffle names and IDs in the same order.
+    songsList.append({"Name": song["Name"], "Id" : song["Id"]})
+
+  # If user asked for shuffle (ps stands for play/shuffle), shuffle.
   if ps == "shuffle":
-    tmpShuffle = list(zip(songsList[0],songsList[1]))
-    random.shuffle(tmpShuffle)
-    songsList[0], songsList[1] = zip(*tmpShuffle)
-    songsList[0], songsList[1] = list(songsList[0]), list(songsList[1])
+    random.shuffle(songsList)
+
   #Initialise song to zero, and begin loop for every song in the list
   songPos = 0
   if os.path.exists(jellyfinStopFilePath):
     os.remove(jellyfinStopFilePath)
-  for song in songsList[0]:
+
+  for song in songsList:
     if os.path.exists(jellyfinStopFilePath):
       break
     # Download song using ID at the current index from the songList
-    get = requests.get(jellyfinurl+"/Items/"+songsList[1][songPos]+"/Download", headers = headers)
+    get = requests.get(jellyfinurl+"/Items/"+songsList[songPos]["Id"]+"/Download", headers = headers)
     # If request successful, save file, and write the ID to a file which asks the playback script to begin.
     if get.status_code == 200:
       currentSong = open(currentMediaPath, "wb")
       currentSong.write(get.content)
       currentSong.close()
       jellyfinPlay = open(jellyfinPlayFilePath, "w")
-      jellyfinPlay.write(songsList[1][songPos])
+      jellyfinPlay.write(songsList[songPos]["Id"])
       jellyfinPlay.close()
     # Loop which only stops once currentMedia deleted (which signifies the end of the song). After this, increment song and loop back.
     while os.path.exists(currentMediaPath):
