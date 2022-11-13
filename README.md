@@ -36,7 +36,7 @@
 
 [Volume Controls](README.md#volume-control)
 
-[Converting Units](README.md#finding-days-until)
+[Finding the days until a date](README.md#finding-days-until)
 
 [Converting Units](README.md#converting-units)
 
