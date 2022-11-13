@@ -36,6 +36,8 @@
 
 [Volume Controls](README.md#volume-control)
 
+[Converting Units](README.md#finding-days-until)
+
 [Converting Units](README.md#converting-units)
 
 # Prerequisites
@@ -1628,7 +1630,97 @@ and obviously change that line to be
 call(["aplay", "/profiles/testSound.wav"])
 ```
 
+## Finding days until
+If you want to be able to find the days until (or since) a date, this is the code for you.
 
+Add the Rhasspy sentence:
+```
+[get_days_until]
+how (many days | long) until [the] ($day_of_month_words){day} [of ($month_numbers){month}] [(1900..2100){year}]
+```
+Go to your slots section, and add a new one called `day_of_month_words`, paste this and *save*:
+```
+first:1
+second:2
+third:3
+fourth:4
+fifth:5
+sixth:6
+seventh:7
+eighth:8
+ninth:9
+tenth:10
+eleventh:11
+twelfth:12
+thirteenth:13
+fourteenth:14
+fifteenth:15
+sixteenth:16
+seventeenth:17
+eighteenth:18
+nineteenth:19
+twentieth:20
+(twenty first):21
+(twenty second):22
+(twenty third):23
+(twenty fourth):24
+(twenty fifth):25
+(twenty sixth):26
+(twenty seventh):27
+(twenty eighth):28
+(twenty ninth):29
+thirtieth:30
+(thirty first):31
+```
+Then, add another called `month_numbers`, since Rhasspy's built-in one outputs words, but we want numbers:
+```
+January:1
+February:2
+March:3
+April:4
+May:5
+June:6
+July:7
+August:8
+September:9
+October:10
+November:11
+December:12
+```
+Finally, add this elif statement to your intenthandler:
+```
+elif intent == "get_days_until":
+  day = int(o["slots"]["day"])
+  try:
+    month = int(o["slots"]["month"])
+    no_month = False
+  except:
+    no_month = True
+  try:
+    year = int(o["slots"]["year"])
+    no_year = False
+  except:
+    no_year = True
+
+  current_date = datetime.now()
+
+  if no_year == True:
+      if no_month == True:
+        until_date = current_date.replace(day=day)
+      else:
+          until_date = current_date.replace(day=day, month=month)
+  else:   
+    until_date = current_date.replace(day=day, month=month, year=year)
+
+  if (until_date - current_date).days < 0:
+    until = False
+    phrase = "Since then, there have been " + str((until_date - current_date).days) + " days"
+  else:
+    until = True
+    phrase = "There are " + str((until_date - current_date).days) + " days until that date"
+
+  speech(phrase)
+```
 
 ## Converting units
 
