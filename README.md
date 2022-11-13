@@ -1537,9 +1537,8 @@ Then, we can add this elif statement to the intentHandler:
 elif intent == "JFGetPlayingMediaName":
   if not os.path.exists(currentMediaPath):
     speech("No songs are playing")
-  songInfoFile = open(songInfoFilePath, "r").read()[1:-1].replace("'","").split(",")
-  songName, songArtist = songInfoFile[0], songInfoFile[1]
-  speech("This is " + songName + " by " + songArtist)
+  song_info = eval(open(songInfoFilePath, 'r').read())
+  speech("This is " + song_info["Name"] + " by " + song_info["AlbumArtist"])
 ```
     
 And add this to our ```# Set Paths``` section

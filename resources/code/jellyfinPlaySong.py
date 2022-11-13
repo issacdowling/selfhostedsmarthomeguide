@@ -6,13 +6,11 @@ import requests
 import json
 
 def getSongDetails(userid,itemid):
-  songInfo = [[],["Name", "Album Artist"]]
   # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
   get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
   song = json.loads(get.text)
   # add the values to a list
-  songInfo[0].append(song["Name"])
-  songInfo[0].append(song["AlbumArtist"])
+  songInfo = {"Name" : song["Name"], "AlbumArtist" : song["AlbumArtist"]}
   return songInfo
 
 tmpDir = "/dev/shm/tmpassistant/"
@@ -24,10 +22,11 @@ if not os.path.exists(tmpDir + "currentMedia"):
 
 if os.path.exists(tmpDir + "songInfoFile"):
   os.remove(tmpDir + "songInfoFile")
+
 itemid = open(tmpDir + "jellyfinPlay", "r").read()
 songInfo = getSongDetails(userid,itemid)
 songInfoFile = open(tmpDir + "songInfoFile", "w")
-songInfoFile.write(str(songInfo[0]))
+songInfoFile.write(str(songInfo))   
 songInfoFile.close()
 
 if os.path.exists(tmpDir + "jellyfinStop"):
