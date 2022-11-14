@@ -1411,7 +1411,7 @@ Now, we'll make another script. Just like with bluetooth support, we can't run e
 First, install miniaudio using pip
 
 ```
-sudo pip install miniaudio
+sudo apt install python3-mpv
 ```
 
 Then, make a systemd service which checks for the file made by the intenthandler by running this:
