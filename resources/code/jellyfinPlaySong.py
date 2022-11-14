@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-import miniaudio
 import time
 import os
 import requests
 import json
+import mpv
 
 def getSongDetails(userid,itemid):
   # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
@@ -14,20 +14,9 @@ def getSongDetails(userid,itemid):
   return songInfo
 
 tmpDir = "/dev/shm/tmpassistant/"
-jellyfinurl, jellyfinauth, userid = "https://", "auth", "userid"
-headers = {"X-Emby-Token": jellyfinauth,}
-
-if not os.path.exists(tmpDir + "currentMedia"):
-  exit("No media to play")
-
-if os.path.exists(tmpDir + "songInfoFile"):
-  os.remove(tmpDir + "songInfoFile")
+jellyfinurl, jellyfinauth, userid, deviceid, playsessionid = "https://", "", "", "123", "323235546"
 
 itemid = open(tmpDir + "jellyfinPlay", "r").read()
-songInfo = getSongDetails(userid,itemid)
-songInfoFile = open(tmpDir + "songInfoFile", "w")
-songInfoFile.write(str(songInfo))   
-songInfoFile.close()
 
 if os.path.exists(tmpDir + "jellyfinStop"):
   os.remove(tmpDir + "jellyfinStop")
@@ -35,59 +24,27 @@ if os.path.exists(tmpDir + "jellyfinPause"):
   os.remove(tmpDir + "jellyfinPause")
 if os.path.exists(tmpDir + "jellyfinResume"):
   os.remove(tmpDir + "jellyfinResume")
-if os.path.exists(tmpDir + "jellyfinIsPaused"):
-  os.remove(tmpDir + "jellyfinIsPaused")
 if os.path.exists(tmpDir + "jellyfinSkipSong"):
   os.remove(tmpDir + "jellyfinSkipSong")
 if os.path.exists(tmpDir + "jellyfinPlay"):
   os.remove(tmpDir + "jellyfinPlay")
 
-try:
-  stream = miniaudio.stream_file(tmpDir + "currentMedia")
-  # Attempt to get duration for all 4 supported file types. If ALL fail, log it.
-  try:
-    duration = int(miniaudio.flac_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
-  except:
-    try:
-      duration = int(miniaudio.mp3_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
-    except:
-      try:
-        duration = int(miniaudio.wav_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
-      except:
-        try:
-          duration = int(miniaudio.vorbis_get_info((open(tmpDir + "currentMedia", "rb")).read()).duration)
-        except:
-          print("Unable to get duration info")
-except:
-  print("Error parsing currentMedia")
+player = mpv.MPV()
+player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '&DeviceId=' + deviceid + '&MaxStreamingBitrate=140000000&api_key=' + jellyfinauth + '&PlaySessionId=' + playsessionid + '&StartTimeTicks=0')
 
-try:
-  device = miniaudio.PlaybackDevice()
-  device.start(stream)
-except:
-  print("Erorr starting playback with miniaudio")
-  duration = -1
+time.sleep(2)
 
-progress = 0
-
-while True:
+while player.percent_pos < 100:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):
-    device.close()
+    player.quit()
     break
   if os.path.exists(tmpDir + "jellyfinPause"):
-    device.stop()
+    player.pause = True
     os.remove(tmpDir + "jellyfinPause")
-    open(tmpDir + "jellyfinIsPaused", "w")
   if os.path.exists(tmpDir + "jellyfinResume"):
-    device.start(stream)
+    player.pause = False
     os.remove(tmpDir + "jellyfinResume")
-    os.remove(tmpDir + "jellyfinIsPaused")
-  if progress >= duration:
-    device.close()
-    break
   time.sleep(1)
-  if not os.path.exists(tmpDir + "jellyfinIsPaused"):
-    progress += 1
 
 if os.path.exists(tmpDir + "jellyfinStop"):
   os.remove(tmpDir + "jellyfinStop")
@@ -95,8 +52,6 @@ if os.path.exists(tmpDir + "jellyfinPause"):
   os.remove(tmpDir + "jellyfinPause")
 if os.path.exists(tmpDir + "jellyfinResume"):
   os.remove(tmpDir + "jellyfinResume")
-if os.path.exists(tmpDir + "jellyfinIsPaused"):
-  os.remove(tmpDir + "jellyfinIsPaused")
 if os.path.exists(tmpDir + "songInfoFile"):
   os.remove(tmpDir + "songInfoFile")
 if os.path.exists(tmpDir + "currentMedia"):
