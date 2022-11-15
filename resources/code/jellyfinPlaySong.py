@@ -38,7 +38,7 @@ player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '
 
 player.wait_until_playing()
 
-while player.playtime_remaining >= 1.1:
+while player.playtime_remaining >= 2:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):
     player.quit()
     break
