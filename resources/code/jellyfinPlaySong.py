@@ -14,7 +14,7 @@ def getSongDetails(userid,itemid):
   return songInfo
 
 tmpDir = "/dev/shm/tmpassistant/"
-jellyfinurl, jellyfinauth, userid, deviceid, playsessionid = "https://", "", "", "123", "323235546"
+jellyfinurl, jellyfinauth, userid, deviceid, playsessionid = "https:", "", "", "123", "323235546"
 
 itemid = open(tmpDir + "jellyfinPlay", "r").read()
 
@@ -32,7 +32,7 @@ if os.path.exists(tmpDir + "jellyfinPlay"):
 player = mpv.MPV()
 player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '&DeviceId=' + deviceid + '&MaxStreamingBitrate=140000000&api_key=' + jellyfinauth + '&PlaySessionId=' + playsessionid + '&StartTimeTicks=0')
 
-time.sleep(2)
+player.wait_until_playing()
 
 while player.percent_pos < 100:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):

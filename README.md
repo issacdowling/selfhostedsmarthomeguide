@@ -1346,7 +1346,7 @@ Then, paste this elif statement at the end of the intenthandler:
 ```
 elif intent == "JellyfinPlay":
   # Set Variables
-  jellyfinurl, jellyfinauth, userid = "URL", "auth", "userid"
+  jellyfinurl, jellyfinauth, userid = "https://", "", ""
   headers = {"X-Emby-Token": jellyfinauth,}
   songsList = []
   ps, itemid, q = o["slots"]["ps"], o["slots"]["itemid"], o["slots"]["q"]
@@ -1378,22 +1378,15 @@ elif intent == "JellyfinPlay":
 
   #Initialise song to zero, and begin loop for every song in the list
   songPos = 0
-  if os.path.exists(jellyfinStopFilePath):
-    os.remove(jellyfinStopFilePath)
-
   for song in songsList:
     if os.path.exists(jellyfinStopFilePath):
       break
-    # Download song using ID at the current index from the songList
-    get = requests.get(jellyfinurl+"/Items/"+songsList[songPos]["Id"]+"/Download", headers = headers)
-    # If request successful, save file, and write the ID to a file which asks the playback script to begin.
-    if get.status_code == 200:
-      currentSong = open(currentMediaPath, "wb")
-      currentSong.write(get.content)
-      currentSong.close()
-      jellyfinPlay = open(jellyfinPlayFilePath, "w")
-      jellyfinPlay.write(songsList[songPos]["Id"])
-      jellyfinPlay.close()
+    currentSong = open(currentMediaPath, "w")
+    currentSong.write("2")
+    currentSong.close()
+    jellyfinPlay = open(jellyfinPlayFilePath, "w")
+    jellyfinPlay.write(songsList[songPos]["Id"])
+    jellyfinPlay.close()
     # Loop which only stops once currentMedia deleted (which signifies the end of the song). After this, increment song and loop back.
     while os.path.exists(currentMediaPath):
       if os.path.exists(jellyfinStopFilePath):
