@@ -5,7 +5,8 @@ import requests
 import json
 import mpv
 
-def getSongDetails(userid,itemid):
+def getSongDetails(userid,itemid,apikey):
+  headers = {"X-Emby-Token": apikey,}
   # Send get request to AlbumArtists API endpoint on the Jellyfin server with authentication
   get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
   song = json.loads(get.text)
@@ -17,6 +18,9 @@ tmpDir = "/dev/shm/tmpassistant/"
 jellyfinurl, jellyfinauth, userid, deviceid, playsessionid = "https:", "", "", "123", "323235546"
 
 itemid = open(tmpDir + "jellyfinPlay", "r").read()
+
+with open(tmpDir + "songInfoFile", 'w') as song_info:
+  song_info.write(str(getSongDetails(userid, itemid, jellyfinauth)))
 
 if os.path.exists(tmpDir + "jellyfinStop"):
   os.remove(tmpDir + "jellyfinStop")
@@ -34,7 +38,7 @@ player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '
 
 player.wait_until_playing()
 
-while player.percent_pos < 100:
+while player.playtime_remaining >= 1.1:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):
     player.quit()
     break
