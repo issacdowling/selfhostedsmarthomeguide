@@ -461,24 +461,6 @@ What's within the top square brackets is what the intent handler will recognise 
 
 While SSH'd into the pi, run
 ```
-sudo nano ~/hass/config/automations.yaml
-```
-Then, paste this in some empty space (remove square brackets if there):
-```
-- alias: "Turn on/off specific light"
-  trigger:
-  - event_data: {}
-    platform: event
-    event_type: assistant_SetSpecificLightPower
-  action:
-     - service: light.turn_{{trigger.event.data.state}}
-       data:
-         entity_id: "{{trigger.event.data.entity}}"
-```
-If you changed what's within the square brackets in the sentence section, change what's after `assistant_` to match. Otherwise, things should just work. Now, go to homeassistant's dev tools, YAML, and reload automations. 
-
-Now, run:
-```
 sudo nano ~/assistant/profiles/intentHandler
 ```
 And paste this below the last elif statement:
@@ -486,7 +468,7 @@ And paste this below the last elif statement:
 elif intent == "SetSpecificLightPower":
     entity = o["slots"]["entity"]
     state = o["slots"]["state"]
-    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+    requests.post(hassurl+"/api/services/light/turn_"+state, headers = hassheaders, json = {"entity_id": entity})
     speech("Alright, I'll turn it " + state )
 ```
 
@@ -510,22 +492,6 @@ light_colour = ($colours){colour}
 (set | turn | make) [the] <light_name> <light_colour>
 ```
 
-Finally, go back to your terminal with automations.yaml open, and paste this below your power config:
-```
-- alias: "Set specific light colour"
-  trigger:
-  - event_data: {}
-    platform: event
-    event_type: assistant_SetSpecificLightColour
-  action:
-     - service: light.turn_on
-       data:
-         entity_id: "{{trigger.event.data.entity}}"
-         color_name: "{{trigger.event.data.colour}}"
-```
-
-All you should need to change is the event_type if you decided to name things differently. Save and exit (CTRL+X, Y, ENTER), then reload your automations in homeassistant. 
-
 Then, run:
 ```
 sudo nano ~/assistant/profiles/intentHandler
@@ -535,7 +501,7 @@ We'll paste another elif block, very similar to our last:
 elif intent == "SetSpecificLightColour":
     entity = o["slots"]["entity"]
     colour = o["slots"]["colour"]
-    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+    requests.post(hassurl+"/api/services/light/turn_on", headers = hassheaders, json = {"entity_id": entity, "color_name" : colour})
     speech("Alright, I'll make it " + colour )
 ```
 Once you've saved an exited, it should work immediately. 
@@ -553,30 +519,10 @@ And add this elif statement, just like the colour one:
 elif intent == "SetSpecificLightBrightness":
     entity = o["slots"]["entity"]
     brightness = o["slots"]["brightness"]
-    requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+    requests.post(hassurl+"/api/services/light/turn_on", headers = hassheaders, json = {"entity_id": entity, "brightness_pct" : brightness})
     speech("Alright, I'll make it " + str(brightness) + " percent")
 ```
 You can probably see how things work now, based on how little has changed from the version of that code which modifies colour instead.
-
-Now, go to your automations.yaml file:
-```
-sudo nano ~/hass/config/automations.yaml
-```
-and at the bottom, paste this:
-```
-- alias: "Set specific light brightness"
-  trigger:
-  - event_data: {}
-    platform: event
-    event_type: assistant_SetSpecificLightBrightness
-  action:
-     - service: light.turn_on
-       data:
-         entity_id: "{{trigger.event.data.entity}}"
-         brightness_pct: "{{trigger.event.data.brightness}}"
-```
-
-All that's left is to reload your automations.yaml (if you don't remember, that's **developer tools --> yaml --> reload automations**) and add your Rhasspy sentences.
 
 Go to rhasspy's web ui at `yourip:12101`, then click sentences on the left, and add this:
 
