@@ -642,88 +642,49 @@ Unlike when I originally wrote this, I now have a system for handling syncing ti
 
 First, we'll add things to our intenthandler. 
 
-Go to the top, add a section called `# Set Paths`, and below it, add: `webserver_url = "http://localhost:4761"`
+Go to the top, add a section called `# Set Paths`, and below it, add: 
+```
+stop_timer_path = tmpDir + "timer_stop"
+start_timer_path = tmpDir + "timer_start"
+timer_info_path = tmpDir + "timer_sync_info.json"
+```
 
-
-Then, add a new elif statement. This is the code for starting a timer:
+Then, add the following elif statements.
 ```
 elif intent == "start_timer":
-  #Get timer details from server, or exit and inform user that it failed
-  try:
-    timer = requests.get(webserver_url + "/timer").json()
-  except:
-    speech("I couldn't access the timer server")
-    exit()
-  
-  #If timer already running, tell user, and give details about how long, then exit.
-  if timer["running"] == True:
-    if timer["length"]-3 >= 60:
-      speech("You've already got a " + str(math.trunc((timer["length"]-3)/60)) + " minutes and " + str(timer["length"] % 60) + " timer")
-    else:
-      speech("You've already got a " + str(timer["length"]-3) + " second timer")
-    exit()
-  elif timer["dismissed"] == False:
-    speech("You've got a timer going off already. I'll dismiss it")
-    stop = requests.post(webserver_url + "/timer_stop").text
-    exit()
-
-  number = int(o["slots"]["time"])
+  length = int(o["slots"]["time"])
   unit = o["slots"]["unit"]
 
-  #Convert spoken time into seconds minus 1
+  #Convert spoken time into seconds if applicable
   if unit == "minute":
-    length = (number*60)-1
-  else:
-    length = number-1
+    length = (length*60)
 
-  #POST timer details to timer server
-  start_timer_json = {"length" : length, "source" : "Blueberry"}
-  send_start_timer_json = requests.post(webserver_url + "/timer_start", json=start_timer_json)
+  #Write the length info to start file.
+  start_timer_json = {"length" : length}
+  with open(start_timer_path, "w") as start_timer:
+    start_timer.write(json.dumps(start_timer_json))
   
   # Tell user that timer is set.
   speech(random.choice(agreeResponse) + "i'll set a " + str(number) + " " + unit + " timer")
-```
-It sends a request to a locally-running timer server, which other devices can access if they want to sync with Blueberry.
 
-Next, as another elif statement, the stop timer code:
-```
 elif intent == "stop_timer":
-  #Get timer details from server, or exit and inform user that it failed
-  try:
-    timer = requests.get(webserver_url + "/timer").json()
-  except:
-    speech("I couldn't access the timer server")
-    exit()
-  
-  #If the timer's not dismissed, dismiss / stop it. Otherwise, tell user that no timer's running.
-  if timer["dismissed"] == False:
-    stop = requests.post(webserver_url + "/timer_stop").text
-    speech("Stopping the timer")                 
-  else:
-    speech("You've got no timers set")
-```
+  with open(stop_timer_path, "w"):
+      pass
+  speech(random.choice(agreeResponse) + "i'll stop the timer")
 
-And finally for the intenthandler, here's how we'll get the remaining length:
-```
 elif intent == "timer_remaining":
-  #Get timer details from server, or exit and inform user that it failed
-  try:
-    timer = requests.get(webserver_url + "/timer").json()
-  except:
-    speech("I couldn't access the timer server")
-    exit()
-  
+  timer = json.load(open(timer_info_path, 'r'))
   #If timer already running, tell user the details
-  if timer["running"] == True:
-    if timer["length"]-3 >= 60:
-      speech("Your timer has " + str(math.trunc((timer["length"]-3)/60)) + " minutes and " + str(timer["length"] % 60) + " seconds left")
+  if timer["remaining_length"] > 0:
+    if timer["remaining_length"]-3 >= 60:
+      speech("Your timer has " + str(math.trunc((timer["remaining_length"]-5)/60)) + " minutes and " + str(timer["remaining_length"]-5 % 60) + " s>
     else:
-      speech("Your timer has " + str(timer["length"]-3) + " seconds left")
-    exit()
+      speech("Your timer has " + str(timer["remaining_length"]-5) + " seconds left")
   #If timer going off, tell user, fix it.
   elif timer["dismissed"] == False:
+    with open(stop_timer_path, "w"):
+      pass
     speech("You've got a timer going off. I'll dismiss it.")
-    stop = requests.post(webserver_url + "/timer_stop").text
   else:
     speech("You've got no timers running")
 ```
@@ -745,12 +706,15 @@ what is [the] timer [at | on]
 
 Run this to download the necessary files and put them in the right place:
 ```
-sudo pip install flask
+sudo apt-get install -y nodejs npm
+sudo pip install websockets
 mkdir ~/sync-conveniences
 cd ~/sync-conveniences
-curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.py
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.js
 curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/timer.py
 curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/timerchime.wav
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/timer-sync.py
+npm install ws
 sudo systemctl --force --full edit start-sync-webserver.service
 ```
 and pasting:
@@ -760,13 +724,13 @@ Description=Start sync conveniences webserver
 After=multi-user.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/webserver.py
+ExecStart=/usr/bin/node /home/assistant-main-node/sync-conveniences/webserver.mjs
 
 [Install]
 WantedBy=multi-user.target
 
 ```
-Change `assistant-main-node` to your username if it's different.
+Change `assistant-main-node` to your username in that file if it's different.
 
 Then do:
 ```
@@ -787,82 +751,41 @@ WantedBy=multi-user.target
 
 Then do:
 ```
-sudo systemctl --force --full edit start-sync-timersounder.service
+sudo systemctl --force --full edit start-sync-timersync.service
 ```
 and paste:
 ```
 [Unit]
-Description=Start sync conveniences timer-sounder      
+Description=Start sync conveniences timer-sync    
 After=multi-user.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer-sounder.py
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer-sync.py
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Now, go into timer.py:
+Modify the timer-sync file
 ```
+sudo nano ~/sync-conveniences/timer-sync.py
 sudo nano ~/sync-conveniences/timer.py
+sudo nano ~/sync-conveniences/webserver.mjs
 ```
-and change `working_dir` to `"/dev/shm/tmpassistant"`
+Change working_directory to `/dev/shm/tmpassistant/` for all of those text files.
 
-Go into webserver and do the same:
-```
-sudo nano ~/sync-conveniences/webserver.py
-```
-
-Open timer-sounder
-```
-sudo nano ~/sync-conveniences/timer-sounder.py
-```
-and paste:
-```
-import json
-import time
-import requests
-from subprocess import call
-
-webserver_url = "http://localhost:4761"
-working_dir = "/dev/shm/tmpassistant"
-timer_finished_audio = "/home/assistant-main-node/sync-conveniences/timerchime.wav"
-
-while True:
-    time.sleep(1)
-    #Get timer details from server, or exit and inform user that it failed
-    try:
-        timer = requests.get(webserver_url + "/timer").json()
-    except:
-        print("I couldn't access the timer server")
-        timer = {"running" : False, "dismissed" : True}
-
-    #If running, do nothing.
-    if timer["running"] == True:
-        pass
-    #If timer going off, alert user
-    elif timer["dismissed"] == False:
-        while timer["dismissed"] == False:
-            try:
-                timer = requests.get(webserver_url + "/timer").json()
-            except:
-                print("I couldn't access the timer server")
-                timer = {"running" : False, "dismissed" : True}
-            call(["aplay", timer_finished_audio])
-```
-In timer_finished_audio, change the username if it's not the same as mine!
+In timer_finished_audio, change the username if it's not the same as mine! Same goes if you want a different audio file.
 
 Now we'll make it all executable and enable it:
 ```
-sudo chmod +x ~/sync-conveniences/timer.py
-sudo chmod +x ~/sync-conveniences/timer-sounder.py
-sudo chmod +x ~/sync-conveniences/webserver.py
 sudo systemctl enable start-sync-webserver.service --now
 sudo systemctl enable start-sync-timer.service --now
-sudo systemctl enable start-sync-timersounder.service --now
+sudo systemctl enable start-sync-timersync.service --now
 ```
 
 And now you should be done. You can ask for a timer, ask how long's left, or stop it, as well as accessing it from other devices [if you set that up.](https://gitlab.com/issacdowling/selfhosted-synced-stuff)
+
+START_TIMER, STOP_TIMER, and TIMER_FILE.JSON are handled by the timer.py file itself. TIMER_START, TIMER_STOP, and TIMER_SYNC_INFO.JSON are handled by the sync handler, and are what should be used.
 
 ## Generic stop function
 In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
