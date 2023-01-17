@@ -710,7 +710,7 @@ sudo apt-get install -y nodejs npm
 sudo pip install websockets
 mkdir ~/sync-conveniences
 cd ~/sync-conveniences
-curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.js
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.mjs
 curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/timer.py
 curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/timerchime.wav
 curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/timer-sync.py
