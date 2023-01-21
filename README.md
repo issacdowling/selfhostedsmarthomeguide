@@ -363,7 +363,7 @@ from datetime import datetime
 import requests
 
 def speech(text):
-  requests.post("http://YOUR-PI-IP:12101/api/text-to-speech", headers = {"content-type": "text/plain"}, data = text)
+  print(json.dumps({"speech" : {"text" : text}}))
 
 # Set paths
 workingDir = "/profiles/"
