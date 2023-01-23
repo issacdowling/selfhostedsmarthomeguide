@@ -1172,10 +1172,9 @@ Automated once you've added the info from your Jellyfin server manually. So, on 
 
 ```
 cd ~/assistant/profiles/en/slots/
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/create-jf-slots.py
 sudo nano create-jf-slots.py
 ```
-
-Now, go to [this link](https://gitlab.com/issacdowling/jellypy/-/raw/main/main.py), CTRL+A to select everything, and paste it into that text editor we opened.
 
 Next, change the contents of `jellyfinurl` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the `:portnumber` at the end.
 
@@ -1186,8 +1185,6 @@ Next, press F12 to open your browser's dev tools, click the network tab, and ent
 ![Firefox dev tools showing URL with userid](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/devtoolsuserid.png)
 
 Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for `userid` (remembering not to include the `&` symbol which will be at the end, and paste it into the `userid` section in the python script.
-
-Finally, go right to the bottom of the script, add some empty lines, and type `genMusicSlots()`. 
 
 Then, save and exit by doing CTRL+X, Y, ENTER.
 
