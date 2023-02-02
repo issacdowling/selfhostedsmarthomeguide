@@ -677,9 +677,9 @@ elif intent == "timer_remaining":
   #If timer already running, tell user the details
   if timer["remaining_length"] > 0:
     if timer["remaining_length"]-3 >= 60:
-      speech("Your timer has " + str(math.trunc((timer["remaining_length"]-5)/60)) + " minutes and " + str(timer["remaining_length"]-5 % 60) + " s>
+      speech("Your timer has " + str(math.trunc((timer["remaining_length"]-3)/60)) + " minutes and " + str((timer["remaining_length"] % 60) - 3) + " seconds left")
     else:
-      speech("Your timer has " + str(timer["remaining_length"]-5) + " seconds left")
+      speech("Your timer has " + str(timer["remaining_length"]-3) + " seconds left")
   #If timer going off, tell user, fix it.
   elif timer["dismissed"] == False:
     with open(stop_timer_path, "w"):
@@ -687,6 +687,7 @@ elif intent == "timer_remaining":
     speech("You've got a timer going off. I'll dismiss it.")
   else:
     speech("You've got no timers running")
+
 ```
 
 In your Rhasspy sentences, you'll want to add these (remember to save and train):
