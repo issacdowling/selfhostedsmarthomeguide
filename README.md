@@ -655,6 +655,9 @@ elif intent == "start_timer":
   length = int(o["slots"]["time"])
   unit = o["slots"]["unit"]
 
+  # Tell user that timer is set.
+  speech("Alright, I'll set a " + str(length) + " " + unit + " timer")
+
   #Convert spoken time into seconds if applicable
   if unit == "minute":
     length = (length*60)
@@ -663,9 +666,6 @@ elif intent == "start_timer":
   start_timer_json = {"length" : length}
   with open(start_timer_path, "w") as start_timer:
     start_timer.write(json.dumps(start_timer_json))
-  
-  # Tell user that timer is set.
-  speech(random.choice(agreeResponse) + "i'll set a " + str(number) + " " + unit + " timer")
 
 elif intent == "stop_timer":
   with open(stop_timer_path, "w"):
@@ -1117,11 +1117,11 @@ random.choice(currentlyResponse)
 
 I've also added it to the timer section, so I've replaced this:
 ```
-speech("Alright, I'll set a " + str(number) + " " + unit + " timer")
+speech("Alright, I'll set a " + str(length) + " " + unit + " timer")
 ```
 with this:
 ```
-speech(random.choice(agreeResponse) + "I'll set a " + str(number) + " " + unit + " timer")
+speech(random.choice(agreeResponse) + "I'll set a " + str(length) + " " + unit + " timer")
 ```
 
 
