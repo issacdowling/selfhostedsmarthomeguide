@@ -110,7 +110,7 @@ Type yes, enter, then type your password (which won't show up onscreen as a secu
 First, run
 ```
 sudo apt update && sudo apt upgrade -y
-```
+``` 
 to get up to date
 
 ### Now, set a static local IP
@@ -182,105 +182,219 @@ And, if you're not using the GPU, you can also add `gpu_mem=16` to the **"[all]"
 
 You can now do CTRL+X, Y, ENTER, to save and exit, then run `sudo reboot` to restart your pi. Once you're back, continue with the next section.
 
-## Installing things
+# Installing things
+
+First, run
+```
+sudo apt-get install python3-venv git -y
+cd
+git clone https://github.com/rhasspy/rhasspy3
+cd rhasspy3
+```
+to install dependencies, which will then allow the installation of rhasspy in a folder in the home directory.
+
+Now, we're gonna configure Rhasspy. Most of this is almost directly taken from Rhasspy's own docs.
+
+```
+nano config/configuration.yaml
+```
+
+# Configuring things
+
+Paste in the following for the different things that need configuring:
+
+**Microphone**
+After the `-D`, you've got to add something. Run `arecord -L`, then find your microphone. In my case, it began with `plughw:`, so I copied that to go after the `-D`, e.g: `-D plughw:CARD=CameraB409241`. When you're done, CTRL+X, Y, ENTER, to save.
+```
+programs:
+  mic:
+    arecord:
+      command: |
+        arecord -q -r 16000 -c 1 -f S16_LE -t raw -D
+      adapter: |
+        mic_adapter_raw.py --rate 16000 --width 2 --channels 1
+
+pipelines:
+  default:
+    mic:
+      name: arecord
+```
+
+**Voice Activity Detection**
+
+Run this to install the program used to detect when you're speaking:
+```
+mkdir -p config/programs/vad/
+cp -R programs/vad/silero config/programs/vad/
+config/programs/vad/silero/script/setup
+```
+
+Then go back into your config:
+```
+nano config/configuration.yaml
+```
+And paste (below the whole `mic:` section) the silero configs:
+```
+  vad:
+    silero:
+      command: |
+        script/speech_prob "share/silero_vad.onnx"
+      adapter: |
+        vad_adapter_raw.py --rate 16000 --width 2 --channels 1 --samples-per-chunk 512
+```
+and then below the other `mic:` section in `pipelines:`
+```
+    vad:
+      name: silero
+```
+
+**Speech To Text**
+
+First, install `faster-whisper`, our speech to text engine:
+```
+mkdir -p config/programs/asr/
+cp -R programs/asr/faster-whisper config/programs/asr/
+config/programs/asr/faster-whisper/script/setup
+config/programs/asr/faster-whisper/script/download.py tiny-int8
+```
+
+Then, add this below the whole `vad:` section:
+```
+  asr:
+    faster-whisper:
+      command: |
+        script/wav2text "${data_dir}/tiny-int8" "{wav_file}"
+      adapter: |
+        asr_adapter_wav2text.py
+    faster-whisper.client:
+      command: |
+        client_unix_socket.py var/run/faster-whisper.socket
+
+servers:
+  asr:
+    faster-whisper:
+      command: |
+        script/server --language "en" "${data_dir}/tiny-int8"
+```
+And do the same below `vad:` within the `pipelines:` section:
+```
+    asr:
+      name: faster-whisper.client
+```
+
+**Wake Word**
 Run
 ```
-curl -sSL https://get.docker.com | sh
-sudo apt-get install -y uidmap libffi-dev libssl-dev python3 python3-pip python3-dev
-sudo pip3 install docker-compose
-sudo gpasswd -a $USER docker
-```
-to install docker and docker compose. This may take a while.
-
-Then run
-
-Then, to install rhasspy, run
-```
-mkdir assistant
-cd assistant
-nano docker-compose.yml
-```
-and paste in the following. This will be much easier if being run from another PC through SSH, since indentation must be exactly correct.
-```
-version: '3.3'
-services:
-    rhasspy:
-        container_name: rhasspy
-        ports:
-            - '12101:12101'
-            - '12183:12183'
-        volumes:
-            - './profiles:/profiles'
-            - '/etc/localtime:/etc/localtime:ro'
-            - '/dev/shm/tmpassistant:/profiles/tmp'
-
-        devices:
-            - '/dev/snd:/dev/snd'
-        image: rhasspy/rhasspy
-        command: --user-profiles /profiles --profile en
-        restart: unless-stopped
-```
-Then, press CTRL+X, Y, Enter, to save and exit. After which, you can just run
-```
-sudo docker-compose up -d
-```
-to begin installing. This, again, may take a while. You'll know it's done once you see this:
-![Install complete](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/donedocker.png)
-
-# Initally setting up rhasspy
-In a browser on the same network as your Pi, go to this site, changing 'your-ip' to your pi's IP we set before (hostname can work too, but sometimes it causes issues).
-```
-http://your-ip.local:12101
-```
-Your browser *should* complain that this site is not secure. If it was a site on the internet, you wouldn't want to access it, however it's just local, so we can tell the browser that we want to continue.
-
-![https issue](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/httpsonly.png)
-
-### And now you'll be here!
-![Rhasspy main page](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/rhasspyhome.png)
-
-Then, go to the settings page using the left-side menu. Go through each service, and - for now - just select the default from the dropdown menu. Then, press the save settings button below the list, and restart. Once restarted, go to the top of the page, and press download. After that's done, things should look like this.
-
-![Settings page with defaults selected](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/settingdefault.png)
-
-## Testing things
-
-### Testing audio output
-#### Plug something in using the Pi's 3.5mm jack.
-
-To test audio output, go back to the home page, and type something into the 'speak' box, and see if it comes out of your speakers. 
-
-![AudioTest](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/audiotest.png)
-
-It will likely sound quite bad, but should work.
-
-### Testing audio input
-#### Plug a USB microphone into a USB port
-
-To test audio input, press 'Wake Up' on the home page, and say "What time is it?". If it hears you, you'll get a response, and the UI will update to show this:
-
-![AudioInputWorks](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/audioinputworks.png)
-
-If there's no response, try relaunching rhasspy. This may get your mic detected if it wasn't before, and can be done by running:
-```
-sudo docker restart rhasspy
+mkdir -p config/programs/wake/
+cp -R programs/wake/porcupine1 config/programs/wake/
+config/programs/wake/porcupine1/script/setup
 ```
 
-## Some improvements
-### TTS
-I reccommend going back to the settings page, switching your **Text To Speech** to `Larynx`, pressing refresh, and choosing a voice you think sounds good. **Southern-english-female** is - at this point in writing - my chosen voice, since higher-pitched voices will work better for voice assistants due to them often using small speakers with little bass response, and I believe it to be the most natural sounding. **Low Quality Vocoder** is perfectly fine, as you'll see when you test it, and is necesary for fast responses on a Pi. Though, **Larynx takes around 15 seconds to initialise each time you reboot, and doesn't do this automatically,** meaning the first question you ask will be highly delayed. 
+Then go back to the configs, and add this to the programs section below `asr:`:
+```
+  wake:
+    porcupine1:
+      command: |
+        .venv/bin/python3 bin/porcupine_stream.py --model "${model}"
+      template_args:
+        model: "blueberry_raspberry-pi.ppn"
+```
 
-### Remember to save your settings and restart afterwards.
+Then this in the `pipelines:`
+```
+    wake:
+      name: porcupine1
+```
+If you're not on a pi, change `raspberry-pi` to `linux`, and you can look at your installed models with a `config/programs/wake/porcupine1/script/list_models`
 
-![TTSsettings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Texttospeech.png)
+**Intent handler**
 
-### Wake word
-To wake things without using the web UI, you *could* set a custom word using **Rhasspy Raven,** however I had trouble with being recognised. Instead, I use **Porcupine**. I just went into porcupine's dropdown, pressed refresh, and selected one from the list, and I'd suggest you do the same. I also increased the sensitivity to **0.75** so it can pick me up when I'm quieter. I suggest you do your own experimentation with this to find the best balance between false positives and false negatives. Save and restart, and it should work.
+In your config, add this in the `programs:` below `wake:`
+```
+  handle:
+    intent_handler:
+      command: |
+        bin/intent_handler.py
+      adapter: |
+        handle_adapter_text.py
+```
 
-![Wakeword settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Wakewordsetting.png)
+and in `pipelines:`
+```
+    handle:
+      name: intent_handler
+```
 
-### STT
-In your speech to text settings, I highly recommend going to the bottom, and changing `silence after` to one second, which gives you some time to pause during speech during a potentially valid sentence. For example, if I say **"What's ten plus one hundred and twenty... seven"**, there's a decent chance that it'll cut me off before I say the 7, since 120 is also a valid word.
+Then make a template for your intent handler:
+```
+mkdir -p config/programs/handle/intent_handler/bin/
+touch config/programs/handle/intent_handler/bin/intent_handler.py
+chmod +x config/programs/handle/intent_handler/bin/intent_handler.py
+```
+
+**Text To Speech**
+
+Run
+```
+mkdir -p config/programs/tts/
+cp -R programs/tts/piper config/programs/tts/
+config/programs/tts/piper/script/setup.py
+```
+
+I don't want to use the default en-gb voice. If you want the default for British English, run this:
+```
+config/programs/tts/piper/script/download.py en-gb
+```
+Obviously, you can change en-gb for other regions. If you know of a different voice you want, you can run `nano config/programs/tts/piper/script/download.py` and change the voice selected for your region, _then_ run that previous command. I choose `en-gb-southern_english_female-low`.
+
+Now, add this to your config in `programs:`, and change `model:` to the one you've got:
+```
+  tts:
+    piper:
+      command: |
+        bin/piper --model "${model}" --output_file -
+      adapter: |
+        tts_adapter_text2wav.py
+      template_args:
+        model: "${data_dir}/en-gb-southern_english_female-low.onnx"
+    piper.client:
+      command: |
+        client_unix_socket.py var/run/piper.socket
+  snd:
+    aplay:
+      command: |
+        aplay -q -r 22050 -f S16_LE -c 1 -t raw
+      adapter: |
+        snd_adapter_raw.py --rate 22050 --width 2 --channels 1
+```
+
+and this to `servers:` (again, change the model to the one you want)
+```
+  tts:
+    piper:
+      command: |
+        script/server "${model}"
+      template_args:
+        model: "${data_dir}/en-gb-southern_english_female-low.onnx"
+```
+
+and this to `pipelines:`
+```
+    tts:
+      name: piper.client
+    snd:
+      name: aplay
+```
+
+**HTTP SERVER**
+
+Just run:
+```
+script/setup_http_server
+```
+
+To set up the server for later.
+
 
 # Making it smart
 ## Setting up Homeassistant
