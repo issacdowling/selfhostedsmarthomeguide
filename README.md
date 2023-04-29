@@ -72,8 +72,8 @@ then **Raspberry Pi OS 64-bit lite**
 
 ### Now, click the settings icon in the bottom right corner.
 
-* Set hostname to whatever you want to call it. I chose assistant-main-node
-* Enable SSH 
+* Set hostname to whatever you want to call it. I chose assistant1
+* Enable SSH with a password
 * Set username and password
 * Configure Wifi if you're going to use it instead of ethernet. Ethernet is more stable, but Wifi allows for more freedom in positioning.
 * Scroll down, save.
