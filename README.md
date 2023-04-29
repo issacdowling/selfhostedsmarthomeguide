@@ -190,7 +190,11 @@ sudo apt-get install python3-venv git -y
 cd
 git clone https://github.com/rhasspy/rhasspy3
 cd rhasspy3
+git reset --hard 11e8d3016d323a2ab1756dc68b4ba8a9f75f22a6
 ```
+
+(right now, that `git reset` command is to peg the version of Rhasspy3 to a specific version while it's in heavy development and incomplete)
+
 to install dependencies, which will then allow the installation of rhasspy in a folder in the home directory.
 
 Now, we're gonna configure Rhasspy. Most of this is almost directly taken from Rhasspy's own docs.
@@ -395,6 +399,16 @@ script/setup_http_server
 
 To set up the server for later.
 
+# Running:
+In one terminal:
+```
+script/http_server --debug --server asr faster-whisper --server tts piperer
+```
+
+In another:
+```
+curl -X POST 'localhost:13331/pipeline/run'
+```
 # Intent Handler
 
 ## Doing basic maths
