@@ -186,7 +186,7 @@ You can now do CTRL+X, Y, ENTER, to save and exit, then run `sudo reboot` to res
 
 First, run
 ```
-sudo apt-get install python3-venv git -y
+sudo apt-get install python3-pip python3-venv git -y
 cd
 git clone https://github.com/rhasspy/rhasspy3
 cd rhasspy3
@@ -318,7 +318,7 @@ In your config, add this in the `programs:` below `wake:`
   handle:
     intent_handler:
       command: |
-        bin/intent_handler.py
+        python3 bin/intent_handler.py
       adapter: |
         handle_adapter_text.py
 ```
@@ -416,7 +416,6 @@ nano config/programs/handle/intent_handler/bin/intent_handler.py
 Then paste this in:
 
 ```
-#!/usr/bin/env python3
 import re
 import random
 import sys
@@ -470,6 +469,59 @@ This will be called if you ask a question including the time, but not a place (I
 
 It sets whether we're in the morning or evening, and then says the current time followed by whether that's AM or PM, using info from datetime.
 
+This is the decision tree with only this included:
+```
+# If user is asking for information
+if ("what" in words) or ("what's" in words) or ("tell" in words):
+  # If asking for the time
+  if "time" in words:
+    # If asking for the time in a place
+    if [place for place in places if place in words]:
+      print("I don't know the time in chicago") # Placeholder
+    # If just generally asking for the time
+    else:
+      say_time()
+```
+
+## The weather
+What if I want it to tell me the weather?
+
+First, go to [openweathermap](https://openweathermap.org/) and sign up for a free account. Then, check your email for an API key. It's important to do this first, since they key will take a little bit to properly activate. 
+
+In the intent handler, I added this function:
+```
+def get_weather():
+  opnwthrurl = "https://api.openweathermap.org/data/2.5/weather?"
+  opnwthrauth = "YOURAUTHKEY"
+  opnwthrlat, opnwthrlon = "LAT" , "LONG"
+  opnwthrunits = "metric"
+  weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
+  currentTemp = weather["main"]["temp"]
+  currentDesc = weather["weather"][0]["description"]
+  speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
+```
+
+I also had to `import requests` then `pip install requests`
+
+
+Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG** to your current latitude and longitude. They don't have to be exactly on your location, but you can use a tool [like this](https://www.latlong.net/) to get the numbers for your general area.
+
+Then, save and exit, and ask your assistant **"What's the weather"**, and it should tell you the current temperature, along with two words to describe it, like **Clear Sky** or **Scattered Clouds**.
+
+
+This is the decision tree with only this:
+```
+# If user is asking for information
+if ("what" in words) or ("what's" in words) or ("tell" in words):
+  # If asking for the weather
+  elif ("weather" in words) or ("temperature" in words) or ("heat" in words) or ("hot" in words) or ("cold" in words):
+    ## If asking for the weather in a place
+    if ("in" in words) or ("at" in words):
+      print("I don't know the weather in chicago")
+    ## If asking for the weather in general
+    else:
+      get_weather()
+```
 ## Doing basic maths
 
 What if we want to ask the assistant to perform calculations? I'll explain the basic multiplication, subtraction, and addition stuff, and if you want to make it better, you should be able to figure it out from what you learn here.
@@ -672,65 +724,6 @@ elif intent == "generic_stop":
   stop = requests.post(webserver_url + "/timer_stop").text
 ```
 As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
-
-## The weather
-What if I want it to tell me the weather?
-
-First, go to [openweathermap](https://openweathermap.org/) and sign up for a free account. Then, check your email for an API key. It's important to do this first, since they key will take a little bit to properly activate. Then, you can go to your rhasspy sentences tab, and add this:
-```
-[GetWeather]
-(what's | tell me) the (weather | temperature)
-how (hot | cold | warm ) is it [today | right now]
-```
-If you want to customise the way you speak to it, you can do it from here. Remember to save and train.
-
-Then, go to your intent handler, and below the last elif statement, paste this:
-```
-elif intent == "GetWeather":
-  opnwthrurl = "https://api.openweathermap.org/data/2.5/weather?"
-  opnwthrauth = "YOURAUTHKEY"
-  opnwthrlat, opnwthrlon = "LAT" , "LONG"
-  opnwthrunits = "metric"
-  weather = requests.get(opnwthrurl+"lat="+opnwthrlat+"&lon="+opnwthrlon+"&units="+opnwthrunits+"&appid="+opnwthrauth).json()
-  currentTemp = weather["main"]["temp"]
-  currentDesc = weather["weather"][0]["description"]
-  speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
-```
-Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG** to your current latitude and longitude. They don't have to be exactly on your location, but you can use a tool [like this](https://www.latlong.net/) to get the numbers for your general area.
-
-Then, save and exit, and ask your assistant **"What's the weather"**, and it should tell you the current temperature, along with two words to describe it, like **Clear Sky** or **Scattered Clouds**.
-
-## Getting the time (but better)
-
-### The examples provided by Rhasspy can already do this...
-
-but we can do it better. It normally responds in 24-hour (at least, it does for me, though my system is set to 24-hour), which is great for reading the time, but not for speaking it. Also, despite technically telling our assistant to say whether it's AM or PM, it sends the strings "am" and "pm", meaning that they're pronounced very awkwardly. To fix this, you can replace the GetTime intent near the top of the intentHandler with this:
-
-```
-if intent == "GetTime":
-    now = datetime.now()
-    if now.strftime('%p') == "PM":
-        apm = "peey em"
-    else:
-        apm = "ey em"
-    if now.strftime('%M') == 00:
-        speech("Its " + now.strftime('%I') + " " + apm)
-    else:
-        speech("Its " + now.strftime('%I') + " " + now.strftime('%M') + " " + apm)
-```
-Basically, we check whether it's AM or PM, and get the 12-hour time, and then just format it in a nice way for speech. It's really simple.
-
-I know that **"Its"** should have an apostrophe to represent a contraction, and it annoys me too, a lot, however I'm trying to avoid extra symbols when necessary.
-
-Because of the interesitng methods of writing AM ("ey em") and PM ("peey em"), this might not sound right if you use a different TTS voice to me. However, on the southern english female voice for larynx, they sound much better than the deault, and it now speaks in 12-hour.
-
-Also, I earlier asked you to remove all of the predone sentences in rhasspy, which would include the GetTime ones. Here's what to add to your sentences:
-```
-[GetTime]
-what's [the] time
-tell [me the] time
-what time [is it]
-```
 
 ## Getting the date
 
