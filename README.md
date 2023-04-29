@@ -395,307 +395,7 @@ script/setup_http_server
 
 To set up the server for later.
 
-
-# Making it smart
-## Setting up Homeassistant
-### If you've already got a homassistant instance, scroll down until we need our access tokens.
-To set up homeassistant, first we need a docker-compose file, just like what we had for rhasspy.
-So, run:
-```
-mkdir ~/hass
-cd ~/hass
-nano docker-compose.yml
-```
-And paste in:
-```
-version: '3'
-services:
-  homeassistant:
-    container_name: homeassistant
-    image: "ghcr.io/home-assistant/home-assistant:stable"
-    volumes:
-      - ./config:/config
-      - /etc/localtime:/etc/localtime:ro
-    restart: unless-stopped
-    privileged: true
-    network_mode: host
-```
-Then, press CTRL+X, Y, Enter, to save and exit. After which, run
-```
-sudo docker-compose up -d
-```
-Once that's done, go to a browser on another machine on your network, and go to this URL: (or your already existing server's URL)
-```
-http://yourhostname.local:8123
-```
-Replacing 'yourhostname' with your hostname. It should look like this: (after the same security prompt as before)
-
-![hass onboarding](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassonboarding.png)
-
-Just type a name, username, and make a password, and press 'Create Account'
-
-![hass make account](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassmakeaccoun.png)
-
-Now, give your home a name and location, (plus elevation, if you'd like)
-
-![hass name home](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassnamehome.png)
-
-And choose which data to *opt-in* for. These are all disabled by default, however I'd ask that you consider turning on anything you're comfortable with, since it can help the devs.
-
-![hass opt in](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassoptin.png)
-
-Finally for the onboarding, just press finish! This page shows any services that homeassistant automatically found, but we'll set things up later.
-
-![hass auto find](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassautofind.png)
-
-Now, you should be on the main homeassistant page. Click your name in the bottom left, then scroll down to long-lived tokens.
-
-![llat](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/llat.png)
-
-Create one, name it whatever you'd like, and save it for a minute.
-
-Go back to your rhasspy tab, then settings, scroll down to intent handler, and select local command.
-
-![local intent handler](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/localcommandintents.png)
-
-Then, press the green dropdown, and set the program to `/profiles/intentHandler`
-
-Now, you can press save and restart.
-
-While it's restarting, run this:
-```
-sudo nano ~/assistant/profiles/intentHandler
-```
-Then, paste this in [(we're building from the Rhasspy example)](https://github.com/synesthesiam/rhasspy/blob/master/bin/mock-commands/handle.py):
-```
-#!/usr/bin/env python
-
-import sys
-import json
-import random
-from datetime import datetime
-import requests
-
-def speech(text):
-  print(json.dumps({"speech" : {"text" : text}}))
-
-# Set paths
-workingDir = "/profiles/"
-tmpDir = workingDir + "tmp/"
-
-# Set Homeassistant URL
-hassurl = "http://YOUR-PI-IP:8123"
-hassauth = ""
-hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
-
-# get json from stdin and load into python dict
-o = json.loads(sys.stdin.read())
-
-intent = o["intent"]["name"]
-
-if intent == "GetTime":
-    now = datetime.datetime.now()
-    speech("It's %s %d %s." % (now.strftime('%H'), now.minute, now.strftime('%p')))
-
-elif intent == "Greet":
-    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
-    speech(random.choice(replies))
-```
-Now, add your Pi's IP to the hassurl section, (and also in the request.post statement), and add your auth token to the hassauth section.
-
-CTRL+X, Y, ENTER.
-
-Then, run
-```
-sudo chmod +x ~/assistant/profiles/intentHandler
-```
-which will allow the script to be executed.
-
-Now, go to rhasspy's web UI, click the wake button, and say out loud, "What time is it?". It should respond with the current time. If not, give it about 20 seconds, the TTS may be doing first-time setup.
-
-Go to your terminal (still SSH'd into the Pi), and type 
-```
-sudo nano ~/hass/config/configuration.yaml
-```
-
-Go right to the top of the file, and look for the line `default_config:`. Go one line below it, and add exactly:
-```
-api:
-```
-
-Also, I highly recommend going some lines below, and pasting this, which will prevent homeassistant from taking up lots of space on your (presumably quite limited) Pi storage, and reduce disk usage, prolonging life:
-```
-# Remove history to save space
-recorder:
-  auto_purge:
-  purge_keep_days: 14
-  commit_interval: 30
-```
-Then, CTRL+X, Y, ENTER.
-
-You can also run `sudo docker restart homeassistant` now too.
-
-#### For all sections where there's lots of iteration and changing of code (e.g - Controlling smart lights, setting timers), you can choose to skip to the end of them for a finished code block that you can paste right into your intentHandler if you'd like. However, if you would like to understand how each bit works, you can pay attention to the whole section
-
-# Features
-
-## Controlling devices
-
-So you know, there are more ways to accomplish things. I'll be describing the methods I use, but if there's a better method, please feel free to share, I'd appreciate it.
-
-### First, we need a thing to control. 
-
-This isn't a homeassistant tutorial, but if you've got any WLED devices, they should automatically appear in the devices section to be configured like this:
-
-![Autoadd1](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd1.png)
-![Autoadd2](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd2.png)
-![Autoadd3](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd3.png)
-
-To check the device name, go to settings, then entities in Homeassistant. Then, click on the device you're intending to control. Note down the name at the bottom.
-
-![Wled device in entities](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/wledentities.png)
-
-Back in Rhasspy, click the circular "slots" tab,
-
-![slot tab](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/slottab.png)
-
-then make a new slot called lights. Within regular brackets, put the name you'd like to speak. If there are multiple, such as "Bed LEDS" and "Bedside LEDs", separate them with a pipe symbol (|). Then, immediately after the brackets, add a colon (:), and **without adding a space**, add the entity id from homeassistant. Here's what mine looks like with two lights.
-
-![Light slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/lightslot.png)
-
-Then, MAKE SURE YOU PRESS SAVE, and head back to your sentences section, remove what you've already got. If you want to use my setup, paste this in:
-```
-[SetSpecificLightPower]
-light_name = ($lights){entity}
-light_state = (on | off){state}
-(set | turn) <light_state> [the] <light_name>
-(set | turn) [the] <light_name> <light_state>
-```
-What's within the top square brackets is what the intent handler will recognise when checking what event is being sent. Then, we set two variables. light_name equals what's in our lights slot (we know we're talking about a slot because of the $), and light_state can be on or off. Again, **or** is represented by a pipe (|). [The next bit was taught to me by a post on the rhasspy community page. Credit to them for this config!](https://community.rhasspy.org/t/access-from-home-assistant-the-raw-value-in-slots-array/3497) Then, we make some sentences. I made two, so I can say things in different orders. The first would allow me to say **"Turn on the bedside light"**, and the second allows **"Turn the bedside light on"**. Arrow brackets reference variables, regular brackets reference groups of words, square brackets reference optional words, and curly brackets reference the name that the sent data will have in the JSON file that Rhasspy sends to homeassistant. When saving, remember to allow training.
-
-While SSH'd into the pi, run
-```
-sudo nano ~/assistant/profiles/intentHandler
-```
-And paste this below the last elif statement:
-```
-elif intent == "SetSpecificLightPower":
-    entity = o["slots"]["entity"]
-    state = o["slots"]["state"]
-    requests.post(hassurl+"/api/services/light/turn_"+state, headers = hassheaders, json = {"entity_id": entity})
-    speech("Alright, I'll turn it " + state )
-```
-
-Anything within `speech()` will be spoken. 
-
-### Now, we'll learn how to add colour.
-
-Go back to your slots, add a new one called ```colours``` (the British spelling), and paste this:
-```
-(aqua | aquamarine | beige | black | blue | brown | chocolate | coral | crimson | cyan | firebrick | forest green | gold | gray | green | hot pink | indigo | khaki | lavender | light blue | light coral | light cyan | light green | light pink | light salmon | light yellow | lime | lime green | magenta | maroon | navy | olive | orange | orchid | pink | purple | red | salmon | tomato | violet | white | yellow)
-```
-It actually supports all colours in [this list](https://www.w3.org/TR/css-color-3/#svg-color), so if I omitted your favourite colour, you can add it as long as it's in the page on that link. MAKE SURE WHENEVER YOU ADD SLOTS OR SENTENCES, YOU SAVE THEM.
-
-![Colour slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/colourslotcorrected.png)
-
-Then, in your sentences section, add this:
-```
-[SetSpecificLightColour]
-light_name = ($lights){entity}
-light_colour = ($colours){colour}
-(set | turn | make) [the] <light_name> <light_colour>
-```
-
-Then, run:
-```
-sudo nano ~/assistant/profiles/intentHandler
-```
-We'll paste another elif block, very similar to our last:
-```
-elif intent == "SetSpecificLightColour":
-    entity = o["slots"]["entity"]
-    colour = o["slots"]["colour"]
-    requests.post(hassurl+"/api/services/light/turn_on", headers = hassheaders, json = {"entity_id": entity, "color_name" : colour})
-    speech("Alright, I'll make it " + colour )
-```
-Once you've saved an exited, it should work immediately. 
-
-### Adding brightness settings
-
-It would be nice to be able to control brightness, but we can't yet, so let's add it.
-
-First, go back into your intentHandler file:
-```
-sudo nano ~/assistant/profiles/intentHandler
-```
-And add this elif statement, just like the colour one:
-```
-elif intent == "SetSpecificLightBrightness":
-    entity = o["slots"]["entity"]
-    brightness = o["slots"]["brightness"]
-    requests.post(hassurl+"/api/services/light/turn_on", headers = hassheaders, json = {"entity_id": entity, "brightness_pct" : brightness})
-    speech("Alright, I'll make it " + str(brightness) + " percent")
-```
-You can probably see how things work now, based on how little has changed from the version of that code which modifies colour instead.
-
-Go to rhasspy's web ui at `yourip:12101`, then click sentences on the left, and add this:
-
-```
-[SetSpecificLightBrightness]
-light_name = ($lights){entity}
-(set | turn | make) [the] <light_name> [to] (1..100){brightness} percent [brightness]
-```
-
-Save and retrain rhasspy, and things should work.
-
-### Finished code blocks (remember to still change any needed variables if applicable)
-
-#### Changing light power
-Code
-```
-elif intent == "SetSpecificLightPower":
-  entity, state = o["slots"]["entity"], o["slots"]["state"]
-  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
-  speech("Alright, I'll turn it " + state )
-```
-Sentence
-```
-[SetSpecificLightPower]
-light_name = ($lights){entity}
-light_state = (on | off){state}
-(set | turn) <light_state> [the] <light_name>
-(set | turn) [the] <light_name> <light_state>
-```
-
-#### Changing light colour
-Code
-```
-elif intent == "SetSpecificLightColour":
-  entity, colour = o["slots"]["entity"], o["slots"]["colour"]
-  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
-  speech("Alright, I'll make it " + colour )
-```
-Sentence
-```
-[SetSpecificLightColour]
-light_name = ($lights){entity}
-light_colour = ($colours){colour}
-(set | turn | make) [the] <light_name> <light_colour>
-```
-#### Changing light brightness
-Code
-```
-elif intent == "SetSpecificLightBrightness":
-  entity, brightness = o["slots"]["entity"], o["slots"]["brightness"]
-  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
-  speech("Alright, I'll make it " + str(brightness) + " percent")
-```
-Sentence
-```
-[SetSpecificLightBrightness]
-light_name = ($lights){entity}
-(set | turn | make) [the] <light_name> [to] (1..100){brightness} percent [brightness]
-```
+# Intent Handler
 
 ## Doing basic maths
 
@@ -1827,6 +1527,307 @@ elif intent == "UnitConversion":
     speech(str(number) + " " + unit1 + " is " + str(round(finalValue,3)).replace("." , " point ") + " " + unit2)
 ```
 
+
+# Making it smart
+## Setting up Homeassistant
+### If you've already got a homassistant instance, scroll down until we need our access tokens.
+To set up homeassistant, first we need a docker-compose file, just like what we had for rhasspy.
+So, run:
+```
+mkdir ~/hass
+cd ~/hass
+nano docker-compose.yml
+```
+And paste in:
+```
+version: '3'
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+```
+Then, press CTRL+X, Y, Enter, to save and exit. After which, run
+```
+sudo docker-compose up -d
+```
+Once that's done, go to a browser on another machine on your network, and go to this URL: (or your already existing server's URL)
+```
+http://yourhostname.local:8123
+```
+Replacing 'yourhostname' with your hostname. It should look like this: (after the same security prompt as before)
+
+![hass onboarding](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassonboarding.png)
+
+Just type a name, username, and make a password, and press 'Create Account'
+
+![hass make account](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassmakeaccoun.png)
+
+Now, give your home a name and location, (plus elevation, if you'd like)
+
+![hass name home](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassnamehome.png)
+
+And choose which data to *opt-in* for. These are all disabled by default, however I'd ask that you consider turning on anything you're comfortable with, since it can help the devs.
+
+![hass opt in](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassoptin.png)
+
+Finally for the onboarding, just press finish! This page shows any services that homeassistant automatically found, but we'll set things up later.
+
+![hass auto find](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/hassautofind.png)
+
+Now, you should be on the main homeassistant page. Click your name in the bottom left, then scroll down to long-lived tokens.
+
+![llat](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/llat.png)
+
+Create one, name it whatever you'd like, and save it for a minute.
+
+Go back to your rhasspy tab, then settings, scroll down to intent handler, and select local command.
+
+![local intent handler](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/localcommandintents.png)
+
+Then, press the green dropdown, and set the program to `/profiles/intentHandler`
+
+Now, you can press save and restart.
+
+While it's restarting, run this:
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+Then, paste this in [(we're building from the Rhasspy example)](https://github.com/synesthesiam/rhasspy/blob/master/bin/mock-commands/handle.py):
+```
+#!/usr/bin/env python
+
+import sys
+import json
+import random
+from datetime import datetime
+import requests
+
+def speech(text):
+  print(json.dumps({"speech" : {"text" : text}}))
+
+# Set paths
+workingDir = "/profiles/"
+tmpDir = workingDir + "tmp/"
+
+# Set Homeassistant URL
+hassurl = "http://YOUR-PI-IP:8123"
+hassauth = ""
+hassheaders = {"Authorization": "Bearer " + hassauth, "content-type": "application/json",}
+
+# get json from stdin and load into python dict
+o = json.loads(sys.stdin.read())
+
+intent = o["intent"]["name"]
+
+if intent == "GetTime":
+    now = datetime.datetime.now()
+    speech("It's %s %d %s." % (now.strftime('%H'), now.minute, now.strftime('%p')))
+
+elif intent == "Greet":
+    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
+    speech(random.choice(replies))
+```
+Now, add your Pi's IP to the hassurl section, (and also in the request.post statement), and add your auth token to the hassauth section.
+
+CTRL+X, Y, ENTER.
+
+Then, run
+```
+sudo chmod +x ~/assistant/profiles/intentHandler
+```
+which will allow the script to be executed.
+
+Now, go to rhasspy's web UI, click the wake button, and say out loud, "What time is it?". It should respond with the current time. If not, give it about 20 seconds, the TTS may be doing first-time setup.
+
+Go to your terminal (still SSH'd into the Pi), and type 
+```
+sudo nano ~/hass/config/configuration.yaml
+```
+
+Go right to the top of the file, and look for the line `default_config:`. Go one line below it, and add exactly:
+```
+api:
+```
+
+Also, I highly recommend going some lines below, and pasting this, which will prevent homeassistant from taking up lots of space on your (presumably quite limited) Pi storage, and reduce disk usage, prolonging life:
+```
+# Remove history to save space
+recorder:
+  auto_purge:
+  purge_keep_days: 14
+  commit_interval: 30
+```
+Then, CTRL+X, Y, ENTER.
+
+You can also run `sudo docker restart homeassistant` now too.
+
+#### For all sections where there's lots of iteration and changing of code (e.g - Controlling smart lights, setting timers), you can choose to skip to the end of them for a finished code block that you can paste right into your intentHandler if you'd like. However, if you would like to understand how each bit works, you can pay attention to the whole section
+
+# Features
+
+## Controlling devices
+
+So you know, there are more ways to accomplish things. I'll be describing the methods I use, but if there's a better method, please feel free to share, I'd appreciate it.
+
+### First, we need a thing to control. 
+
+This isn't a homeassistant tutorial, but if you've got any WLED devices, they should automatically appear in the devices section to be configured like this:
+
+![Autoadd1](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd1.png)
+![Autoadd2](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd2.png)
+![Autoadd3](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/Autoadd3.png)
+
+To check the device name, go to settings, then entities in Homeassistant. Then, click on the device you're intending to control. Note down the name at the bottom.
+
+![Wled device in entities](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/wledentities.png)
+
+Back in Rhasspy, click the circular "slots" tab,
+
+![slot tab](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/slottab.png)
+
+then make a new slot called lights. Within regular brackets, put the name you'd like to speak. If there are multiple, such as "Bed LEDS" and "Bedside LEDs", separate them with a pipe symbol (|). Then, immediately after the brackets, add a colon (:), and **without adding a space**, add the entity id from homeassistant. Here's what mine looks like with two lights.
+
+![Light slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/lightslot.png)
+
+Then, MAKE SURE YOU PRESS SAVE, and head back to your sentences section, remove what you've already got. If you want to use my setup, paste this in:
+```
+[SetSpecificLightPower]
+light_name = ($lights){entity}
+light_state = (on | off){state}
+(set | turn) <light_state> [the] <light_name>
+(set | turn) [the] <light_name> <light_state>
+```
+What's within the top square brackets is what the intent handler will recognise when checking what event is being sent. Then, we set two variables. light_name equals what's in our lights slot (we know we're talking about a slot because of the $), and light_state can be on or off. Again, **or** is represented by a pipe (|). [The next bit was taught to me by a post on the rhasspy community page. Credit to them for this config!](https://community.rhasspy.org/t/access-from-home-assistant-the-raw-value-in-slots-array/3497) Then, we make some sentences. I made two, so I can say things in different orders. The first would allow me to say **"Turn on the bedside light"**, and the second allows **"Turn the bedside light on"**. Arrow brackets reference variables, regular brackets reference groups of words, square brackets reference optional words, and curly brackets reference the name that the sent data will have in the JSON file that Rhasspy sends to homeassistant. When saving, remember to allow training.
+
+While SSH'd into the pi, run
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+And paste this below the last elif statement:
+```
+elif intent == "SetSpecificLightPower":
+    entity = o["slots"]["entity"]
+    state = o["slots"]["state"]
+    requests.post(hassurl+"/api/services/light/turn_"+state, headers = hassheaders, json = {"entity_id": entity})
+    speech("Alright, I'll turn it " + state )
+```
+
+Anything within `speech()` will be spoken. 
+
+### Now, we'll learn how to add colour.
+
+Go back to your slots, add a new one called ```colours``` (the British spelling), and paste this:
+```
+(aqua | aquamarine | beige | black | blue | brown | chocolate | coral | crimson | cyan | firebrick | forest green | gold | gray | green | hot pink | indigo | khaki | lavender | light blue | light coral | light cyan | light green | light pink | light salmon | light yellow | lime | lime green | magenta | maroon | navy | olive | orange | orchid | pink | purple | red | salmon | tomato | violet | white | yellow)
+```
+It actually supports all colours in [this list](https://www.w3.org/TR/css-color-3/#svg-color), so if I omitted your favourite colour, you can add it as long as it's in the page on that link. MAKE SURE WHENEVER YOU ADD SLOTS OR SENTENCES, YOU SAVE THEM.
+
+![Colour slot](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/colourslotcorrected.png)
+
+Then, in your sentences section, add this:
+```
+[SetSpecificLightColour]
+light_name = ($lights){entity}
+light_colour = ($colours){colour}
+(set | turn | make) [the] <light_name> <light_colour>
+```
+
+Then, run:
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+We'll paste another elif block, very similar to our last:
+```
+elif intent == "SetSpecificLightColour":
+    entity = o["slots"]["entity"]
+    colour = o["slots"]["colour"]
+    requests.post(hassurl+"/api/services/light/turn_on", headers = hassheaders, json = {"entity_id": entity, "color_name" : colour})
+    speech("Alright, I'll make it " + colour )
+```
+Once you've saved an exited, it should work immediately. 
+
+### Adding brightness settings
+
+It would be nice to be able to control brightness, but we can't yet, so let's add it.
+
+First, go back into your intentHandler file:
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+And add this elif statement, just like the colour one:
+```
+elif intent == "SetSpecificLightBrightness":
+    entity = o["slots"]["entity"]
+    brightness = o["slots"]["brightness"]
+    requests.post(hassurl+"/api/services/light/turn_on", headers = hassheaders, json = {"entity_id": entity, "brightness_pct" : brightness})
+    speech("Alright, I'll make it " + str(brightness) + " percent")
+```
+You can probably see how things work now, based on how little has changed from the version of that code which modifies colour instead.
+
+Go to rhasspy's web ui at `yourip:12101`, then click sentences on the left, and add this:
+
+```
+[SetSpecificLightBrightness]
+light_name = ($lights){entity}
+(set | turn | make) [the] <light_name> [to] (1..100){brightness} percent [brightness]
+```
+
+Save and retrain rhasspy, and things should work.
+
+### Finished code blocks (remember to still change any needed variables if applicable)
+
+#### Changing light power
+Code
+```
+elif intent == "SetSpecificLightPower":
+  entity, state = o["slots"]["entity"], o["slots"]["state"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"state": state})
+  speech("Alright, I'll turn it " + state )
+```
+Sentence
+```
+[SetSpecificLightPower]
+light_name = ($lights){entity}
+light_state = (on | off){state}
+(set | turn) <light_state> [the] <light_name>
+(set | turn) [the] <light_name> <light_state>
+```
+
+#### Changing light colour
+Code
+```
+elif intent == "SetSpecificLightColour":
+  entity, colour = o["slots"]["entity"], o["slots"]["colour"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"colour": colour})
+  speech("Alright, I'll make it " + colour )
+```
+Sentence
+```
+[SetSpecificLightColour]
+light_name = ($lights){entity}
+light_colour = ($colours){colour}
+(set | turn | make) [the] <light_name> <light_colour>
+```
+#### Changing light brightness
+Code
+```
+elif intent == "SetSpecificLightBrightness":
+  entity, brightness = o["slots"]["entity"], o["slots"]["brightness"]
+  requests.post(hassurl+"/api/events/assistant_"+intent, headers = hassheaders, json = {"entity": entity,"brightness": brightness})
+  speech("Alright, I'll make it " + str(brightness) + " percent")
+```
+Sentence
+```
+[SetSpecificLightBrightness]
+light_name = ($lights){entity}
+(set | turn | make) [the] <light_name> [to] (1..100){brightness} percent [brightness]
+```
 
 # Resources
 There's a folder called resources in this git repo. It contains any files of mine (or somebody else's, if they're ok with it) that you might want. Any API keys or related stuff in code will be blocked out, however they're otherwise unmodified.
