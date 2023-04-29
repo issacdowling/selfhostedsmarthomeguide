@@ -329,13 +329,6 @@ and in `pipelines:`
       name: intent_handler
 ```
 
-Then make a template for your intent handler:
-```
-mkdir -p config/programs/handle/intent_handler/bin/
-touch config/programs/handle/intent_handler/bin/intent_handler.py
-chmod +x config/programs/handle/intent_handler/bin/intent_handler.py
-```
-
 **Text To Speech**
 
 Run
@@ -409,7 +402,28 @@ In another:
 ```
 curl -X POST 'localhost:13331/pipeline/run'
 ```
+
 # Intent Handler
+
+To make a template for your intent handler:
+```
+mkdir -p config/programs/handle/intent_handler/bin/
+touch config/programs/handle/intent_handler/bin/intent_handler.py
+chmod +x config/programs/handle/intent_handler/bin/intent_handler.py
+nano config/programs/handle/intent_handler/bin/intent_handler.py
+```
+
+Then paste this in:
+
+```
+#!/usr/bin/env python3
+import re
+import sys
+
+text = sys.stdin.read().strip().lower()
+words = [re.sub(r"\W", "", word) for word in text.split()]
+```
+CTRL+X, Y, ENTER to save and exit.
 
 ## Doing basic maths
 
