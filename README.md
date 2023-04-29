@@ -418,37 +418,63 @@ Then paste this in:
 ```
 #!/usr/bin/env python3
 import re
+import random
 import sys
+
+# Set responses
+agreeResponse = ("Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, ")
+currentlyResponse = ("Right now it's ", "It's ", "Currently it's ", "At the moment it's ", "Presently, it's >
+morningResponse = (" in the morning", " AM")
+eveningResponse = (" in the afternoon", " in the evening", " PM")
+
 
 text = sys.stdin.read().strip().lower()
 words = [re.sub(r"\W", "", word) for word in text.split()]
 ```
 CTRL+X, Y, ENTER to save and exit.
 
+## The structure of queries
+
+Lots of nested ifs. 
+
+I separate things into different categories. For example, this wonderful line:
+```
+if ("what" in words) or ("what's" in words) or ("tell" in words):
+```
+checks if you're asking a question. Other things might be commands. Within those, I check for words said. For example, when checking the time, I check for a question including the word time, and then whether it includes a place. If it doesn't, it just says the local time, but if it does, you can get the time somewhere else. It's like a little decision tree.
+
+I would also eventually like to check for politeness to have the assistant respond with manners, and other fun things.
+
+## Getting the time
+
+I added
+```
+from datetime import datetime
+```
+and this function:
+
+```
+def say_time():
+  now = datetime.now()
+  if now.strftime('%p') == "PM":
+    apm = random.choice(eveningResponse)
+  else:
+    apm = random.choice(morningResponse)
+  if now.strftime('%M') == 00:
+    speech("Its " + now.strftime('%I') + " " + apm)
+  else:
+    print(random.choice(currentlyResponse) + now.strftime('%I') + " " + now.strftime('%M') + " " + apm)
+```
+
+This will be called if you ask a question including the time, but not a place (I'll properly add support for asking the time in different places later).
+
+It sets whether we're in the morning or evening, and then says the current time followed by whether that's AM or PM, using info from datetime.
+
 ## Doing basic maths
 
 What if we want to ask the assistant to perform calculations? I'll explain the basic multiplication, subtraction, and addition stuff, and if you want to make it better, you should be able to figure it out from what you learn here.
 
-First, go back to the slots section in the left menu.
 
-![slot tab](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/slottab.png)
-
-Then, we'll define our operations. Make a new slot called **"operators"**, then paste this in:
-```
-(add | plus):+
-(times | multiplied by):*
-(minus | subtract | take | take away):-
-(divided by | over):/
-```
-If you'd like to be able to call a certain operation with another word, just add it within the brackets, along with a pipe (|) symbol to separate it from the other words. Save this.
-
-Now, go to the sentences tab, and add a [DoMaths] section. Paste in what's below:
-```
-[DoMaths]
-operator = ($operators){operator}
-what is (-1000..1000){num1} <operator> (-1000..1000){num2}
-```
-This lets us perform those three operations on two numbers between -1000 and 1000. You can increase the range by changing the numbers at either end of the two dots (**".."**), but I was concerned that the assistant may find it harder to tell exactly what number you're saying as the range of numbers increases, so 1000 seemed an alright compromise.
 
 Finally, head over to the intentHandler by running:
 ```
