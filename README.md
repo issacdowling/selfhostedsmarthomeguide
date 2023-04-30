@@ -590,7 +590,197 @@ elif ("what" in words) or ("whats" in words) or ("tell" in words):
       get_weather()
 ```
 
+## Getting the date
+
+Add this elif statement:
+
+```
+elif intent == "GetDate":
+  months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
+  weekdays = [" Monday ", " Tuesday ", " Wednesday ", " Thursday ", " Friday ", " Saturday ", " Sunday "]
+  dayNum = datetime.now().day
+  month = months[(datetime.now().month)-1]
+  weekday = weekdays[datetime.today().weekday()]
+  speech("Today, it's" + weekday + "the " + str(dayNum) + " of" + month)
+```
+
+We get a number for the day of the month, day of week, and month (so, Jan is 1, Dec is 12), then convert these to words using lists. Then, we speak a sentence which puts it all together.
+
+Go to your Rhasspy sentences section, and add this:
+```
+[GetDate]
+what date [is it]
+whats [the] date
+tell me [the] date
+whats today
+```
+Save and retrain, and it should work.
+
+## Giving greetings
+
+This is **part of the Rhasspy-provided example script,** however it's a feature nonetheless. 
+
+In your Rhasspy sentences section, add this:
+```
+[Greet]
+Hello
+Hi
+Good (morning | afternoon | evening)
+```
+and remember to save and retrain.
+
+It should work immediately, since it was part of the example we pasted in earlier, however we'll look at the code anyway.
+
+```
+elif intent == "Greet":
+    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
+    speech(random.choice(replies))
+```
+
+If the intent is **"Greet"**, we make a list of items, each of which is a string. In this case, they're just different ways of greeting the user. Then, we randomly pick one of the items and say t. If you want to add extra things to say, just add a string to the list. 
+
+I at some point intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
+
 ## Setting timers
+Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
+
+First, we'll add things to our intenthandler. 
+
+Go to the top, add a section called `# Set Paths`, and below it, add: 
+```
+stop_timer_path = tmpDir + "timer_stop"
+start_timer_path = tmpDir + "timer_start"
+timer_info_path = tmpDir + "timer_sync_info.json"
+```
+
+Then, add the following elif statements.
+```
+elif intent == "start_timer":
+  length = int(o["slots"]["time"])
+  unit = o["slots"]["unit"]
+
+  # Tell user that timer is set.
+  speech("Alright, I'll set a " + str(length) + " " + unit + " timer")
+
+  #Convert spoken time into seconds if applicable
+  if unit == "minute":
+    length = (length*60)
+
+  #Write the length info to start file.
+  start_timer_json = {"length" : length}
+  with open(start_timer_path, "w") as start_timer:
+    start_timer.write(json.dumps(start_timer_json))
+
+elif intent == "stop_timer":
+  with open(stop_timer_path, "w"):
+      pass
+  speech(random.choice(agreeResponse) + "i'll stop the timer")
+
+elif intent == "timer_remaining":
+  timer = json.load(open(timer_info_path, 'r'))
+  #If timer already running, tell user the details
+  if timer["remaining_length"] > 0:
+    if timer["remaining_length"]-3 >= 60:
+      speech("Your timer has " + str(math.trunc((timer["remaining_length"]-3)/60)) + " minutes and " + str((timer["remaining_length"] % 60) - 3) + " seconds left")
+    else:
+      speech("Your timer has " + str(timer["remaining_length"]-3) + " seconds left")
+  #If timer going off, tell user, fix it.
+  elif timer["dismissed"] == False:
+    with open(stop_timer_path, "w"):
+      pass
+    speech("You've got a timer going off. I'll dismiss it.")
+  else:
+    speech("You've got no timers running")
+
+```
+
+In your Rhasspy sentences, you'll want to add these (remember to save and train):
+```
+[start_timer]
+(set | make | start) a (1..60){time} (second | minute){unit} timer
+
+[stop_timer]
+stop [the] (timer | alarm)
+
+[timer_remaining]
+how long left on timer
+what is [the] timer [at | on]
+```
+
+#### Now that those are added, we'll get the server and notifier set up.
+
+Run this to download the necessary files and put them in the right place:
+```
+sudo apt-get install -y nodejs npm
+sudo pip install websockets
+mkdir ~/sync-conveniences
+cd ~/sync-conveniences
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.mjs
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/timer.py
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/timerchime.wav
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/timer-sync.py
+npm install ws## Setting timers
+Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
+
+First, we'll add things to our intenthandler. 
+
+Go to the top, add a section called `# Set Paths`, and below it, add: 
+```
+stop_timer_path = tmpDir + "timer_stop"
+start_timer_path = tmpDir + "timer_start"
+timer_info_path = tmpDir + "timer_sync_info.json"
+```
+
+Then, add the following elif statements.
+```
+elif intent == "start_timer":
+  length = int(o["slots"]["time"])
+  unit = o["slots"]["unit"]
+
+  # Tell user that timer is set.
+  speech("Alright, I'll set a " + str(length) + " " + unit + " timer")
+
+  #Convert spoken time into seconds if applicable
+  if unit == "minute":
+    length = (length*60)
+
+  #Write the length info to start file.
+  start_timer_json = {"length" : length}
+  with open(start_timer_path, "w") as start_timer:
+    start_timer.write(json.dumps(start_timer_json))
+
+elif intent == "stop_timer":
+  with open(stop_timer_path, "w"):
+      pass
+  speech(random.choice(agreeResponse) + "i'll stop the timer")
+
+elif intent == "timer_remaining":
+  timer = json.load(open(timer_info_path, 'r'))
+  #If timer already running, tell user the details
+  if timer["remaining_length"] > 0:
+    if timer["remaining_length"]-3 >= 60:
+      speech("Your timer has " + str(math.trunc((timer["remaining_length"]-3)/60)) + " minutes and " + str((timer["remaining_length"] % 60) - 3) + " seconds left")
+    else:
+      speech("Your timer has " + str(timer["remaining_length"]-3) + " seconds left")
+  #If timer going off, tell user, fix it.
+  elif timer["dismissed"] == False:
+    with open(stop_timer_path, "w"):
+      pass
+    speech("You've got a timer going off. I'll dismiss it.")
+  else:
+    speech("You've got no timers running")
+
+```
+
+In your Rhasspy sentences, you'll want to add these (remember to save and train):
+```
+[start_timer]
+(set | make | start) a (1..60){time} (second | minute){unit} timer
+
+[stop_timer]
+stop [the] (timer | alarm)
+
+[timer_remaining]## Setting timers
 Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
 
 First, we'll add things to our intenthandler. 
@@ -758,56 +948,355 @@ elif intent == "generic_stop":
 ```
 As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
 
-## Getting the date
+#### Now that those are added, we'll get the server and notifier set up.
 
-Add this elif statement:
+Run this to download the necessary files and put them in the right place:
+```
+sudo apt-get install -y nodejs npm
+sudo pip install websockets
+mkdir ~/sync-conveniences
+cd ~/sync-conveniences
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.mjs
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/timer.py
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/timerchime.wav
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/timer-sync.py
+npm install ws
+sudo systemctl --force --full edit start-sync-webserver.service
+```
+and pasting:
+```                                        
+[Unit]
+Description=Start sync conveniences webserver       
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/node /home/assistant-main-node/sync-conveniences/webserver.mjs
+
+[Install]
+WantedBy=multi-user.target
 
 ```
-elif intent == "GetDate":
-  months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
-  weekdays = [" Monday ", " Tuesday ", " Wednesday ", " Thursday ", " Friday ", " Saturday ", " Sunday "]
-  dayNum = datetime.now().day
-  month = months[(datetime.now().month)-1]
-  weekday = weekdays[datetime.today().weekday()]
-  speech("Today, it's" + weekday + "the " + str(dayNum) + " of" + month)
+Change `assistant-main-node` to your username in that file if it's different.
+
+Then do:
+```
+sudo systemctl --force --full edit start-sync-timer.service
+```
+and paste:
+```
+[Unit]
+Description=Start sync conveniences timer       
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer.py
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-We get a number for the day of the month, day of week, and month (so, Jan is 1, Dec is 12), then convert these to words using lists. Then, we speak a sentence which puts it all together.
-
-Go to your Rhasspy sentences section, and add this:
+Then do:
 ```
-[GetDate]
-what date [is it]
-whats [the] date
-tell me [the] date
-whats today
+sudo systemctl --force --full edit start-sync-timersync.service
 ```
-Save and retrain, and it should work.
-
-## Giving greetings
-
-This is **part of the Rhasspy-provided example script,** however it's a feature nonetheless. 
-
-In your Rhasspy sentences section, add this:
+and paste:
 ```
-[Greet]
-Hello
-Hi
-Good (morning | afternoon | evening)
-```
-and remember to save and retrain.
+[Unit]
+Description=Start sync conveniences timer-sync    
+After=multi-user.target
 
-It should work immediately, since it was part of the example we pasted in earlier, however we'll look at the code anyway.
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer-sync.py
 
-```
-elif intent == "Greet":
-    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
-    speech(random.choice(replies))
+[Install]
+WantedBy=multi-user.target
 ```
 
-If the intent is **"Greet"**, we make a list of items, each of which is a string. In this case, they're just different ways of greeting the user. Then, we randomly pick one of the items and say t. If you want to add extra things to say, just add a string to the list. 
+Modify the timer-sync file
+```
+sudo nano ~/sync-conveniences/timer-sync.py
+sudo nano ~/sync-conveniences/timer.py
+sudo nano ~/sync-conveniences/webserver.mjs
+```
+Change working_directory to `/dev/shm/tmpassistant/` for all of those text files.
 
-I at some point intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
+In timer_finished_audio, change the username if it's not the same as mine! Same goes if you want a different audio file.
+
+Now we'll make it all executable and enable it:
+```
+sudo systemctl enable start-sync-webserver.service --now
+sudo systemctl enable start-sync-timer.service --now
+sudo systemctl enable start-sync-timersync.service --now
+```
+
+And now you should be done. You can ask for a timer, ask how long's left, or stop it, as well as accessing it from other devices [if you set that up.](https://gitlab.com/issacdowling/selfhosted-synced-stuff)
+
+START_TIMER, STOP_TIMER, and TIMER_FILE.JSON are handled by the timer.py file itself. TIMER_START, TIMER_STOP, and TIMER_SYNC_INFO.JSON are handled by the sync handler, and are what should be used.
+
+## Generic stop function
+In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
+
+First, we'll add the sentence, since it's the most basic part. Go to your rhasspy web UI, sentences, and paste this:
+```
+[generic_stop]
+stop
+```
+Wonderful.
+
+Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping - we'll stop everything:
+```
+elif intent == "generic_stop":
+  stop = requests.post(webserver_url + "/timer_stop").text
+```
+As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
+and pasting:
+```                                        
+[Unit]
+Description=Start sync conveniences webserver       
+After=multi-user.target
+## Setting timers
+Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
+
+First, we'll add things to our intenthandler. 
+
+Go to the top, add a section called `# Set Paths`, and below it, add: 
+```
+stop_timer_path = tmpDir + "timer_stop"
+start_timer_path = tmpDir + "timer_start"
+timer_info_path = tmpDir + "timer_sync_info.json"
+```
+
+Then, add the following elif statements.
+```
+elif intent == "start_timer":
+  length = int(o["slots"]["time"])
+  unit = o["slots"]["unit"]
+
+  # Tell user that timer is set.
+  speech("Alright, I'll set a " + str(length) + " " + unit + " timer")
+
+  #Convert spoken time into seconds if applicable
+  if unit == "minute":
+    length = (length*60)
+
+  #Write the length info to start file.
+  start_timer_json = {"length" : length}
+  with open(start_timer_path, "w") as start_timer:
+    start_timer.write(json.dumps(start_timer_json))
+
+elif intent == "stop_timer":
+  with open(stop_timer_path, "w"):
+      pass
+  speech(random.choice(agreeResponse) + "i'll stop the timer")
+
+elif intent == "timer_remaining":
+  timer = json.load(open(timer_info_path, 'r'))
+  #If timer already running, tell user the details
+  if timer["remaining_length"] > 0:
+    if timer["remaining_length"]-3 >= 60:
+      speech("Your timer has " + str(math.trunc((timer["remaining_length"]-3)/60)) + " minutes and " + str((timer["remaining_length"] % 60) - 3) + " seconds left")
+    else:
+      speech("Your timer has " + str(timer["remaining_length"]-3) + " seconds left")
+  #If timer going off, tell user, fix it.
+  elif timer["dismissed"] == False:
+    with open(stop_timer_path, "w"):
+      pass
+    speech("You've got a timer going off. I'll dismiss it.")
+  else:
+    speech("You've got no timers running")
+
+```
+
+In your Rhasspy sentences, you'll want to add these (remember to save and train):
+```
+[start_timer]
+(set | make | start) a (1..60){time} (second | minute){unit} timer
+
+[stop_timer]
+stop [the] (timer | alarm)
+
+[timer_remaining]
+how long left on timer
+what is [the] timer [at | on]
+```
+
+#### Now that those are added, we'll get the server and notifier set up.
+
+Run this to download the necessary files and put them in the right place:
+```
+sudo apt-get install -y nodejs npm
+sudo pip install websockets
+mkdir ~/sync-conveniences
+cd ~/sync-conveniences
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/webserver.mjs
+curl -O https://gitlab.com/issacdowling/selfhosted-synced-stuff/-/raw/main/timer.py
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/timerchime.wav
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/timer-sync.py
+npm install ws
+sudo systemctl --force --full edit start-sync-webserver.service
+```
+and pasting:
+```                                        
+[Unit]
+Description=Start sync conveniences webserver       
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/node /home/assistant-main-node/sync-conveniences/webserver.mjs
+
+[Install]
+WantedBy=multi-user.target
+
+```
+Change `assistant-main-node` to your username in that file if it's different.
+
+Then do:
+```
+sudo systemctl --force --full edit start-sync-timer.service
+```
+and paste:
+```
+[Unit]
+Description=Start sync conveniences timer       
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer.py
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then do:
+```
+sudo systemctl --force --full edit start-sync-timersync.service
+```
+and paste:
+```
+[Unit]
+Description=Start sync conveniences timer-sync    
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer-sync.py
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Modify the timer-sync file
+```
+sudo nano ~/sync-conveniences/timer-sync.py
+sudo nano ~/sync-conveniences/timer.py
+sudo nano ~/sync-conveniences/webserver.mjs
+```
+Change working_directory to `/dev/shm/tmpassistant/` for all of those text files.
+
+In timer_finished_audio, change the username if it's not the same as mine! Same goes if you want a different audio file.
+
+Now we'll make it all executable and enable it:
+```
+sudo systemctl enable start-sync-webserver.service --now
+sudo systemctl enable start-sync-timer.service --now
+sudo systemctl enable start-sync-timersync.service --now
+```
+
+And now you should be done. You can ask for a timer, ask how long's left, or stop it, as well as accessing it from other devices [if you set that up.](https://gitlab.com/issacdowling/selfhosted-synced-stuff)
+
+START_TIMER, STOP_TIMER, and TIMER_FILE.JSON are handled by the timer.py file itself. TIMER_START, TIMER_STOP, and TIMER_SYNC_INFO.JSON are handled by the sync handler, and are what should be used.
+
+## Generic stop function
+In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
+
+First, we'll add the sentence, since it's the most basic part. Go to your rhasspy web UI, sentences, and paste this:
+```
+[generic_stop]
+stop
+```
+Wonderful.
+
+Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping - we'll stop everything:
+```
+elif intent == "generic_stop":
+  stop = requests.post(webserver_url + "/timer_stop").text
+```
+As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
+WantedBy=multi-user.target
+
+```
+Change `assistant-main-node` to your username in that file if it's different.
+
+Then do:
+```
+sudo systemctl --force --full edit start-sync-timer.service
+```
+and paste:
+```
+[Unit]
+Description=Start sync conveniences timer       
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer.py
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then do:
+```
+sudo systemctl --force --full edit start-sync-timersync.service
+```
+and paste:
+```
+[Unit]
+Description=Start sync conveniences timer-sync    
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/assistant-main-node/sync-conveniences/timer-sync.py
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Modify the timer-sync file
+```
+sudo nano ~/sync-conveniences/timer-sync.py
+sudo nano ~/sync-conveniences/timer.py
+sudo nano ~/sync-conveniences/webserver.mjs
+```
+Change working_directory to `/dev/shm/tmpassistant/` for all of those text files.
+
+In timer_finished_audio, change the username if it's not the same as mine! Same goes if you want a different audio file.
+
+Now we'll make it all executable and enable it:
+```
+sudo systemctl enable start-sync-webserver.service --now
+sudo systemctl enable start-sync-timer.service --now
+sudo systemctl enable start-sync-timersync.service --now
+```
+
+And now you should be done. You can ask for a timer, ask how long's left, or stop it, as well as accessing it from other devices [if you set that up.](https://gitlab.com/issacdowling/selfhosted-synced-stuff)
+
+START_TIMER, STOP_TIMER, and TIMER_FILE.JSON are handled by the timer.py file itself. TIMER_START, TIMER_STOP, and TIMER_SYNC_INFO.JSON are handled by the sync handler, and are what should be used.
+
+## Generic stop function
+In the future, we might have other things that we'd like to stop, such as music playback, which is why I made the "timer stop" it's own separate thing. I'd still like to be able to just say "stop", so we'll add another intent which just stops everything. 
+
+First, we'll add the sentence, since it's the most basic part. Go to your rhasspy web UI, sentences, and paste this:
+```
+[generic_stop]
+stop
+```
+Wonderful.
+
+Now, we'll add this code to the end of our intentHandler, which says that - if we're not specifically told ***what***  we're stopping - we'll stop everything:
+```
+elif intent == "generic_stop":
+  stop = requests.post(webserver_url + "/timer_stop").text
+```
+As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
 
 ## Jellyfin Music Support
 We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
