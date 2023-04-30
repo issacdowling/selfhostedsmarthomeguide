@@ -186,7 +186,7 @@ You can now do CTRL+X, Y, ENTER, to save and exit, then run `sudo reboot` to res
 
 First, run
 ```
-sudo apt-get install python3-pip python3-venv git -y
+sudo apt-get install python3-venv git -y
 cd
 git clone https://github.com/rhasspy/rhasspy3
 cd rhasspy3
@@ -313,12 +313,12 @@ If you're not on a pi, change `raspberry-pi` to `linux`, and you can look at you
 
 **Intent handler**
 
-In your config, add this in the `programs:` below `wake:`
+In your config, add this in the `programs:` below `wake:`, and replace `assistant1` with your chosen username.
 ```
   handle:
     intent_handler:
       command: |
-        python3 bin/intent_handler.py
+        /home/assistant1/rhasspy3/.venv/bin/python3 bin/intent_handler.py
       adapter: |
         handle_adapter_text.py
 ```
@@ -438,9 +438,11 @@ Lots of nested ifs.
 
 I separate things into different categories. For example, this wonderful line:
 ```
-if ("what" in words) or ("what's" in words) or ("tell" in words):
+if ("what" in words) or ("whats" in words) or ("tell" in words):
 ```
 checks if you're asking a question. Other things might be commands. Within those, I check for words said. For example, when checking the time, I check for a question including the word time, and then whether it includes a place. If it doesn't, it just says the local time, but if it does, you can get the time somewhere else. It's like a little decision tree.
+
+Keep in mind, we're working with lowercase words with all special characters removed. It would be possible to grab the raw version with capitalisation and punctuation, but that's not what this decision tree is using. (e.g, `what's` is invalid and will never show up, so we must use `whats` instead, even if it's frustrating grammar-wise)
 
 I would also eventually like to check for politeness to have the assistant respond with manners, and other fun things.
 
@@ -472,7 +474,7 @@ It sets whether we're in the morning or evening, and then says the current time 
 This is the decision tree with only this included:
 ```
 # If user is asking for information
-if ("what" in words) or ("what's" in words) or ("tell" in words):
+if ("what" in words) or ("whats" in words) or ("tell" in words):
   # If asking for the time
   if "time" in words:
     # If asking for the time in a place
@@ -501,7 +503,7 @@ def get_weather():
   speech("It's currently " + str(round(currentTemp)) + " degrees and " + currentDesc)
 ```
 
-I also had to `import requests` then `pip install requests`
+I also had to `import requests` then `pip install requests`, but within the venv created earlier. To do this, run `~/rhasspy3/.venv/bin/pip install requests`. Any other pip install should be done with this pip too.
 
 
 Change **YOURAUTHKEY** to your api key from openweathermap, and **LAT** / **LONG** to your current latitude and longitude. They don't have to be exactly on your location, but you can use a tool [like this](https://www.latlong.net/) to get the numbers for your general area.
@@ -512,7 +514,7 @@ Then, save and exit, and ask your assistant **"What's the weather"**, and it sho
 This is the decision tree with only this:
 ```
 # If user is asking for information
-if ("what" in words) or ("what's" in words) or ("tell" in words):
+if ("what" in words) or ("whats" in words) or ("tell" in words):
   # If asking for the weather
   elif ("weather" in words) or ("temperature" in words) or ("heat" in words) or ("hot" in words) or ("cold" in words):
     ## If asking for the weather in a place
@@ -522,40 +524,6 @@ if ("what" in words) or ("what's" in words) or ("tell" in words):
     else:
       get_weather()
 ```
-## Doing basic maths
-
-What if we want to ask the assistant to perform calculations? I'll explain the basic multiplication, subtraction, and addition stuff, and if you want to make it better, you should be able to figure it out from what you learn here.
-
-
-
-Finally, head over to the intentHandler by running:
-```
-sudo nano ~/assistant/profiles/intentHandler
-```
-And paste this below the last elif section:
-```
-elif intent == "DoMaths":
-  operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
-  if operator == "*":
-    operator = " times "
-    calcResult = str(num1*num2)
-  elif operator == "+":
-    operator = " add "
-    calcResult = str(num1+num2)
-  elif operator == "-":
-    operator = " minus "
-    calcResult = str(num1-num2)
-  elif operator == "/":
-    operator = " over "
-    calcResult = str(num1/num2)
-  if num1 == 9 and num2 == 10 and operator == " add ":
-    speech("9 plus 10 is 21")
-  else:
-    speech(str(num1) + operator + str(num2) + " is " + calcResult.replace("." , " point "))
-```
-
-
-Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven. This is why it was important to change your STT settings earlier, increasing `silence after` time.
 
 ## Setting timers
 Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
@@ -934,86 +902,6 @@ Except for if you re-pair your phone. It likely won't let you re-pair.
 To fix that, there's no elegant solution right now. Open the terminal, run `bluetoothctl`, then type `remove `, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
 
 ### Optimal.
-
-## Natural and varied responses
-
-Right now, the assistant will always respond in the same way to a given request. This is easy to program, but not very natural, and we can make it better.
-
-If you were paying attention to the **greetings** section, you'll probably understand how we'll implement this. All we need is a list of potential appropriate phrases, and then we pick a random one to speak each time.
-
-First, we need to figure out what we want it to say, and which possible situations they're appropriate for. For example, after turning on a light, it would make sense to preface "I'll turn it on" with **Ok / Alright / Will do / Got it / Sure**, but it wouldn't make sense to have that same list of words when answering a maths question.
-
-So, get into your intentHandler:
-```
-sudo nano ~/assistant/profiles/intentHandler
-```
-and go to just below your `# Set paths` section.
-
-Add a new section called `# Set responses`. Then, add your responses below - here's how you would add the example from before:
-```
-agreeResponse = ["Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, "] 
-```
-In this case, I want a small pause after the phrase, so I've added a comma and a space within the quotes for all of them, and used a comma after the parenthesis to separate each one. 
-
-Now, I can go down to the `SetSpecificLight` sections, and change this:
-```
-speech("Alright, I'll make it " + colour)
-```
-to this (doing the same change for all light sections):
-```
-speech(random.choice(agreeResponse) + "I'll make it " + colour)
-```
-All we've actually done is make it pick a random string from the list we made instead of just saying **"Alright, "**. If we just saved and exited here, it would work.
-
-### But we can add it to other situations, like the time and weather
-
-Back in the `# Set responses` section, I've added this line:
-```
-currentlyResponse = ["Right now it's ", "Its ", "Currently its ", "At the moment its "]
-```
-Then, in the `GetTime` and `GetWeather` sections, we can replace the `"Its "` with
-```
-random.choice(currentlyResponse)
-```
-
-I've also added it to the timer section, so I've replaced this:
-```
-speech("Alright, I'll set a " + str(length) + " " + unit + " timer")
-```
-with this:
-```
-speech(random.choice(agreeResponse) + "I'll set a " + str(length) + " " + unit + " timer")
-```
-
-
-### We could also implement different options for individual responses. 
-
-For example, when cancelling a timer, I could add this to the top of the doTimer intent:
-```
-timerCancelResponse = ["Timer cancelled", "Cancelling timer", "I'll cancel the timer"]
-```
-and then just set it to pick one of those:
-```
-speech(random.choice(timerCancelResponse))
-```
-
-### Or different ways of saying AM / PM
-
-We can add `morningResponse = [" in the morning", " ey em"]` and then `eveningResponse = [" in the afternoon", " in the evening", " peey em"]`
-
-**(remember from the timer bit, AM and PM are spelt weirdly so that they're spoken correctly with my TTS choice. They might need changing for whatever voice you choose personally)**
-
-Now, we go down to the `if intent == "GetTime":` section, and make the a/pm variable sections with:
-```
-apm = random.choice(eveningResponse)
-```
-then the next one is
-```
-apm = random.choice(morningResponse)
-```
-and now your time announcements should be a bit more varied than before.
-
-The way we're doing this is really simple and flexible, but makes the responses less repetitive. I like it.
 
 ## Jellyfin Music Support
 We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
@@ -1574,6 +1462,49 @@ elif intent == "UnitConversion":
     speech(str(number) + " " + unit1 + " is " + str(round(finalValue,3)).replace("." , " point ") + " " + unit2)
 ```
 
+## Doing basic maths
+
+What if we want to ask the assistant to perform calculations? I'll explain the basic multiplication, subtraction, and addition stuff, and if you want to make it better, you should be able to figure it out from what you learn here.
+
+In the intenthandler, I added this function
+```
+def do_maths(operator, num1, num2):
+  operator, num1, num2 = o["slots"]["operator"], o["slots"]["num1"], o["slots"]["num2"]
+  if operator == "*":
+    operator = " times "
+    calcResult = str(num1*num2)
+  elif operator == "+":
+    operator = " add "
+    calcResult = str(num1+num2)
+  elif operator == "-":
+    operator = " minus "
+    calcResult = str(num1-num2)
+  elif operator == "/":
+    operator = " over "
+    calcResult = str(num1/num2)
+  if num1 == 9 and num2 == 10 and operator == " add ":
+    speech("9 plus 10 is 21")
+  else:
+    speech(str(num1) + operator + str(num2) + " is " + calcResult.replace("." , " point "))
+```
+
+TESTING BIT=======
+  # If asking for a mathematical operation
+  elif ("plus" in words) or ("add" in words) or ("+" in words) or ("minus" in words) or ("take" in words) or ("-" in >
+    #Extract numbers from statement
+    numbers = []
+    for word in words:
+      if word.isdigit():
+        numbers.append(int(word))
+    #If there are 2 numbers
+    if len(numbers) == 2:
+      if (word == "plus") or (word == "add") or (word == "+"):
+        print(str(numbers[0]) + " plus " + str(numbers[1]) + " equals " + str(numbers[0] + numbers[1]))
+      elif (word == "minus") or (word == "take") or (word == "-"):
+        print(str(numbers[0]) + " minus " + str(numbers[1]) + " equals " + str(numers[0] - numbers[1]))
+==================
+
+Basically, we make variables for the operator and both numbers from the incoming JSON, then just perform the operation, speaking the result. Once you've saved and exited, it should just work. Keep in mind, you've got to say your numbers quite quickly. Once your sentence is perceived to be complete, it will stop listening, even if you're still speaking. This means that if you say - for example - **"twenty seven"** too slowly, it may cut you off before you've said seven. This is why it was important to change your STT settings earlier, increasing `silence after` time.
 
 # Making it smart
 ## Setting up Homeassistant
