@@ -612,6 +612,7 @@ elif ("what" in words) or ("whats" in words) or ("tell" in words):
   # If the user is asking for the date
   elif ("date" in words) or ("today" in words) or ("day" in words):
     get_date()
+```
 
 ## Giving greetings
 
