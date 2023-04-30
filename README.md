@@ -471,8 +471,6 @@ sudo nano /etc/bluetooth/main.conf
 ```
 and go to the `#DiscoverableTimeout` line. Remove the #, and set it to `DiscoverableTimeout = 30`
 
-Set PairableTimeout to 30 too,
-
 and add:
 `Class = 0x000414` to the top of the config.
 
@@ -480,118 +478,30 @@ Then `CTRL+X, Y, ENTER` to save and exit.
 
 Next, run this to download the script that makes your Pi visible as a bluetooth speaker
 ```
-
+mkdir -p ~/rhasspy3/resources/code
+cd ~/rhasspy3/resources/code
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/new/resources/code/bt-audio.py
+chmod +x bt-audio.py
+cd ~/rhasspy3
 ```
 
-Now, run this to install some dependencies and begin editing your intentHandler:
+Then, into the intenthandler, we'll add this function:
 ```
-sudo nano ~/assistant/profiles/intentHandler
-```
-
-and go to near the bottom, where you'll add another elif statement:
-```
-elif intent == "BluetoothPairing":
-    bleutoothFile = open(bluetoothFilePath, "w") 
-    time.sleep(0.1)
-    bluetoothFile.close()
-    os.remove(bluetoothFilePath)
-    speech("Turning on bluetooth pairing")
+def bluetooth_pairing():
+  # Spawn detached (background, unrelated to this python script) process for bluetooth audio. Very annoying to find right command, had to rant here.
+  p = subprocess.Popen(['/home/assistant1/rhasspy3/resources/code/bt-audio.py'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  print(random.choice(agreeResponse) + " I'll turn on bluetooth pairing")
 ```
 
-Then, go to the `# Set paths` section at the top, and add 
-```
-bluetoothFilePath = tmpDir+"bluetoothFile"
-```
-Save and exit.
-
-Then run this to create a new system service (which will handle the bt-audio script)
-```
-sudo nano /etc/systemd/system/speakerbluetoothpair.service
-```
-and paste in
-```
-[Unit]
-Description=Starts bluetooth pairing script
-
-[Service]
-Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/bt-audio.py
-```
-(replace assistant-main-node with your username if different).
-
-Save and exit.
-
-Then, make practically the same thing by running:
-```
-sudo nano /etc/systemd/system/speakerbluetoothpairstop.service
-```
-and pasting:
-```
-[Unit]
-Description=Stops bluetooth pairing script after 30s
-
-[Service]
-Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/stop-bluetooth-pairing.sh
-```
-(replace assistant-main-node with your username if different). This 2nd service just kills that previous service once it's not needed anymore.
-
-Then, we'll make two more services, which handle *enabling* the previous two. 
-```
-sudo nano /etc/systemd/system/speakerbluetoothpair.path
-```
-And paste in:
-```
-[Unit]
-Description=Checks for bluetooth pairing file from rhasspy to start pairing
-
-[Path]
-PathExists=/dev/shm/tmpassistant/bluetoothFile
-
-[Install]
-WantedBy=multi-user.target
-```
-
-And again, for the second, run
-```
-sudo nano /etc/systemd/system/speakerbluetoothpairstop.path
-```
-And paste in:
-```
-[Unit]
-Description=Checks for bluetooth pairing file from rhasspy to stop pairing
-
-[Path]
-PathExists=/dev/shm/tmpassistant/bluetoothFile
-
-[Install]
-WantedBy=multi-user.target
-```
-
-CTRL+X+Y to save and exit.
-
-Now, let's make the script which is used to stop the first service:
-```
-sudo nano ~/assistant/stop-bluetooth-pairing.sh
-```
-and add
-```
-#!/bin/sh
-sleep 30
-systemctl stop speakerbluetoothpair.service
-systemctl reset-failed speakerbluetoothpair.service
-```
-
-And finally run this to add permissions and enable services: 
-```
-sudo chmod +x ~/assistant/stop-bluetooth-pairing.sh
-sudo chmod +x ~/assistant/bt-audio.py
-sudo systemctl enable speakerbluetoothpair.path --now
-sudo systemctl enable speakerbluetoothpairstop.path --now
-```
+Also, at the top, add this (`import subprocess`) to import what's necessary.
 
 Then `sudo reboot now` to reboot.
 
+This is decision tree with just this:
+```
+if ("bluetooth" in words) and (("turn" in words) or ("on" in words) or ("pairing" in words)):
+  bluetooth_pairing()
+```
 
 **It's a mess, but it works.**
 
@@ -629,7 +539,7 @@ It sets whether we're in the morning or evening, and then says the current time 
 This is the decision tree with only this included:
 ```
 # If user is asking for information
-if ("what" in words) or ("whats" in words) or ("tell" in words):
+elif ("what" in words) or ("whats" in words) or ("tell" in words):
   # If asking for the time
   if "time" in words:
     # If asking for the time in a place
@@ -669,7 +579,7 @@ Then, save and exit, and ask your assistant **"What's the weather"**, and it sho
 This is the decision tree with only this:
 ```
 # If user is asking for information
-if ("what" in words) or ("whats" in words) or ("tell" in words):
+elif ("what" in words) or ("whats" in words) or ("tell" in words):
   # If asking for the weather
   elif ("weather" in words) or ("temperature" in words) or ("heat" in words) or ("hot" in words) or ("cold" in words):
     ## If asking for the weather in a place
