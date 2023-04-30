@@ -438,13 +438,168 @@ Lots of nested ifs.
 
 I separate things into different categories. For example, this wonderful line:
 ```
-if ("what" in words) or ("whats" in words) or ("tell" in words):
+elif ("what" in words) or ("whats" in words) or ("tell" in words):
 ```
 checks if you're asking a question. Other things might be commands. Within those, I check for words said. For example, when checking the time, I check for a question including the word time, and then whether it includes a place. If it doesn't, it just says the local time, but if it does, you can get the time somewhere else. It's like a little decision tree.
 
 Keep in mind, we're working with lowercase words with all special characters removed. It would be possible to grab the raw version with capitalisation and punctuation, but that's not what this decision tree is using. (e.g, `what's` is invalid and will never show up, so we must use `whats` instead, even if it's frustrating grammar-wise)
 
 I would also eventually like to check for politeness to have the assistant respond with manners, and other fun things.
+
+## Bluetooth Audio Streaming
+You can use an Echo or Google Home as a bluetooth speaker, why not this?
+
+First, run this to install all of the (originally difficult for me to find) dependencies
+
+```
+sudo apt-get install -y libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-1.0 pulseaudio-module-bluetooth python3-pip gstreamer1.0-plugins gstreamer1.0-alsa
+pip3 install dbus-python
+```
+
+Then, paste this into your terminal
+```
+sudo hostnamectl --pretty set-hostname ""
+```
+and put what you want the speaker to appear as within the quotes. So, if you put "Issac Bedroom Speaker", it would appear to your phone like this:
+![Issac Bedroom Speaker in Bluetooth settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/issacbedroomspeaker.png)
+
+In the end, I picked Blueberry.
+
+Then, run 
+```
+sudo nano /etc/bluetooth/main.conf
+```
+and go to the `#DiscoverableTimeout` line. Remove the #, and set it to `DiscoverableTimeout = 30`
+
+Set PairableTimeout to 30 too,
+
+and add:
+`Class = 0x000414` to the top of the config.
+
+Then `CTRL+X, Y, ENTER` to save and exit.
+
+Next, run this to download the script that makes your Pi visible as a bluetooth speaker
+```
+
+```
+
+Now, run this to install some dependencies and begin editing your intentHandler:
+```
+sudo nano ~/assistant/profiles/intentHandler
+```
+
+and go to near the bottom, where you'll add another elif statement:
+```
+elif intent == "BluetoothPairing":
+    bleutoothFile = open(bluetoothFilePath, "w") 
+    time.sleep(0.1)
+    bluetoothFile.close()
+    os.remove(bluetoothFilePath)
+    speech("Turning on bluetooth pairing")
+```
+
+Then, go to the `# Set paths` section at the top, and add 
+```
+bluetoothFilePath = tmpDir+"bluetoothFile"
+```
+Save and exit.
+
+Then run this to create a new system service (which will handle the bt-audio script)
+```
+sudo nano /etc/systemd/system/speakerbluetoothpair.service
+```
+and paste in
+```
+[Unit]
+Description=Starts bluetooth pairing script
+
+[Service]
+Type=oneshot
+ExecStart=/home/assistant-main-node/assistant/bt-audio.py
+```
+(replace assistant-main-node with your username if different).
+
+Save and exit.
+
+Then, make practically the same thing by running:
+```
+sudo nano /etc/systemd/system/speakerbluetoothpairstop.service
+```
+and pasting:
+```
+[Unit]
+Description=Stops bluetooth pairing script after 30s
+
+[Service]
+Type=oneshot
+ExecStart=/home/assistant-main-node/assistant/stop-bluetooth-pairing.sh
+```
+(replace assistant-main-node with your username if different). This 2nd service just kills that previous service once it's not needed anymore.
+
+Then, we'll make two more services, which handle *enabling* the previous two. 
+```
+sudo nano /etc/systemd/system/speakerbluetoothpair.path
+```
+And paste in:
+```
+[Unit]
+Description=Checks for bluetooth pairing file from rhasspy to start pairing
+
+[Path]
+PathExists=/dev/shm/tmpassistant/bluetoothFile
+
+[Install]
+WantedBy=multi-user.target
+```
+
+And again, for the second, run
+```
+sudo nano /etc/systemd/system/speakerbluetoothpairstop.path
+```
+And paste in:
+```
+[Unit]
+Description=Checks for bluetooth pairing file from rhasspy to stop pairing
+
+[Path]
+PathExists=/dev/shm/tmpassistant/bluetoothFile
+
+[Install]
+WantedBy=multi-user.target
+```
+
+CTRL+X+Y to save and exit.
+
+Now, let's make the script which is used to stop the first service:
+```
+sudo nano ~/assistant/stop-bluetooth-pairing.sh
+```
+and add
+```
+#!/bin/sh
+sleep 30
+systemctl stop speakerbluetoothpair.service
+systemctl reset-failed speakerbluetoothpair.service
+```
+
+And finally run this to add permissions and enable services: 
+```
+sudo chmod +x ~/assistant/stop-bluetooth-pairing.sh
+sudo chmod +x ~/assistant/bt-audio.py
+sudo systemctl enable speakerbluetoothpair.path --now
+sudo systemctl enable speakerbluetoothpairstop.path --now
+```
+
+Then `sudo reboot now` to reboot.
+
+
+**It's a mess, but it works.**
+
+Except for if you re-pair your phone. It likely won't let you re-pair.
+
+To fix that, there's no elegant solution right now. Open the terminal, run `bluetoothctl`, then type `remove `, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
+
+### Optimal.
 
 ## Getting the time
 
@@ -743,165 +898,6 @@ elif intent == "Greet":
 If the intent is **"Greet"**, we make a list of items, each of which is a string. In this case, they're just different ways of greeting the user. Then, we randomly pick one of the items and say t. If you want to add extra things to say, just add a string to the list. 
 
 I at some point intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
-
-## Bluetooth Audio Streaming
-You can use an Echo or Google Home as a bluetooth speaker, why not this?
-
-First, run this (and press yes / y when asked) to install all of the (originally difficult for me to find) dependencies
-
-```
-sudo apt-get install libdbus-glib-1-2 libdbus-glib-1-dev python3-gi python3-gst-1.0
-sudo pip install dbus-python
-```
-
-Then, paste this into your terminal
-```
-sudo hostnamectl --pretty set-hostname ""
-```
-and put what you want the speaker to appear as within the quotes. So, if you put "Issac Bedroom Speaker", it would appear to your phone like this:
-![Issac Bedroom Speaker in Bluetooth settings](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/issacbedroomspeaker.png)
-
-Then, run 
-```
-sudo nano /etc/bluetooth/main.conf
-```
-and go to the `#DiscoverableTimeout` line. Remove the #, and set it to `DiscoverableTimeout = 30`
-
-Then `CTRL+X, Y, ENTER` to save and exit.
-
-Now, run `sudo reboot now` to reboot and apply these changes.
-
-Once you're back in, run this to download the script that makes your Pi visible as a bluetooth speaker
-```
-cd ~/assistant/
-sudo curl -O https://raw.githubusercontent.com/elwint/bt-audio/master/bt-audio.py
-```
-
-Now, run this to install some dependencies and begin editing your intentHandler:
-```
-sudo apt install pulseaudio-module-bluetooth
-sudo nano ~/assistant/profiles/intentHandler
-```
-
-and go to near the bottom, where you'll add another elif statement:
-```
-elif intent == "BluetoothPairing":
-    bleutoothFile = open(bluetoothFilePath, "w") 
-    time.sleep(0.1)
-    bluetoothFile.close()
-    os.remove(bluetoothFilePath)
-    speech("Turning on bluetooth pairing")
-```
-
-Then, go to the `# Set paths` section at the top, and add 
-```
-bluetoothFilePath = tmpDir+"bluetoothFile"
-```
-Save and exit.
-
-Then run this to create a new system service (which will handle the bt-audio script)
-```
-sudo nano /etc/systemd/system/speakerbluetoothpair.service
-```
-and paste in
-```
-[Unit]
-Description=Starts bluetooth pairing script
-
-[Service]
-Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/bt-audio.py
-```
-(replace assistant-main-node with your username if different).
-
-Save and exit.
-
-Then, make practically the same thing by running:
-```
-sudo nano /etc/systemd/system/speakerbluetoothpairstop.service
-```
-and pasting:
-```
-[Unit]
-Description=Stops bluetooth pairing script after 30s
-
-[Service]
-Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/stop-bluetooth-pairing.sh
-```
-(replace assistant-main-node with your username if different). This 2nd service just kills that previous service once it's not needed anymore.
-
-Then, we'll make two more services, which handle *enabling* the previous two. 
-```
-sudo nano /etc/systemd/system/speakerbluetoothpair.path
-```
-And paste in:
-```
-[Unit]
-Description=Checks for bluetooth pairing file from rhasspy to start pairing
-
-[Path]
-PathExists=/dev/shm/tmpassistant/bluetoothFile
-
-[Install]
-WantedBy=multi-user.target
-```
-
-And again, for the second, run
-```
-sudo nano /etc/systemd/system/speakerbluetoothpairstop.path
-```
-And paste in:
-```
-[Unit]
-Description=Checks for bluetooth pairing file from rhasspy to stop pairing
-
-[Path]
-PathExists=/dev/shm/tmpassistant/bluetoothFile
-
-[Install]
-WantedBy=multi-user.target
-```
-
-
-CTRL+X+Y to save and exit.
-
-Now, let's make the script which is used to stop the first service:
-```
-sudo nano ~/assistant/stop-bluetooth-pairing.sh
-```
-and add
-```
-#!/bin/sh
-sleep 30
-systemctl stop speakerbluetoothpair.service
-systemctl reset-failed speakerbluetoothpair.service
-```
-
-And finally run this to add permissions and enable services: 
-```
-sudo chmod +x ~/assistant/stop-bluetooth-pairing.sh
-sudo chmod +x ~/assistant/bt-audio.py
-sudo systemctl enable speakerbluetoothpair.path --now
-sudo systemctl enable speakerbluetoothpairstop.path --now
-```
-
-Then, go to your rhasspy sentences section, and paste this at the bottom:
-```
-[BluetoothPairing]
-turn on bluetooth [pairing]
-```
-
-Then `sudo reboot now` to reboot.
-
-
-**It's a mess, but it works.**
-
-Except for if you re-pair your phone. It likely won't let you re-pair.
-
-To fix that, there's no elegant solution right now. Open the terminal, run `bluetoothctl`, then type `remove `, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
-
-### Optimal.
 
 ## Jellyfin Music Support
 We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
