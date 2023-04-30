@@ -499,15 +499,12 @@ Then `sudo reboot now` to reboot.
 
 This is decision tree with just this:
 ```
+# If the user is asking for bluetooth pairing
 if ("bluetooth" in words) and (("turn" in words) or ("on" in words) or ("pairing" in words)):
   bluetooth_pairing()
 ```
 
-**It's a mess, but it works.**
-
-Except for if you re-pair your phone. It likely won't let you re-pair.
-
-To fix that, there's no elegant solution right now. Open the terminal, run `bluetoothctl`, then type `remove `, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
+If you **unpair** (not just disconnect) your phone, you won't be able to reconnect. To fix that, open the terminal, run `bluetoothctl`, then type `remove `, press tab, and it'll either fill something in, or give you a list of options. If it fills something in, just press enter and you're done. If you've got a list, type the first letter of one, press tab, then enter, and do that for each item in the list.
 
 ### Optimal.
 
@@ -595,26 +592,26 @@ elif ("what" in words) or ("whats" in words) or ("tell" in words):
 Add this elif statement:
 
 ```
-elif intent == "GetDate":
+def get_date():
   months = [" January ", " February ", " March ", " April ", " May ", " June ", " July ", " August ", " September ", " October ", " November ", " December "]
   weekdays = [" Monday ", " Tuesday ", " Wednesday ", " Thursday ", " Friday ", " Saturday ", " Sunday "]
   dayNum = datetime.now().day
   month = months[(datetime.now().month)-1]
   weekday = weekdays[datetime.today().weekday()]
-  speech("Today, it's" + weekday + "the " + str(dayNum) + " of" + month)
+  print(random.choice(currentlyResponse) + weekday + "the " + str(dayNum) + " of" + month)
 ```
 
 We get a number for the day of the month, day of week, and month (so, Jan is 1, Dec is 12), then convert these to words using lists. Then, we speak a sentence which puts it all together.
 
-Go to your Rhasspy sentences section, and add this:
+Ensure `from datetime import datetime` is present (it should be from earlier though).
+
+Here is the decision tree with just this:
 ```
-[GetDate]
-what date [is it]
-whats [the] date
-tell me [the] date
-whats today
-```
-Save and retrain, and it should work.
+# If user is asking for information
+elif ("what" in words) or ("whats" in words) or ("tell" in words):
+  # If the user is asking for the date
+  elif ("date" in words) or ("today" in words) or ("day" in words):
+    get_date()
 
 ## Giving greetings
 
