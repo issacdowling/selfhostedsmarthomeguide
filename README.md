@@ -734,6 +734,283 @@ elif ("light" in words) or ("lights" in words):
           requests.post("http://IP/win&A=" +  str(int(int(words[raw_words.index(word)])*2.55)) )
 ```
 
+## Jellyfin Music Support
+We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
+
+Progress made on this integration happens [here](https://gitlab.com/issacdowling/jellypy).
+
+#### Here is a reminder to myself to make this into a slots program eventually so that it's even more hands-off.
+
+#### Also, authenticating in a way that makes sense will come one day.
+
+But that's not how things are right now, so the setup is weird, but it works.
+
+### Making the slot files
+
+Firstly, we'll make our slots. This is how the voice assistant will understand what words are valid, and luckily, is automated.
+
+Automated once you've added the info from your Jellyfin server manually. So, on your Pi, run this:
+
+```
+cd ~/assistant/profiles/en/slots/
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/create-jf-slots.py
+sudo nano create-jf-slots.py
+```
+
+Next, change the contents of `jellyfinurl` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the `:portnumber` at the end.
+
+Then, go to your Jellyfin server's web client, then click the profile icon in the top right, dashboard, then API keys on the left bar. Add one, pick whatever name you want, and copy that key to your `jellyfinauth` variable. 
+
+Next, press F12 to open your browser's dev tools, click the network tab, and enter `userid` into the search bar, then refresh the page. Hopefully you'll see something like this:
+
+![Firefox dev tools showing URL with userid](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/devtoolsuserid.png)
+
+Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for `userid` (remembering not to include the `&` symbol which will be at the end, and paste it into the `userid` section in the python script.
+
+Then, save and exit by doing CTRL+X, Y, ENTER.
+
+Now, you can just run `sudo python create-jf-slots.py`. We need `sudo` because otherwise it won't have permissions to create its files.
+
+### Getting the songs to play
+
+In this section, we'll add to the intentHandler, allowing it to grab the IDs of the songs you want to play, and shuffle them if necessary.
+
+First, add these sentences:
+```
+[JellyfinPlay]
+albums = ($albums){itemid}
+albumartists = ($albumartists){itemid}
+playlists = ($playlists){itemid}
+songs = ($songs){itemid}
+(play | shuffle){ps} my{q} (favourites){itemid}
+(play | shuffle){ps} the album{q} <albums>
+(play | shuffle){ps} the artist{q} <albumartists>
+(play | shuffle){ps} the playlist{q} <playlists>
+play{ps} [the] song{q} <songs>
+```
+
+Then, paste this elif statement at the end of the intenthandler:
+```
+elif intent == "JellyfinPlay":
+  # Set Variables
+  jellyfinurl, jellyfinauth, userid = "https://", "", ""
+  headers = {"X-Emby-Token": jellyfinauth,}
+  songsList = []
+  ps, itemid, q = o["slots"]["ps"], o["slots"]["itemid"], o["slots"]["q"]
+  # Check if song currently playing. Stop it if True
+  if os.path.exists(currentMediaPath):
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
+    time.sleep(1)
+
+  # If not just an individual song, get the list of songs and their info. 
+  if not q == "song":
+    if itemid == "favourites":
+      get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
+    else:
+      get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
+    receivedJson = json.loads(get.text)
+    songs = receivedJson["Items"]
+  # If individual song, just get one song's info
+  else:
+    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
+    songs = [json.loads(get.text)]
+
+  for song in songs:
+    songsList.append({"Name": song["Name"], "Id" : song["Id"]})
+
+  # If user asked for shuffle (ps stands for play/shuffle), shuffle.
+  if ps == "shuffle":
+    random.shuffle(songsList)
+
+  #Initialise song to zero, and begin loop for every song in the list
+  songPos = 0
+  for song in songsList:
+    if os.path.exists(jellyfinStopFilePath):
+      break
+    currentSong = open(currentMediaPath, "w")
+    currentSong.write("2")
+    currentSong.close()
+    jellyfinPlay = open(jellyfinPlayFilePath, "w")
+    jellyfinPlay.write(songsList[songPos]["Id"])
+    jellyfinPlay.close()
+    # Loop which only stops once currentMedia deleted (which signifies the end of the song). After this, increment song and loop back.
+    while os.path.exists(currentMediaPath):
+      if os.path.exists(jellyfinStopFilePath):
+        break
+    songPos += 1
+```
+Remember to add the server URL, auth, and userid.
+
+This script first checks if a song is currently playing, and stops if so. Then, if you're not asking for an individual song, it checks if you asked for favourites. If you did, it loads your favourites into a list. If you didn't, it will try to load all songs within the requested album/playlist/artist into the list instead. If you just asked for one song, we load that into the list instead. Then, we shuffle if necessary, and initialise a loop, where the song is downloaded, the playback script (which we will soon create) is requested to start, and this loop only restarts once the previous song is done.
+
+### To add playback support
+
+Now, we'll make another script. Just like with bluetooth support, we can't run everything in the docker container, so we'll be making a system service that is *activated* by the intentHandler.
+
+First, install miniaudio using pip
+
+```
+sudo apt install python3-mpv
+```
+
+Then, make a systemd service which checks for the file made by the intenthandler by running this:
+```
+sudo nano /etc/systemd/system/jellyfinSongPlay.path
+```
+then paste:
+```
+[Unit]
+Description=Checks for jellyfin play file, and activates the service which runs script which handles playback
+
+[Path]
+PathExists=/dev/shm/tmpassistant/jellyfinPlay
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+Save and exit, then run:
+```
+sudo nano /etc/systemd/system/jellyfinSongPlay.service
+```
+and paste:
+```
+[Unit]
+Description=Activates script which handles playback for jellyfin song
+
+[Service]
+Type=oneshot
+ExecStart=/home/assistant-main-node/assistant/jellyfinPlaySong.py
+
+[Install]
+WantedBy=multi-user.target
+```
+Now make that script by running:
+```
+cd ~/assistant/
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/jellyfinPlaySong.py
+sudo chmod +x jellyfinPlaySong.py
+sudo nano ~/assistant/jellyfinPlaySong.py
+```
+
+And remember to add the URL, authtoken, and user id to the variables at the top, then CTRL+X, Y, Enter to save.
+
+This script handles playback (including pausing, stopping, and resuming), as well as getting info for the currently playing song incase we want it for later.
+
+#### Now enable it all
+by running
+```
+sudo systemctl enable jellyfinSongPlay.path --now
+sudo chmod +x ~/assistant/jellyfinPlaySong.py
+```
+
+### Pause, stop, and resume
+
+First, go to the Rhasspy web UI, sentences, and add this:
+```
+[JellyfinPlaybackCtrl]
+(stop | pause | unpause | continue | resume){playback} [the] (song | music)
+```
+
+Now, add this to the bottom of your intentHandler:
+```
+elif intent == "JellyfinPlaybackCtrl":
+  if not os.path.exists(currentMediaPath):
+    speech("No songs are playing")
+  playback = o["slots"]["playback"]
+  if playback == "continue" or playback == "resume" or playback == "unpause":
+    jellyfinResume = open(jellyfinResumeFilePath, "w")
+    jellyfinResume.close()
+  if playback == "pause":
+    jellyfinPause = open(jellyfinPauseFilePath, "w")
+    jellyfinPause.close()
+  if playback == "stop":
+    jellyfinStop = open(jellyfinStopFilePath, "w")
+    jellyfinStop.close()
+```
+
+This bit of code makes a file to represent you wanting to *play*, *pause*, or *resume* the music, which is then detected and handled by the playback script.
+
+#### And, you can add `open(jellyfinStopFilePath, "w")` to your "GenericStop" intent too.
+
+Then, in your `# Set paths` section, add these:
+```
+jellyfinResumeFilePath = tmpDir+"jellyfinResume"
+jellyfinStopFilePath = tmpDir+"jellyfinStop"
+jellyfinPauseFilePath = tmpDir+"jellyfinPause"
+```
+Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
+
+I also suggest changing the if statement at the start of the `jellyfinPlaySong` section. Instead of exiting if we've already got something playing, we'll just *stop* what's already playing so we can continue.
+
+So, replace this:
+```
+if os.path.exists(currentMediaPath):
+  exit("Already playing")
+```
+with this:
+```
+if os.path.exists(currentMediaPath):
+  jellyfinStop = open(jellyfinStopFilePath, "w")
+  jellyfinStop.close()
+  time.sleep(2)
+```
+
+### Getting currently playing song
+Although probably not the most useful while playing a single song, we'll add this feature now so we have it later.
+
+In the code previously added, we're already storing a lot of info about the currently playing song in RAM. All we need is to specify a way of accessing it. Although for future use (potentially in a UI? not sure) we've got lots of info available (release date, file format, bitrate, etc), all I want is the name and artist. I want to say "what song is this?" - or something similar - and for the assistant to respond: "This is <songname> by <artistname>"
+    
+The file with this info is called "songInfoFile".
+    
+First, we'll add this sentence to Rhasspy:
+```
+[JFGetPlayingMediaName]
+what song [is] [(this | playing | on)]
+whats the name of [this] song
+whats currently playing
+whats playing right now
+```
+Then, we can add this elif statement to the intentHandler:
+```
+elif intent == "JFGetPlayingMediaName":
+  if not os.path.exists(currentMediaPath):
+    speech("No songs are playing")
+  song_info = eval(open(songInfoFilePath, 'r').read())
+  speech("This is " + song_info["Name"] + " by " + song_info["AlbumArtist"])
+```
+    
+And add this to our ```# Set Paths``` section
+```
+songInfoFilePath = tmpDir+"songInfoFile"
+```
+    
+It'll now read that file (which was created by the playback script, grabbing the info from your Jellyfin server using the ID of the song), separate out the name and artist, then say them in a sentence.
+
+#### Adding ability to skip.
+    
+Add this sentence:
+```
+[JellyfinSkipSong]
+(skip | next) [the] (song | track | music)
+```
+
+Then, we'll add this elif statement, which makes a skip file. It'll work like the stop file used to, except it ***won't*** tell our song-queue to stop too:
+```
+elif intent == "JellyfinSkipSong":
+  if not os.path.exists(currentMediaPath):
+    speech("No songs are playing")
+  jellyfinSkipSong = open(workingDir + "tmp/jellyfinSkipSong", "w")
+  jellyfinSkipSong.close()
+```
+
+And now, you should be able to skip song.
+
+This works because we're basically simulating the song having finished, but not also stopping the queue program.
+
 
 ## Setting timers
 Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
@@ -1391,285 +1668,6 @@ elif intent == "generic_stop":
   stop = requests.post(webserver_url + "/timer_stop").text
 ```
 As you can see, we're just stopping the timer right now, but the point of this intent is that we'll add anything else that can be stopped here too. This'll be mentioned in the relevant sections. For now, you can save and exit.
-
-## Jellyfin Music Support
-We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
-
-Progress made on this integration happens [here](https://gitlab.com/issacdowling/jellypy).
-
-#### Here is a reminder to myself to make this into a slots program eventually so that it's even more hands-off.
-
-#### Also, authenticating in a way that makes sense will come one day.
-
-But that's not how things are right now, so the setup is weird, but it works.
-
-### Making the slot files
-
-Firstly, we'll make our slots. This is how the voice assistant will understand what words are valid, and luckily, is automated.
-
-Automated once you've added the info from your Jellyfin server manually. So, on your Pi, run this:
-
-```
-cd ~/assistant/profiles/en/slots/
-curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/create-jf-slots.py
-sudo nano create-jf-slots.py
-```
-
-Next, change the contents of `jellyfinurl` to the address that you access your jellyfin server from. It should appear just like it does in your browser, including **https://** and (if applicable) the `:portnumber` at the end.
-
-Then, go to your Jellyfin server's web client, then click the profile icon in the top right, dashboard, then API keys on the left bar. Add one, pick whatever name you want, and copy that key to your `jellyfinauth` variable. 
-
-Next, press F12 to open your browser's dev tools, click the network tab, and enter `userid` into the search bar, then refresh the page. Hopefully you'll see something like this:
-
-![Firefox dev tools showing URL with userid](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/devtoolsuserid.png)
-
-Right click one of the options, copy the URL, then paste it into your address bar. Copy out the value for `userid` (remembering not to include the `&` symbol which will be at the end, and paste it into the `userid` section in the python script.
-
-Then, save and exit by doing CTRL+X, Y, ENTER.
-
-Now, you can just run `sudo python create-jf-slots.py`. We need `sudo` because otherwise it won't have permissions to create its files.
-
-### Getting the songs to play
-
-In this section, we'll add to the intentHandler, allowing it to grab the IDs of the songs you want to play, and shuffle them if necessary.
-
-First, add these sentences:
-```
-[JellyfinPlay]
-albums = ($albums){itemid}
-albumartists = ($albumartists){itemid}
-playlists = ($playlists){itemid}
-songs = ($songs){itemid}
-(play | shuffle){ps} my{q} (favourites){itemid}
-(play | shuffle){ps} the album{q} <albums>
-(play | shuffle){ps} the artist{q} <albumartists>
-(play | shuffle){ps} the playlist{q} <playlists>
-play{ps} [the] song{q} <songs>
-```
-
-Then, paste this elif statement at the end of the intenthandler:
-```
-elif intent == "JellyfinPlay":
-  # Set Variables
-  jellyfinurl, jellyfinauth, userid = "https://", "", ""
-  headers = {"X-Emby-Token": jellyfinauth,}
-  songsList = []
-  ps, itemid, q = o["slots"]["ps"], o["slots"]["itemid"], o["slots"]["q"]
-  # Check if song currently playing. Stop it if True
-  if os.path.exists(currentMediaPath):
-    jellyfinStop = open(jellyfinStopFilePath, "w")
-    jellyfinStop.close()
-    time.sleep(1)
-
-  # If not just an individual song, get the list of songs and their info. 
-  if not q == "song":
-    if itemid == "favourites":
-      get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&Filters=IsFavorite&IncludeItemTypes=Audio", headers = headers)
-    else:
-      get = requests.get(jellyfinurl+"/Users/"+userid+"/Items?Recursive=true&IncludeItemTypes=Audio&parentId=" + itemid, headers = headers)
-    receivedJson = json.loads(get.text)
-    songs = receivedJson["Items"]
-  # If individual song, just get one song's info
-  else:
-    get = requests.get(jellyfinurl+"/Users/"+userid+"/Items/" + itemid, headers = headers)
-    songs = [json.loads(get.text)]
-
-  for song in songs:
-    songsList.append({"Name": song["Name"], "Id" : song["Id"]})
-
-  # If user asked for shuffle (ps stands for play/shuffle), shuffle.
-  if ps == "shuffle":
-    random.shuffle(songsList)
-
-  #Initialise song to zero, and begin loop for every song in the list
-  songPos = 0
-  for song in songsList:
-    if os.path.exists(jellyfinStopFilePath):
-      break
-    currentSong = open(currentMediaPath, "w")
-    currentSong.write("2")
-    currentSong.close()
-    jellyfinPlay = open(jellyfinPlayFilePath, "w")
-    jellyfinPlay.write(songsList[songPos]["Id"])
-    jellyfinPlay.close()
-    # Loop which only stops once currentMedia deleted (which signifies the end of the song). After this, increment song and loop back.
-    while os.path.exists(currentMediaPath):
-      if os.path.exists(jellyfinStopFilePath):
-        break
-    songPos += 1
-```
-Remember to add the server URL, auth, and userid.
-
-This script first checks if a song is currently playing, and stops if so. Then, if you're not asking for an individual song, it checks if you asked for favourites. If you did, it loads your favourites into a list. If you didn't, it will try to load all songs within the requested album/playlist/artist into the list instead. If you just asked for one song, we load that into the list instead. Then, we shuffle if necessary, and initialise a loop, where the song is downloaded, the playback script (which we will soon create) is requested to start, and this loop only restarts once the previous song is done.
-
-### To add playback support
-
-Now, we'll make another script. Just like with bluetooth support, we can't run everything in the docker container, so we'll be making a system service that is *activated* by the intentHandler.
-
-First, install miniaudio using pip
-
-```
-sudo apt install python3-mpv
-```
-
-Then, make a systemd service which checks for the file made by the intenthandler by running this:
-```
-sudo nano /etc/systemd/system/jellyfinSongPlay.path
-```
-then paste:
-```
-[Unit]
-Description=Checks for jellyfin play file, and activates the service which runs script which handles playback
-
-[Path]
-PathExists=/dev/shm/tmpassistant/jellyfinPlay
-
-[Service]
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-```
-Save and exit, then run:
-```
-sudo nano /etc/systemd/system/jellyfinSongPlay.service
-```
-and paste:
-```
-[Unit]
-Description=Activates script which handles playback for jellyfin song
-
-[Service]
-Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/jellyfinPlaySong.py
-
-[Install]
-WantedBy=multi-user.target
-```
-Now make that script by running:
-```
-cd ~/assistant/
-curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/jellyfinPlaySong.py
-sudo chmod +x jellyfinPlaySong.py
-sudo nano ~/assistant/jellyfinPlaySong.py
-```
-
-And remember to add the URL, authtoken, and user id to the variables at the top, then CTRL+X, Y, Enter to save.
-
-This script handles playback (including pausing, stopping, and resuming), as well as getting info for the currently playing song incase we want it for later.
-
-#### Now enable it all
-by running
-```
-sudo systemctl enable jellyfinSongPlay.path --now
-sudo chmod +x ~/assistant/jellyfinPlaySong.py
-```
-
-### Pause, stop, and resume
-
-First, go to the Rhasspy web UI, sentences, and add this:
-```
-[JellyfinPlaybackCtrl]
-(stop | pause | unpause | continue | resume){playback} [the] (song | music)
-```
-
-Now, add this to the bottom of your intentHandler:
-```
-elif intent == "JellyfinPlaybackCtrl":
-  if not os.path.exists(currentMediaPath):
-    speech("No songs are playing")
-  playback = o["slots"]["playback"]
-  if playback == "continue" or playback == "resume" or playback == "unpause":
-    jellyfinResume = open(jellyfinResumeFilePath, "w")
-    jellyfinResume.close()
-  if playback == "pause":
-    jellyfinPause = open(jellyfinPauseFilePath, "w")
-    jellyfinPause.close()
-  if playback == "stop":
-    jellyfinStop = open(jellyfinStopFilePath, "w")
-    jellyfinStop.close()
-```
-
-This bit of code makes a file to represent you wanting to *play*, *pause*, or *resume* the music, which is then detected and handled by the playback script.
-
-#### And, you can add `open(jellyfinStopFilePath, "w")` to your "GenericStop" intent too.
-
-Then, in your `# Set paths` section, add these:
-```
-jellyfinResumeFilePath = tmpDir+"jellyfinResume"
-jellyfinStopFilePath = tmpDir+"jellyfinStop"
-jellyfinPauseFilePath = tmpDir+"jellyfinPause"
-```
-Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
-
-I also suggest changing the if statement at the start of the `jellyfinPlaySong` section. Instead of exiting if we've already got something playing, we'll just *stop* what's already playing so we can continue.
-
-So, replace this:
-```
-if os.path.exists(currentMediaPath):
-  exit("Already playing")
-```
-with this:
-```
-if os.path.exists(currentMediaPath):
-  jellyfinStop = open(jellyfinStopFilePath, "w")
-  jellyfinStop.close()
-  time.sleep(2)
-```
-
-### Getting currently playing song
-Although probably not the most useful while playing a single song, we'll add this feature now so we have it later.
-
-In the code previously added, we're already storing a lot of info about the currently playing song in RAM. All we need is to specify a way of accessing it. Although for future use (potentially in a UI? not sure) we've got lots of info available (release date, file format, bitrate, etc), all I want is the name and artist. I want to say "what song is this?" - or something similar - and for the assistant to respond: "This is <songname> by <artistname>"
-    
-The file with this info is called "songInfoFile".
-    
-First, we'll add this sentence to Rhasspy:
-```
-[JFGetPlayingMediaName]
-what song [is] [(this | playing | on)]
-whats the name of [this] song
-whats currently playing
-whats playing right now
-```
-Then, we can add this elif statement to the intentHandler:
-```
-elif intent == "JFGetPlayingMediaName":
-  if not os.path.exists(currentMediaPath):
-    speech("No songs are playing")
-  song_info = eval(open(songInfoFilePath, 'r').read())
-  speech("This is " + song_info["Name"] + " by " + song_info["AlbumArtist"])
-```
-    
-And add this to our ```# Set Paths``` section
-```
-songInfoFilePath = tmpDir+"songInfoFile"
-```
-    
-It'll now read that file (which was created by the playback script, grabbing the info from your Jellyfin server using the ID of the song), separate out the name and artist, then say them in a sentence.
-
-#### Adding ability to skip.
-    
-Add this sentence:
-```
-[JellyfinSkipSong]
-(skip | next) [the] (song | track | music)
-```
-
-Then, we'll add this elif statement, which makes a skip file. It'll work like the stop file used to, except it ***won't*** tell our song-queue to stop too:
-```
-elif intent == "JellyfinSkipSong":
-  if not os.path.exists(currentMediaPath):
-    speech("No songs are playing")
-  jellyfinSkipSong = open(workingDir + "tmp/jellyfinSkipSong", "w")
-  jellyfinSkipSong.close()
-```
-
-And now, you should be able to skip song.
-
-This works because we're basically simulating the song having finished, but not also stopping the queue program.
-    
-
 
 ## Finding days until
 If you want to be able to find the days until (or since) a date, this is the code for you.
