@@ -429,6 +429,7 @@ eveningResponse = (" in the afternoon", " in the evening", " PM")
 
 text = sys.stdin.read().strip().lower()
 words = [re.sub(r"\W", "", word) for word in text.split()]
+raw_words = text.split()
 ```
 CTRL+X, Y, ENTER to save and exit.
 
