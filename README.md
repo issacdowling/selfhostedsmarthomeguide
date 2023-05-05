@@ -741,14 +741,14 @@ We can talk to the Jellyfin API to get music from a server, and integrate it wit
 
 But that's not how things are right now, so the setup is weird, but it works.
 
-### Making the slot files
+### Downloading an index of your library.
 
-Firstly, we'll make our slots. This is how the voice assistant will understand what words are valid, and luckily, is automated.
+Jellyfin's API supports search, but voice recognition isn't perfect, and Jellyfin's search doesn't seem to be fuzzy at all, so I'll have to search a local index instead.
 
-Automated once you've added the info from your Jellyfin server manually. So, on your Pi, run this:
+Run this:
 
 ```
-cd ~/assistant/profiles/en/slots/
+cd ~/rhasspy3/resources/code/
 curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/create-jf-slots.py
 sudo nano create-jf-slots.py
 ```
