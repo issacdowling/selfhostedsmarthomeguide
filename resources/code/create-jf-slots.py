@@ -6,7 +6,6 @@ import re
 jellyfinurl = ""
 jellyfinauth = ""
 userId = ""
-itemId = ""
 headers = {"X-Emby-Token": jellyfinauth,}
 
 # Function for getting list of artists
