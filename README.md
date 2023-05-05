@@ -647,6 +647,51 @@ elif ("hi" in words) or ("hello" in words) or ("hey" in words):
   generic_greet()
 ```
 
+## Volume control
+Setting my speaker any below 65% is entirely inaudible, so we'll add support for setting **your own** "boundaries" for volume. In my case, I'd want "0%" to actually mean 65%. This obviously isn't necessary for everyone, and shouldn't be for me in the future either, but is useful for those dealing with separate amps and stuff.
+
+First, we'll get the sound file we need into the right place.
+
+```
+mkdir -p ~/rhasspy3/resources/sounds/
+cd ~/rhasspy3/resources/sounds/
+sudo curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/stoplistening.wav
+mv stoplistening.wav volume_change.wav
+cd ~/rhasspy3
+```
+
+and then this to your intentHandler:
+```
+def set_volume(percentage):
+  audioDevice = "Master"
+  minBound, maxBound = 65, 100
+  percentage = int(minBound+int((percentage)*((maxBound-minBound)/100)))
+  subprocess.call(["amixer", "sset", audioDevice, str(percentage) + "%"], stdout=subprocess.DEVNULL)
+  subprocess.call(["aplay", "/home/assistant1/rhasspy3/resources/sounds/volume_change.wav"], stdout=subprocess.DEVNULL)
+```
+
+You'll also need to add `import subprocess` to the top of the intent handler.
+
+This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.Just run `amixer`, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
+
+![Amixer devices](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/amixer-devices.png)
+
+Here, that's `Headphone`.  If yours is different, just change it in the python script.
+
+This is the decision tree with only this section:
+```
+# If the user is telling something to happen
+elif ("set" in words) or ("make" in words):
+  ## If the user is setting the volume
+  if ("volume" in words) or ("speakers" in words):
+    #Find the percentage, send that over to the set_volume function.
+    for word in raw_words:
+      if "%" in word:
+        # Get the index of the percentage value, then get that from the filtered words for just the numerical value.
+        # Convert it to int, then call function
+        set_volume(int(words[raw_words.index(word)]))
+```
+
 ## Setting timers
 Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
 
@@ -1581,34 +1626,7 @@ And now, you should be able to skip song.
 
 This works because we're basically simulating the song having finished, but not also stopping the queue program.
     
-## Volume control
-Setting my speaker any below 65% is entirely inaudible, so we'll add support for setting **your own** "boundaries" for volume. In my case, I'd want "0%" to actually mean 65%. This obviously isn't necessary for everyone, and shouldn't be for me in the future either, but is useful for those dealing with separate amps and stuff.
 
-First, we'll get the sound file we need into the right place.
-
-```
-mkdir -p ~/rhasspy3/resources/sounds/
-cd ~/rhasspy3/resources/sounds/
-sudo curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/stoplistening.wav
-mv stoplistening.wav volume_change.wav
-cd ~/rhasspy3
-```
-
-and then this to your intentHandler:
-```
-def set_volume(volume):
-  audioDevice = "Headphone"
-  percentage = o["slots"]["percentage"]
-  minBound, maxBound = 0, 100
-  percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
-  call(["amixer", "sset", audioDevice, str(percentage) + "%"])
-  call(["aplay", "/home/assistant1/rhasspy3/resources/sounds/volume_change.wav"])
-```
-This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.Just run `amixer`, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
-
-![Amixer devices](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/amixer-devices.png)
-
-Here, that's `Headphone`.  If yours is different, just change it in the python script.
 
 ## Finding days until
 If you want to be able to find the days until (or since) a date, this is the code for you.
