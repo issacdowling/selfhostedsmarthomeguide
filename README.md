@@ -737,10 +737,6 @@ elif ("light" in words) or ("lights" in words):
 ## Jellyfin Music Support
 We can talk to the Jellyfin API to get music from a server, and integrate it with our speech-to-text so that all artists, songs, and albums are recognised.
 
-Progress made on this integration happens [here](https://gitlab.com/issacdowling/jellypy).
-
-#### Here is a reminder to myself to make this into a slots program eventually so that it's even more hands-off.
-
 #### Also, authenticating in a way that makes sense will come one day.
 
 But that's not how things are right now, so the setup is weird, but it works.
