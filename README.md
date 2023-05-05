@@ -630,14 +630,21 @@ and remember to save and retrain.
 It should work immediately, since it was part of the example we pasted in earlier, however we'll look at the code anyway.
 
 ```
-elif intent == "Greet":
-    replies = ['Hi!', 'Hello!', 'Hey there!', 'Greetings.']
-    speech(random.choice(replies))
+def generic_greet():
+  replies = ["Hi!", "Hello!", "Hey there!", "Greetings.", "Hola.", "Good day."]
+  print(random.choice(replies))
 ```
 
 If the intent is **"Greet"**, we make a list of items, each of which is a string. In this case, they're just different ways of greeting the user. Then, we randomly pick one of the items and say t. If you want to add extra things to say, just add a string to the list. 
 
 I at some point intend to make it aware of the time so it can correct you if you mistakenly say **Good Morning** in the **Evening** (or vice versa).
+
+This is the decision tree with just this:
+```
+#If user is generically saying hi
+elif ("hi" in words) or ("hello" in words) or ("hey" in words):
+  generic_greet()
+```
 
 ## Setting timers
 Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
@@ -1574,63 +1581,33 @@ And now, you should be able to skip song.
 This works because we're basically simulating the song having finished, but not also stopping the queue program.
     
 ## Volume control
-For now, this is more complex than I'd like (if you're in my situation), however definitely workable. With the tools we've got, setting my speaker any below 65% is entirely inaudible, so we'll add support for setting **your own** "boundaries" for volume. In my case, I'd want "0%" to actually mean 65%. This obviously isn't necessary for everyone, and shouldn't be for me in the future either.
-    
-After doing some looking, I couldn't change the volume of audio from the host OS, since Rhasspy's docker container has separate access to audio devices. But that's fine, because our python script runs within that docker container, so we can just call `amixer` and politely ask for a volume change.
-    
-So, add this to your sentences:
+Setting my speaker any below 65% is entirely inaudible, so we'll add support for setting **your own** "boundaries" for volume. In my case, I'd want "0%" to actually mean 65%. This obviously isn't necessary for everyone, and shouldn't be for me in the future either, but is useful for those dealing with separate amps and stuff.
+
+First, we'll get the sound file we need into the right place.
+
 ```
-[ChangeVolume]
-(set | change) [the] volume [to] (0..100){percentage} [percent]
+mkdir -p ~/rhasspy3/resources/sounds/
+cd ~/rhasspy3/resources/sounds/
+sudo curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/stoplistening.wav
+mv stoplistening.wav volume_change.wav
+cd ~/rhasspy3
 ```
+
 and then this to your intentHandler:
 ```
-elif intent == "ChangeVolume":
+def set_volume(volume):
   audioDevice = "Headphone"
   percentage = o["slots"]["percentage"]
   minBound, maxBound = 0, 100
   percentage = int(minBound+(percentage*((maxBound-minBound)/100)))
   call(["amixer", "sset", audioDevice, str(percentage) + "%"])
+  call(["aplay", "/home/assistant1/rhasspy3/resources/sounds/volume_change.wav"])
 ```
-This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.
-    
-First, run this:
-```
-docker exec -it rhasspy bash
-```
-You're now inside Rhasspy.
-    
-From here, just run `amixer`, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
+This *might* just work immediately for you, however if not, it's likely the audio device that's wrong. We can find the right one like this.Just run `amixer`, and you'll see a list of devices (or just one, like me for now). We just care about finding the name of the right one. 
 
 ![Amixer devices](https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/images/amixer-devices.png)
 
-Here, that's `Headphone`.  If yours is different, just change it in the python script (and if you think you're stuck inside Rhasspy, you can leave it by running `exit`)
-    
-### Setting custom boundaries
-    
-Sometimes, we want custom minimum/maximum audio levels. If you do, all we need to do is change the numbers on this line:
-```
-minBound, maxBound = 0, 100
-```
-
-So, if I have a minBound of 60 and a maxBound of 80, then ask for 50% volume, it'll give me 70% "real" volume. This won't be useful for everyone, but I needed it, and it works.
-
-### Adding a confirmation sound.
-
-You might want to be given a general idea for how loud you've set your volume. This is as simple as adding one line to the end of this section:
-```
-call(["aplay", "/profiles/yourfile.wav"])
-```
-In my case, I'll be repurposing the sounds that I made which were originally intended for the "start/stop listening" sounds. If you want to use them, run this:
-```
-cd ~/assistant/profiles
-sudo curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/sounds/stoplistening.wav
-sudo mv stoplistening.wav testSound.wav
-```
-and obviously change that line to be
-```
-call(["aplay", "/profiles/testSound.wav"])
-```
+Here, that's `Headphone`.  If yours is different, just change it in the python script.
 
 ## Finding days until
 If you want to be able to find the days until (or since) a date, this is the code for you.
