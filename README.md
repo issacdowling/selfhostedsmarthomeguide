@@ -692,7 +692,7 @@ elif ("set" in words) or ("make" in words):
         set_volume(int(words[raw_words.index(word)]))
 ```
 
-# Light controls
+# Smart Home controls
 
 For all of this, make sure `import requests` is at the top of your intent handler.
 
