@@ -692,6 +692,49 @@ elif ("set" in words) or ("make" in words):
         set_volume(int(words[raw_words.index(word)]))
 ```
 
+# Light controls
+
+For all of this, make sure `import requests` is at the top of your intent handler.
+
+Also, do `~/rhasspy3/.venv/bin/pip install colour`, which will let us turn human colours into rgb values more easily.
+
+## WLED
+
+#### This section is for controlling WLED Lights:
+
+(for now at least), I've not made a function for this. Here's an example of the decision tree with just this, using two lights.:
+
+```
+# If the user wants to control lights
+elif ("light" in words) or ("lights" in words):
+  if ("door" in words):
+    if ("on" in words):
+      requests.post("http://IP/win&T=1")
+    elif ("off" in words):
+      requests.post("http://IP/win&T=0")
+    #elif ADD COLOUR CHECKING HERE:
+    else:
+      for word in raw_words:
+        if "%" in word:
+          # Get the index of the percentage value, then get that from the filtered words for just the numerical value.
+          # Convert it to int, normalise from 0-100 to 0-255, then POST
+          requests.post("http://IP/win&A=" +  str(int(int(words[raw_words.index(word)])*2.55)) )
+
+  elif ("bed" in words) or ("bedside" in words):
+    if ("on" in words):
+      requests.post("http://IP/win&T=1")
+    elif ("off" in words):
+      requests.post("http://IP/win&T=0")
+    #elif ADD COLOUR CHECKING HERE:
+    else:
+      for word in raw_words:
+        if "%" in word:
+          # Get the index of the percentage value, then get that from the filtered words for just the numerical value.
+          # Convert it to int, normalise from 0-100 to 0-255, then POST
+          requests.post("http://IP/win&A=" +  str(int(int(words[raw_words.index(word)])*2.55)) )
+```
+
+
 ## Setting timers
 Unlike when I originally wrote this, I now have a system for handling syncing timers with Blueberry and other devices. If you don't care, this'll work standalone, you don't need to mess with anything, but if you're interested, [here's the link with more details](https://gitlab.com/issacdowling/selfhosted-synced-stuff).
 
