@@ -710,28 +710,34 @@ elif ("light" in words) or ("lights" in words):
   if ("door" in words):
     if ("on" in words):
       requests.post("http://IP/win&T=1")
+      print(random.choice(agreeResponse) + " I'll turn on the door light")
     elif ("off" in words):
       requests.post("http://IP/win&T=0")
+      print(random.choice(agreeResponse) + " I'll turn off the door light")
     #elif ADD COLOUR CHECKING HERE:
     else:
       for word in raw_words:
         if "%" in word:
           # Get the index of the percentage value, then get that from the filtered words for just the numerical value.
-          # Convert it to int, normalise from 0-100 to 0-255, then POST
+          # Convert it to int, then call function
           requests.post("http://IP/win&A=" +  str(int(int(words[raw_words.index(word)])*2.55)) )
-
+          print(random.choice(agreeResponse) + " I'll set the door light to " + word)
   elif ("bed" in words) or ("bedside" in words):
     if ("on" in words):
       requests.post("http://IP/win&T=1")
+      print(random.choice(agreeResponse) + " I'll turn on the bedside light")
     elif ("off" in words):
       requests.post("http://IP/win&T=0")
+      print(random.choice(agreeResponse) + " I'll turn off the bedside light")
     #elif ADD COLOUR CHECKING HERE:
     else:
       for word in raw_words:
         if "%" in word:
           # Get the index of the percentage value, then get that from the filtered words for just the numerical value.
-          # Convert it to int, normalise from 0-100 to 0-255, then POST
+          # Convert it to int, then call function
           requests.post("http://IP/win&A=" +  str(int(int(words[raw_words.index(word)])*2.55)) )
+          print(random.choice(agreeResponse) + " I'll set the bedside light to " + word)
+
 ```
 
 ## Jellyfin Music Support
@@ -748,7 +754,8 @@ Jellyfin's API supports search, but voice recognition isn't perfect, and Jellyfi
 Run this:
 
 ```
-cd ~/rhasspy3/resources/code/
+mkdir -p ~/rhasspy3/jellyfin/
+cd ~/rhasspy3/jellyfin/
 curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/create-jf-slots.py
 sudo nano create-jf-slots.py
 ```
@@ -765,29 +772,19 @@ Right click one of the options, copy the URL, then paste it into your address ba
 
 Then, save and exit by doing CTRL+X, Y, ENTER.
 
-Now, you can just run `sudo python create-jf-slots.py`. We need `sudo` because otherwise it won't have permissions to create its files.
+Now, you can just run `python create-jf-slots.py`.
 
 ### Getting the songs to play
 
 In this section, we'll add to the intentHandler, allowing it to grab the IDs of the songs you want to play, and shuffle them if necessary.
+ 
+Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz` to install the library we'll be using for searching.
 
-First, add these sentences:
-```
-[JellyfinPlay]
-albums = ($albums){itemid}
-albumartists = ($albumartists){itemid}
-playlists = ($playlists){itemid}
-songs = ($songs){itemid}
-(play | shuffle){ps} my{q} (favourites){itemid}
-(play | shuffle){ps} the album{q} <albums>
-(play | shuffle){ps} the artist{q} <albumartists>
-(play | shuffle){ps} the playlist{q} <playlists>
-play{ps} [the] song{q} <songs>
-```
+
 
 Then, paste this elif statement at the end of the intenthandler:
 ```
-elif intent == "JellyfinPlay":
+def JellyfinPlay():
   # Set Variables
   jellyfinurl, jellyfinauth, userid = "https://", "", ""
   headers = {"X-Emby-Token": jellyfinauth,}
