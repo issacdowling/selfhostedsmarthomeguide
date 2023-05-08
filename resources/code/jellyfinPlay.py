@@ -1,9 +1,9 @@
-#!/usr/bin/python3
 import time
 import os
 import requests
 import json
 import mpv
+import sys
 
 def getSongDetails(userid,itemid,apikey):
   headers = {"X-Emby-Token": apikey,}
@@ -17,7 +17,7 @@ def getSongDetails(userid,itemid,apikey):
 tmpDir = "/dev/shm/tmpassistant/"
 jellyfinurl, jellyfinauth, userid, deviceid, playsessionid = "https:", "", "", "123", "323235546"
 
-itemid = open(tmpDir + "jellyfinPlay", "r").read()
+itemid = sys.argv[1]
 
 with open(tmpDir + "songInfoFile", 'w') as song_info:
   song_info.write(str(getSongDetails(userid, itemid, jellyfinauth)))

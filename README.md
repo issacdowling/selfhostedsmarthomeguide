@@ -785,8 +785,6 @@ In this section, we'll add to the intentHandler, allowing it to grab the IDs of 
  
 Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz python-Levenshtein` to install the library we'll be using for searching.
 
-
-
 Then, paste this elif statement at the end of the intenthandler:
 ```
 def JellyfinPlay():
@@ -844,6 +842,7 @@ Also, at the top of your intent handler, ensure you've got the follwing:
 ```                                            
 from thefuzz import fuzz
 from thefuzz import process
+import os
 ```
 
 This script first checks if a song is currently playing, and stops if so. Then, if you're not asking for an individual song, it checks if you asked for favourites. If you did, it loads your favourites into a list. If you didn't, it will try to load all songs within the requested album/playlist/artist into the list instead. If you just asked for one song, we load that into the list instead. Then, we shuffle if necessary, and initialise a loop, where the song is downloaded, the playback script (which we will soon create) is requested to start, and this loop only restarts once the previous song is done.
@@ -858,43 +857,9 @@ First, install miniaudio using pip
 sudo apt install python3-mpv
 ```
 
-Then, make a systemd service which checks for the file made by the intenthandler by running this:
+Now, make the playback script@
 ```
-sudo nano /etc/systemd/system/jellyfinSongPlay.path
-```
-then paste:
-```
-[Unit]
-Description=Checks for jellyfin play file, and activates the service which runs script which handles playback
-
-[Path]
-PathExists=/dev/shm/tmpassistant/jellyfinPlay
-
-[Service]
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-```
-Save and exit, then run:
-```
-sudo nano /etc/systemd/system/jellyfinSongPlay.service
-```
-and paste:
-```
-[Unit]
-Description=Activates script which handles playback for jellyfin song
-
-[Service]
-Type=oneshot
-ExecStart=/home/assistant-main-node/assistant/jellyfinPlaySong.py
-
-[Install]
-WantedBy=multi-user.target
-```
-Now make that script by running:
-```
-cd ~/assistant/
+cd ~/rhasspy3/jellyfin/
 curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/jellyfinPlaySong.py
 sudo chmod +x jellyfinPlaySong.py
 sudo nano ~/assistant/jellyfinPlaySong.py
@@ -904,64 +869,6 @@ And remember to add the URL, authtoken, and user id to the variables at the top,
 
 This script handles playback (including pausing, stopping, and resuming), as well as getting info for the currently playing song incase we want it for later.
 
-#### Now enable it all
-by running
-```
-sudo systemctl enable jellyfinSongPlay.path --now
-sudo chmod +x ~/assistant/jellyfinPlaySong.py
-```
-
-### Pause, stop, and resume
-
-First, go to the Rhasspy web UI, sentences, and add this:
-```
-[JellyfinPlaybackCtrl]
-(stop | pause | unpause | continue | resume){playback} [the] (song | music)
-```
-
-Now, add this to the bottom of your intentHandler:
-```
-elif intent == "JellyfinPlaybackCtrl":
-  if not os.path.exists(currentMediaPath):
-    speech("No songs are playing")
-  playback = o["slots"]["playback"]
-  if playback == "continue" or playback == "resume" or playback == "unpause":
-    jellyfinResume = open(jellyfinResumeFilePath, "w")
-    jellyfinResume.close()
-  if playback == "pause":
-    jellyfinPause = open(jellyfinPauseFilePath, "w")
-    jellyfinPause.close()
-  if playback == "stop":
-    jellyfinStop = open(jellyfinStopFilePath, "w")
-    jellyfinStop.close()
-```
-
-This bit of code makes a file to represent you wanting to *play*, *pause*, or *resume* the music, which is then detected and handled by the playback script.
-
-#### And, you can add `open(jellyfinStopFilePath, "w")` to your "GenericStop" intent too.
-
-Then, in your `# Set paths` section, add these:
-```
-jellyfinResumeFilePath = tmpDir+"jellyfinResume"
-jellyfinStopFilePath = tmpDir+"jellyfinStop"
-jellyfinPauseFilePath = tmpDir+"jellyfinPause"
-```
-Now, you should be able to ask for any song, then tell it to pause, stop, or resume after pausing.
-
-I also suggest changing the if statement at the start of the `jellyfinPlaySong` section. Instead of exiting if we've already got something playing, we'll just *stop* what's already playing so we can continue.
-
-So, replace this:
-```
-if os.path.exists(currentMediaPath):
-  exit("Already playing")
-```
-with this:
-```
-if os.path.exists(currentMediaPath):
-  jellyfinStop = open(jellyfinStopFilePath, "w")
-  jellyfinStop.close()
-  time.sleep(2)
-```
 
 ### Getting currently playing song
 Although probably not the most useful while playing a single song, we'll add this feature now so we have it later.
