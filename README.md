@@ -419,6 +419,7 @@ Then paste this in:
 import re
 import random
 import sys
+import os
 
 # Set responses
 agreeResponse = ("Okay, ", "Alright, ", "Will do. ", "Got it, ", "Sure, ")
@@ -430,6 +431,10 @@ eveningResponse = (" in the afternoon", " in the evening", " PM")
 text = sys.stdin.read().strip().lower()
 words = [re.sub(r"\W", "", word) for word in text.split()]
 raw_words = text.split()
+
+tmp_file_path = "/dev/shm/tmpassistant/"
+if not os.path.exists(tmp_file_path):
+  os.makedirs(tmp_file_path)
 ```
 CTRL+X, Y, ENTER to save and exit.
 
