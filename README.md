@@ -778,7 +778,7 @@ Now, you can just run `python create-jf-slots.py`.
 
 In this section, we'll add to the intentHandler, allowing it to grab the IDs of the songs you want to play, and shuffle them if necessary.
  
-Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz` to install the library we'll be using for searching.
+Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz python-Levenshtein` to install the library we'll be using for searching.
 
 
 
@@ -834,6 +834,12 @@ def JellyfinPlay():
     songPos += 1
 ```
 Remember to add the server URL, auth, and userid.
+
+Also, at the top of your intent handler, ensure you've got the follwing:
+```                                            
+from thefuzz import fuzz
+from thefuzz import process
+```
 
 This script first checks if a song is currently playing, and stops if so. Then, if you're not asking for an individual song, it checks if you asked for favourites. If you did, it loads your favourites into a list. If you didn't, it will try to load all songs within the requested album/playlist/artist into the list instead. If you just asked for one song, we load that into the list instead. Then, we shuffle if necessary, and initialise a loop, where the song is downloaded, the playback script (which we will soon create) is requested to start, and this loop only restarts once the previous song is done.
 
