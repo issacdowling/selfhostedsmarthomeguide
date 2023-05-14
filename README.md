@@ -432,6 +432,7 @@ text = sys.stdin.read().strip().lower()
 words = [re.sub(r"\W", "", word) for word in text.split()]
 raw_words = text.split()
 
+#Create temp file path
 tmp_file_path = "/dev/shm/tmpassistant/"
 if not os.path.exists(tmp_file_path):
   os.makedirs(tmp_file_path)
@@ -686,7 +687,7 @@ Here, that's `Headphone`.  If yours is different, just change it in the python s
 This is the decision tree with only this section:
 ```
 # If the user is telling something to happen
-elif ("set" in words) or ("make" in words):
+elif ("set" in words) or ("said" in words) or ("make" in words): # "said" since "set" is sometimes misheard)
   ## If the user is setting the volume
   if ("volume" in words) or ("speakers" in words):
     #Find the percentage, send that over to the set_volume function.
@@ -844,6 +845,8 @@ from thefuzz import fuzz
 from thefuzz import process
 import os
 ```
+
+You'll need to go into your Jellyfin profile and disable audio playback with transcoding, or the API breaks for some reason.
 
 This script first checks if a song is currently playing, and stops if so. Then, if you're not asking for an individual song, it checks if you asked for favourites. If you did, it loads your favourites into a list. If you didn't, it will try to load all songs within the requested album/playlist/artist into the list instead. If you just asked for one song, we load that into the list instead. Then, we shuffle if necessary, and initialise a loop, where the song is downloaded, the playback script (which we will soon create) is requested to start, and this loop only restarts once the previous song is done.
 

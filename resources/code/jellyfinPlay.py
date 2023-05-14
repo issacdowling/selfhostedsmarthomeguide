@@ -34,11 +34,11 @@ if os.path.exists(tmpDir + "jellyfinPlay"):
   os.remove(tmpDir + "jellyfinPlay")
 
 player = mpv.MPV()
-player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '&DeviceId=' + deviceid + '&MaxStreamingBitrate=140000000&api_key=' + jellyfinauth + '&PlaySessionId=' + playsessionid + '&StartTimeTicks=0&AudioCodec=vorbis')
+player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '&DeviceId=' + deviceid + '&MaxStreamingBitrate=140000000&api_key=' + jellyfinauth + '&PlaySessionId=' + playsessionid + '&StartTimeTicks=0')
 
 player.wait_until_playing()
 
-while player.playtime_remaining >= 2:
+while player.playtime_remaining >= 1:
   if os.path.exists(tmpDir + "jellyfinStop") or os.path.exists(tmpDir + "jellyfinSkipSong"):
     player.quit()
     break
