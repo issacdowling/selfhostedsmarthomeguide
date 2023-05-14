@@ -783,7 +783,7 @@ Now, you can just run `python create-jf-slots.py`.
 
 In this section, we'll add to the intentHandler, allowing it to grab the IDs of the songs you want to play, and shuffle them if necessary.
  
-Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz python-Levenshtein` to install the library we'll be using for searching.
+Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz python-Levenshtein python3-mpv` to install the library we'll be using for searching.
 
 Then, paste this elif statement at the end of the intenthandler:
 ```
@@ -860,9 +860,9 @@ sudo apt install python3-mpv
 Now, make the playback script@
 ```
 cd ~/rhasspy3/jellyfin/
-curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/jellyfinPlaySong.py
-sudo chmod +x jellyfinPlaySong.py
-sudo nano ~/assistant/jellyfinPlaySong.py
+curl -O https://gitlab.com/issacdowling/selfhostedsmarthomeguide/-/raw/main/resources/code/jellyfinPlay.py
+sudo chmod +x jellyfinPlay.py
+sudo nano ~/assistant/jellyfinPlay.py
 ```
 
 And remember to add the URL, authtoken, and user id to the variables at the top, then CTRL+X, Y, Enter to save.

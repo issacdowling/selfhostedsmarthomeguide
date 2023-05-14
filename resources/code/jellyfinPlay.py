@@ -34,7 +34,7 @@ if os.path.exists(tmpDir + "jellyfinPlay"):
   os.remove(tmpDir + "jellyfinPlay")
 
 player = mpv.MPV()
-player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '&DeviceId=' + deviceid + '&MaxStreamingBitrate=140000000&api_key=' + jellyfinauth + '&PlaySessionId=' + playsessionid + '&StartTimeTicks=0')
+player.play(jellyfinurl + '/Audio/' + itemid + '/universal?UserId=' + userid + '&DeviceId=' + deviceid + '&MaxStreamingBitrate=140000000&api_key=' + jellyfinauth + '&PlaySessionId=' + playsessionid + '&StartTimeTicks=0&AudioCodec=vorbis')
 
 player.wait_until_playing()
 
