@@ -784,7 +784,7 @@ Now, you can just run `python create-jf-slots.py`.
 
 In this section, we'll add to the intentHandler, allowing it to grab the IDs of the songs you want to play, and shuffle them if necessary.
  
-Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz python-Levenshtein python3-mpv` to install the library we'll be using for searching.
+Firstly, run `~/rhasspy3/.venv/bin/pip install thefuzz python-Levenshtein python-mpv==0.5.2` to install the library we'll be using for searching.
 
 Then, paste this elif statement at the end of the intenthandler:
 ```
