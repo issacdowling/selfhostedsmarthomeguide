@@ -1,4 +1,7 @@
 # SelfhostedSmartHomeGuide
+
+### This has been superceded by my other smart home / voice assistant efforts, and this repo is therefore archived.
+
 ### This is not done yet. In-progress. You assume all responsibility for if *anything* goes wrong for *any reason*.
 
 # Table of Contents
